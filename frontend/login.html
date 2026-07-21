@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GAMCH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8fafc; } /* slate-50 */
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950">
+
+<div class="grid min-h-screen lg:grid-cols-2">
+
+    <!-- PANEL IZQUIERDO -->
+    <section class="relative hidden overflow-hidden lg:flex">
+
+        <!-- Fondo -->
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-700"></div>
+
+        <!-- Efectos -->
+        <div class="absolute -left-24 top-10 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-500/30 blur-3xl"></div>
+
+        <!-- Contenido -->
+        <div class="relative z-10 flex flex-col justify-center px-20 text-white">
+
+            <div class="mb-10 flex h-24 w-24 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md">
+                <i data-lucide="landmark" class="h-12 w-12"></i>
+            </div>
+
+            <h1 class="mb-4 text-5xl font-extrabold leading-tight">
+                GAMCH
+            </h1>
+
+            <p class="mb-10 text-xl text-slate-200">
+                Sistema de Gestión de Hojas de Ruta y Procesos Administrativos.
+            </p>
+
+            <div class="space-y-6">
+
+                <div class="flex items-center gap-4">
+                    <div class="rounded-xl bg-white/10 p-3">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold">
+                            Acceso Seguro
+                        </h3>
+
+                        <p class="text-sm text-slate-300">
+                            Información protegida mediante autenticación.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="rounded-xl bg-white/10 p-3">
+                        <i data-lucide="workflow"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold">
+                            Gestión Centralizada
+                        </h3>
+
+                        <p class="text-sm text-slate-300">
+                            Control de documentos y procesos desde un solo lugar.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="rounded-xl bg-white/10 p-3">
+                        <i data-lucide="clock-3"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold">
+                            Mayor Productividad
+                        </h3>
+
+                        <p class="text-sm text-slate-300">
+                            Optimiza el seguimiento de cada trámite.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PANEL DERECHO -->
+    <section class="flex items-center justify-center bg-slate-100 px-6 py-12">
+
+        <div class="w-full max-w-md rounded-3xl bg-white p-10 shadow-2xl">
+
+            <div class="mb-10 text-center">
+
+                <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
+                    <i data-lucide="landmark" class="h-10 w-10"></i>
+                </div>
+
+                <h2 class="text-3xl font-bold text-slate-800">
+                    Bienvenido
+                </h2>
+
+                <p class="mt-2 text-slate-500">
+                    Inicia sesión para continuar
+                </p>
+
+            </div>
+
+            <form id="form-login" class="space-y-6">
+
+                <div
+                    id="mensaje-error"
+                    class="hidden rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+                </div>
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Usuario
+                    </label>
+
+                    <div class="relative">
+
+                        <i data-lucide="user"
+                           class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
+
+                        <input
+                            id="username"
+                            type="text"
+                            required
+                            autocomplete="username"
+                            placeholder="Ingrese su usuario"
+                            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-12 pr-4 transition focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <label class="mb-2 block text-sm font-semibold text-slate-700">
+                        Contraseña
+                    </label>
+
+                    <div class="relative">
+
+                        <i data-lucide="lock"
+                           class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
+
+                        <input
+                            id="password"
+                            type="password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="Ingrese su contraseña"
+                            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-12 pr-4 transition focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="btn-login"
+                    type="submit"
+                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 font-semibold text-white transition duration-300 hover:-translate-y-1 hover:bg-indigo-700 hover:shadow-xl">
+
+                    <span>Ingresar al Sistema</span>
+
+                    <i data-lucide="arrow-right"></i>
+
+                </button>
+
+            </form>
+
+            <div class="mt-10 border-t pt-5 text-center text-xs text-slate-400">
+                © 2026 GAMCH · Gobierno Autónomo Municipal
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+
+<script src="js/login.js"></script>
+
+</body>

@@ -1,0 +1,16 @@
+fastapi>=0.104.1
+uvicorn>=0.24.0
+sqlalchemy>=2.0.23
+psycopg2-binary>=2.9.9
+pydantic>=2.5.2
+pydantic-settings>=2.1.0
+openpyxl>=3.1.2
+python-docx>=1.1.0
+num2words>=0.5.14
+docopt>=0.6.2
+python-multipart>=0.0.32
+bcrypt>=3.2.2 
+passlib>=1.7.4 
+pyjwt>=2.13.0
+cffi>=2.0.0 
+pycparser>=3.0

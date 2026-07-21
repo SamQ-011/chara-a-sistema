@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sistema de Seguimiento de Hojas de Ruta</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 30px;
+        }
+
+        .card-hover{
+            transition:.25s;
+        }
+
+        .card-hover:hover{
+            transform:translateY(-3px);
+            box-shadow:0 15px 35px rgba(0,0,0,.08);
+        }
+    </style>
+    <script src="js/auth.js"></script>
+
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+
+    <aside class="w-72 bg-gradient-to-b from-slate-900 via-indigo-900 to-indigo-800 text-white flex flex-col shadow-2xl">
+
+        <div class="p-8 border-b border-indigo-700">
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-lg text-indigo-800">
+
+                    🏛️
+
+                </div>
+
+                <div>
+
+                    <h1 class="font-bold text-2xl">
+
+                        GAMCH
+
+                    </h1>
+
+                    <p class="text-indigo-200 text-sm">
+
+                        Sistema Municipal
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <nav class="flex-1 p-5 space-y-2">
+
+            <a href="index.html"
+                class="flex items-center gap-3 bg-white/15 rounded-xl px-5 py-4 transition hover:bg-white/20">
+
+                <i data-lucide="layout-dashboard"></i>
+
+                Bandeja de Procesos
+
+            </a>
+
+            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar"
+                class="flex items-center gap-3 rounded-xl px-5 py-4 transition hover:bg-white/10">
+                <i data-lucide="plus-circle"></i> Nuevo Proceso
+            </a>
+
+        </nav>
+
+        <div class="p-5 border-t border-indigo-700">
+
+            <div class="bg-white/10 rounded-xl p-4">
+
+                <p class="text-sm text-indigo-100">
+
+                    Sistema de Seguimiento Documental
+
+                </p>
+
+                <p class="text-xs text-indigo-300 mt-2">
+
+                    Gobierno Autónomo Municipal
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO -->
+
+    <main class="flex-1 overflow-y-auto">
+
+        <header class="bg-white border-b">
+
+            <div class="px-10 py-6 flex justify-between items-center">
+
+                <div>
+
+                    <h1 class="text-3xl font-bold text-slate-800">
+
+                        Bandeja de Procesos
+
+                    </h1>
+
+                    <p class="text-gray-500 mt-1">
+
+                        Gestión y seguimiento de hojas de ruta
+
+                    </p>
+
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-4 border-l pl-6">
+                        <div>
+                            <p id="ui-user-name" class="font-semibold text-slate-800">Cargando...</p>
+                            <p id="ui-user-rol" class="text-xs text-gray-500 uppercase tracking-wide">Rol</p>
+                        </div>
+                        <button onclick="cerrarSesion()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Cerrar Sesión">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+        <section class="p-10">
+
+            <!-- TARJETAS -->
+
+            <div class="grid lg:grid-cols-4 gap-6 mb-8">
+
+                <div class="bg-white rounded-2xl p-6 shadow card-hover">
+
+                    <div class="flex justify-between">
+
+                        <div>
+
+                            <p class="text-gray-500">
+
+                                Total Procesos
+
+                            </p>
+
+                            <h2 id="totalProcesos"
+                                class="text-4xl font-bold mt-3">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                        <div
+                            class="bg-indigo-100 text-indigo-700 rounded-xl w-14 h-14 flex items-center justify-center">
+
+                            <i data-lucide="folder-kanban"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow card-hover">
+
+                    <div class="flex justify-between">
+
+                        <div>
+
+                            <p class="text-gray-500">
+
+                                En Curso
+
+                            </p>
+
+                            <h2 id="enCurso"
+                                class="text-4xl font-bold text-blue-600 mt-3">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                        <div
+                            class="bg-blue-100 text-blue-700 rounded-xl w-14 h-14 flex items-center justify-center">
+
+                            <i data-lucide="loader-circle"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow card-hover">
+
+                    <div class="flex justify-between">
+
+                        <div>
+
+                            <p class="text-gray-500">
+
+                                Pendientes
+
+                            </p>
+
+                            <h2 id="pendientes"
+                                class="text-4xl font-bold text-yellow-500 mt-3">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                        <div
+                            class="bg-yellow-100 text-yellow-700 rounded-xl w-14 h-14 flex items-center justify-center">
+
+                            <i data-lucide="triangle-alert"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow card-hover">
+
+                    <div class="flex justify-between">
+
+                        <div>
+
+                            <p class="text-gray-500">
+
+                                Finalizados
+
+                            </p>
+
+                            <h2 id="finalizados"
+                                class="text-4xl font-bold text-green-600 mt-3">
+
+                                0
+
+                            </h2>
+
+                        </div>
+
+                        <div
+                            class="bg-green-100 text-green-700 rounded-xl w-14 h-14 flex items-center justify-center">
+
+                            <i data-lucide="badge-check"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- TABLA -->
+
+            <div class="bg-white rounded-3xl shadow-lg overflow-hidden border border-slate-200">
+
+                <div class="flex justify-between items-center p-6 border-b">
+
+                    <div>
+
+                        <h3 class="text-xl font-bold">
+
+                            Procesos Registrados
+
+                        </h3>
+
+                        <p class="text-gray-500 text-sm">
+
+                            Seguimiento de contratación municipal
+
+                        </p>
+
+                    </div>
+
+                    <a href="nuevo_proceso.html" id="btn-nuevo-proceso-main"
+                        class="bg-indigo-600 hover:bg-indigo-700 transition text-white rounded-xl px-5 py-3 flex items-center gap-2">
+                        <i data-lucide="plus"></i> Nuevo Proceso
+                    </a>
+
+                </div>
+
+                <table class="w-full">
+
+                    <thead class="bg-slate-100">
+
+                        <tr>
+
+                            <th class="px-8 py-5 text-left">
+
+                                Código
+
+                            </th>
+
+                            <th class="px-8 py-5 text-left">
+
+                                Proveedor
+
+                            </th>
+
+                            <th class="px-8 py-5 text-left">
+
+                                Estado
+
+                            </th>
+
+                            <th class="px-8 py-5 text-center">
+
+                                Acción
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tabla-procesos">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
