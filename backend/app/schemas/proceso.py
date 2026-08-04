@@ -26,6 +26,7 @@ class VariablesUI(BaseModel):
     direccion: Optional[str] = ""
     telefono: Optional[str] = ""
     codigo: str
+    hoja_ruta: str = ""
     n_orden: Optional[str] = ""
     objeto: str
     desca: str

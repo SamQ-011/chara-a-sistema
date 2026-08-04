@@ -10,8 +10,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selectArea = document.getElementById("area_solicitante");
 
     if (rolUsuario === "SOLICITANTE") {
-            if (contenedorDerivacion) contenedorDerivacion.style.display = "none";
-            if (selectArea) selectArea.removeAttribute("required");
+        if (contenedorDerivacion) contenedorDerivacion.style.display = "none";
+        if (selectArea) selectArea.removeAttribute("required");
+    }
+
+    if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolUsuario)) {
+        const btnCatalogos = document.getElementById("menu-catalogos");
+        if (btnCatalogos) btnCatalogos.style.display = "none";
     }
 
     document.getElementById('fecha_solicitud').valueAsDate = new Date();
@@ -40,7 +45,10 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
-    if (!selectArea.value) {
+    const rolUsuario = localStorage.getItem("user_rol");
+
+    // Solo SECRETARIA/ADMIN necesitan seleccionar un área de derivación
+    if (rolUsuario !== "SOLICITANTE" && !selectArea.value) {
         alert("Debe seleccionar un área de derivación válida.");
         return;
     }
@@ -49,16 +57,14 @@ form.addEventListener("submit", async (e) => {
     btnGuardar.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
     lucide.createIcons();
 
-    const unidadId = parseInt(selectArea.value, 10);
-    const unidadNombre = selectArea.options[selectArea.selectedIndex].text;
-
     // Payload simplificado para Ventanilla Única
     const variables_ui = {
         hoja_ruta: document.getElementById("hoja_ruta").value.trim(),
         objeto: document.getElementById("objeto").value.trim(),
         fecha_corta: document.getElementById("fecha_solicitud").value,
 
-        uni_solic: selectArea.value,
+        // SOLICITANTE no selecciona unidad; el backend la auto-asigna
+        uni_solic: selectArea.value || "",
         
         // --- Defaults técnicos que se llenarán después ---
         codigo: "HR-" + Date.now(),

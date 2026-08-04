@@ -42,7 +42,7 @@ async function inicializarDashboard() {
         if (btnMain) btnMain.style.display = "none";
     }
 
-    if (rolActual !== "ADMIN", "RPC", "PRESUPESTO") {
+    if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolActual)) {
         const btnCatalogos = document.getElementById("menu-catalogos");
         if (btnCatalogos) btnCatalogos.style.display = "none";
     }
@@ -246,7 +246,7 @@ function pintarTabla(datos) {
                 ${checkboxHabilitado}
             </td>
 
-            <td class="px-8 py-5 font-bold text-indigo-700 whitespace-nowrap align-middle">${p.codigo_proceso}</td>
+            <td class="px-8 py-5 font-bold text-indigo-700 whitespace-nowrap align-middle">${p.hoja_ruta || p.codigo_proceso}</td>
             
             <td class="px-8 py-5 text-slate-600 font-medium align-middle">
                 <div class="flex flex-col gap-1">
@@ -304,14 +304,20 @@ function actualizarKPIs(rol) {
 
     // Inyectamos las matemáticas puras de nuestra clasificación
     const elTotal = document.getElementById("totalProcesos");
-    const elPendientes = document.getElementById("enCurso");
-    const elProcesados = document.getElementById("pendientes");
+    const elEnCurso = document.getElementById("enCurso");
+    const elPendientes = document.getElementById("pendientes");
     const elFinalizados = document.getElementById("finalizados");
 
-    if(elTotal) elTotal.textContent = procesosCache.length;
-    if(elPendientes) elPendientes.textContent = listasClasificadas.pendientes.length; // Bandeja activa
-    if(elProcesados) elProcesados.textContent = listasClasificadas.procesados.length; // Historial
-    if(elFinalizados) elFinalizados.textContent = procesosCache.filter(p => p.estado === "FINALIZADO").length;
+    // Excluimos ANULADO de las métricas activas
+    const totalActivos = procesosCache.filter(p => p.estado !== "ANULADO").length;
+    const countEnCurso = procesosCache.filter(p => (p.estado === "EN CURSO" || p.estado === "CON PENDIENTES")).length;
+    const countPendientesAccion = listasClasificadas.pendientes.length;
+    const countFinalizados = procesosCache.filter(p => p.estado === "FINALIZADO").length;
+
+    if(elTotal) elTotal.textContent = totalActivos;
+    if(elEnCurso) elEnCurso.textContent = countEnCurso;
+    if(elPendientes) elPendientes.textContent = countPendientesAccion;
+    if(elFinalizados) elFinalizados.textContent = countFinalizados;
 }
 
 if (buscador) {
@@ -429,7 +435,7 @@ async function ejecutarFusion() {
         
         cerrarModalFusion();
         document.getElementById('barra-accion-masiva').classList.add('hidden');
-        cargarProcesos();
+        await cargarProcesosYClasificar();
         
         alert("¡Fusión completada con éxito!");
     } catch (error) {

@@ -89,6 +89,7 @@ def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_d
         resultado.append({
             "id": p.id,
             "codigo_proceso": p.codigo_proceso,
+            "hoja_ruta": p.hoja_ruta,
             "objeto_contratacion": p.objeto_contratacion,
             "estado": estado_str,
             "unidad_nombre": p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla / Sin Asignar"),
@@ -192,8 +193,8 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_a
             uni_id = unidad_db.id if unidad_db else None
 
         nuevo_proceso = Proceso(
-            codigo_proceso=ui.codigo,
-            hoja_ruta=getattr(ui, "hoja_ruta", ""),
+            codigo_proceso=ui.hoja_ruta or ui.codigo,
+            hoja_ruta=ui.hoja_ruta,
             nro_orden=ui.n_orden,
             objeto_contratacion=ui.objeto,
             desca_contextual=ui.objeto[:50] if ui.objeto else "",
@@ -272,9 +273,8 @@ def fusionar_procesos(payload: FusionPayload, db: Session = Depends(get_db)):
     base = procesos_origen[0]
 
     # 2. Creamos el Proceso Maestro
-    import time
     nuevo_proceso = Proceso(
-        codigo_proceso=f"MSTR-{int(time.time())}",
+        codigo_proceso=payload.hoja_ruta_master,
         hoja_ruta=payload.hoja_ruta_master,
         objeto_contratacion=payload.objeto_unificado,
         desca_contextual=payload.objeto_unificado[:50],
@@ -291,21 +291,44 @@ def fusionar_procesos(payload: FusionPayload, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nuevo_proceso)
 
-    # 3. Traslado Físico Documental (Copiar PDFs)
+    # 3. Traslado Físico Documental (Fusionar PDFs de solicitudes)
     ruta_maestro = os.path.join("Resultados", f"Proceso_{nuevo_proceso.id}")
     os.makedirs(ruta_maestro, exist_ok=True)
 
+    # Recolectamos todos los PDFs de solicitud de los procesos originales
+    pdfs_solicitud = []
+    
     for p in procesos_origen:
         ruta_origen = os.path.join("Resultados", f"Proceso_{p.id}")
         if os.path.exists(ruta_origen):
-            # Buscamos PDFs en la carpeta origen
-            for archivo in os.listdir(ruta_origen):
+            for archivo in sorted(os.listdir(ruta_origen)):
                 if archivo.endswith(".pdf"):
                     src_file = os.path.join(ruta_origen, archivo)
-                    # Renombramos para identificar de qué proceso original vino
-                    dst_file = os.path.join(ruta_maestro, f"Solicitud_Anexada_{p.hoja_ruta or p.id}.pdf")
-                    shutil.copy2(src_file, dst_file)
-        
+                    pdfs_solicitud.append(src_file)
+                    # También copiamos cada PDF individualmente como anexo para trazabilidad
+                    dst_anexo = os.path.join(ruta_maestro, f"Solicitud_Anexada_{p.hoja_ruta or p.id}_{archivo}")
+                    shutil.copy2(src_file, dst_anexo)
+
+    # Fusionamos todos los PDFs en un solo documento unificado
+    if pdfs_solicitud:
+        try:
+            from pypdf import PdfWriter, PdfReader
+            writer = PdfWriter()
+            for pdf_path in pdfs_solicitud:
+                reader = PdfReader(pdf_path)
+                for page in reader.pages:
+                    writer.add_page(page)
+            ruta_pdf_unificado = os.path.join(ruta_maestro, f"0_Solicitud_Inicial_{nuevo_proceso.id}.pdf")
+            with open(ruta_pdf_unificado, "wb") as output_file:
+                writer.write(output_file)
+            print(f"[FUSION] PDF unificado creado con {len(writer.pages)} páginas desde {len(pdfs_solicitud)} archivos")
+        except Exception as e:
+            print(f"[FUSION ERROR] Error al fusionar PDFs: {e}")
+            # Si la fusión de PDFs falla, al menos copiamos el primer PDF como solicitud principal
+            if pdfs_solicitud:
+                shutil.copy2(pdfs_solicitud[0], os.path.join(ruta_maestro, f"0_Solicitud_Inicial_{nuevo_proceso.id}.pdf"))
+
+    for p in procesos_origen:
         # 4. Cambiamos estado de los hijos y marcamos trazabilidad
         p.estado = EstadoProceso.ANULADO # O crea un EstadoProceso.FUSIONADO en tu Enum
         p.fusionado_en_id = nuevo_proceso.id
@@ -322,6 +345,9 @@ def actualizar_proceso(proceso_id: int, datos: ProcesoUpdate, db: Session = Depe
         proceso = db.query(Proceso).filter(Proceso.id == proceso_id, Proceso.activo == True).first()
         if not proceso:
             raise HTTPException(status_code=404, detail="Proceso no encontrado")
+
+        if proceso.estado == EstadoProceso.ANULADO:
+            raise HTTPException(status_code=400, detail="Este trámite ha sido ANULADO / FUSIONADO y no se puede modificar.")
 
         ui = datos.variables_ui
 
@@ -455,6 +481,9 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
     proceso = db.query(Proceso).filter(Proceso.id == proceso_id).first()
     if not proceso:
         raise HTTPException(status_code=404, detail="Proceso no encontrado")
+
+    if proceso.estado == EstadoProceso.ANULADO:
+        raise HTTPException(status_code=400, detail="Este trámite ha sido ANULADO / FUSIONADO y no admite generación o modificación de documentos.")
 
     if payload.clave_documento == "especificaciones_tecnicas":
         # 1. Actualizar nombre oficial
@@ -694,6 +723,9 @@ async def subir_pdf_solicitud(proceso_id: int, file: UploadFile = File(...), db:
     proceso = db.query(Proceso).filter(Proceso.id == proceso_id).first()
     if not proceso:
         raise HTTPException(status_code=404, detail="Proceso no encontrado en la base de datos.")
+
+    if proceso.estado == EstadoProceso.ANULADO:
+        raise HTTPException(status_code=400, detail="Este trámite ha sido ANULADO / FUSIONADO y no permite la subida de nuevos archivos.")
 
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="El archivo adjunto debe ser estrictamente un PDF.")

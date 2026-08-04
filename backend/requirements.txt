@@ -17,3 +17,4 @@ pycparser>=3.0
 docx2pdf>=0.1.8 
 pywin32>=312 
 tqdm>=4.69.0
+pypdf>=6.0.0

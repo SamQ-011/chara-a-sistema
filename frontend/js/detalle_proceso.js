@@ -42,6 +42,30 @@ async function cargarDatosProceso() {
         document.getElementById("lbl-plazo").textContent = plazoStr;
         document.getElementById("lbl-area").textContent = proceso.distrito_comunidad || "S/N";
         
+        // Banner visual para procesos ANULADOS
+        const bannerContainer = document.getElementById("container-banner-anulado");
+        if (proceso.estado === "ANULADO") {
+            if (bannerContainer) {
+                bannerContainer.classList.remove("hidden");
+                bannerContainer.innerHTML = `
+                    <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-r-2xl text-red-900 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-red-100 rounded-xl text-red-600">
+                                <i data-lucide="slash" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-base">Este trámite ha sido ANULADO / FUSIONADO</p>
+                                <p class="text-xs text-red-700 mt-0.5">Fue unificado en el Expediente Maestro ${proceso.fusionado_en_id ? `#${proceso.fusionado_en_id}` : ''}. Este expediente se conserva solo para fines de auditoría y lectura.</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-red-200 text-red-800 rounded-lg text-xs font-bold uppercase tracking-wider">Solo Lectura</span>
+                    </div>
+                `;
+            }
+        } else if (bannerContainer) {
+            bannerContainer.classList.add("hidden");
+        }
+
         // Todo ahora recibe "proceso" por parámetro (Inyección de dependencias)
         renderizarControlesEdicion(rolActual, proceso);
         renderizarDocumentos(rolActual, proceso);
@@ -56,6 +80,11 @@ async function cargarDatosProceso() {
 function renderizarControlesEdicion(rolActual, proceso) {
     const contenedorBotones = document.getElementById("contenedor-acciones-principales");
     if (!contenedorBotones) return;
+
+    if (proceso.estado === "ANULADO") {
+        contenedorBotones.innerHTML = "";
+        return;
+    }
 
     // Regla de Negocio: El botón de edición solo sale si no hay otros documentos generados
     const tieneDocumentosAvanzados = proceso.documentos && proceso.documentos.some(d => d.clave_documento !== 'solicitud_cp');
@@ -78,15 +107,17 @@ function renderizarDocumentos(rolActual, proceso) {
     const contenedor = document.getElementById("contenedor-documentos");
     let html = `<div class="relative border-l-2 border-slate-200 ml-4 space-y-4">`;
 
+    const esAnulado = proceso.estado === "ANULADO";
+
     // Lista de documentos que ya están finalizados en el backend
-    const docsFinalizados = (proceso.documentos || []).filter(d => d.estado === "FINALIZADO" || d.estado === "FINALIZADO").map(d => d.clave_documento);
+    const docsFinalizados = (proceso.documentos || []).filter(d => d.estado === "FINALIZADO").map(d => d.clave_documento);
 
     MAESTRO_DOCUMENTOS.forEach((doc, index) => {
-        const tienePermiso = doc.owner.includes(rolActual);
+        const tienePermiso = doc.owner.includes(rolActual) && !esAnulado;
         const estaListo = docsFinalizados.includes(doc.id_tipo);
         const textoRoles = doc.owner.join(' / ');
         
-        // UX Checklist: Verde si está listo, gris/azul si falta
+        // UX Checklist: Verde si está listo, gris/rojo si es anulado o pendiente
         const indicador = estaListo 
             ? `<i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-500 bg-white rounded-full absolute -left-[15px] top-3 z-10 shadow-sm"></i>`
             : `<span class="absolute -left-[17px] top-3 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 bg-white z-10 ${tienePermiso ? 'text-indigo-600 border-indigo-600 shadow-md shadow-indigo-200' : 'text-slate-400 border-slate-200'}">${index + 1}</span>`;
@@ -94,7 +125,34 @@ function renderizarDocumentos(rolActual, proceso) {
         const colorTitulo = tienePermiso ? "text-slate-800" : "text-slate-500";
         
         let uiAccion = "";
-        if (tienePermiso) {
+        if (esAnulado) {
+            // Si está anulado, solo se permite descargar si ya existía antes
+            if (estaListo) {
+                const btnWord = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'word')`;
+                const btnPDF = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'pdf')`;
+                uiAccion = `
+                    <div class="flex items-center justify-between w-full">
+                        <span class="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 flex items-center gap-1">
+                            <i data-lucide="lock" class="w-3.5 h-3.5"></i> Bloqueado (Anulado)
+                        </span>
+                        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+                            <button onclick="${btnWord}" class="px-4 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-semibold" title="Descargar Word">
+                                <i data-lucide="file-text" class="w-4 h-4"></i> Word
+                            </button>
+                            <button onclick="${btnPDF}" class="px-4 py-1.5 text-slate-600 hover:text-red-600 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-semibold" title="Imprimir PDF">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
+                            </button>
+                        </div>
+                    </div>`;
+            } else {
+                uiAccion = `
+                    <div class="flex justify-end w-full">
+                        <span class="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg flex items-center gap-2 text-sm border border-slate-200 font-medium">
+                            <i data-lucide="slash" class="w-4 h-4"></i> No disponible (Trámite Anulado)
+                        </span>
+                    </div>`;
+            }
+        } else if (tienePermiso) {
             const btnWord = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'word')`;
             const btnPDF = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'pdf')`;
 
@@ -156,6 +214,11 @@ function renderizarDocumentos(rolActual, proceso) {
 
 // COMPONENTIZACIÓN: Cargar Modal Dinámico
 window.generarDocumento = async function(tipoDoc, proceso) {
+    if (proceso && proceso.estado === "ANULADO") {
+        alert("⛔ Este trámite ha sido ANULADO / FUSIONADO y no admite generación o modificación de documentos.");
+        return;
+    }
+
     // Se guardan los nombres de función como texto para evitar el ReferenceError
     const mapaModales = {
         "especificaciones_tecnicas": { idVista: "vista-especificaciones", funcionName: "abrirEditorEspecificaciones" },
