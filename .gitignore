@@ -2,7 +2,14 @@ __pycache__/
 *.pyc
 venv/
 env/
+.venv/
 .env
+
 node_modules/
 .vscode/
-.venv/
+
+*.tmp
+
+backend/Resultados/
+backend/Uploads/
+logs/
