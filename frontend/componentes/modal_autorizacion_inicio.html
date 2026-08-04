@@ -1,0 +1,76 @@
+<!-- archivo: componentes/modal_autorizacion_inicio.html -->
+<div id="vista-autorizacion" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Autorización de Inicio</h2>
+            <p class="text-slate-400 text-sm mt-1">Revisión, edición y emisión de orden</p>
+        </div>
+        <button onclick="cerrarEditorAutorizacion()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
+            <div class="grid grid-cols-3 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Unidad Solicitante</label>
+                    <input type="text" id="aut-solicitante" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Código de Proyecto</label>
+                    <input type="text" id="aut-codigo" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Autorización</label>
+                    <input type="date" id="aut-fecha" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div class="col-span-3">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Objeto de Contratación / Actividad</label>
+                    <textarea id="aut-objeto" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-slate-50"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-base font-bold text-slate-800">Ítems a Autorizar (Heredados)</h3>
+                    <button type="button" onclick="agregarItemAutorizacion()" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-200 transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Agregar Ítem
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 w-12 text-center">Nro</th>
+                                <th class="px-4 py-3 min-w-[200px]">Objeto Corto</th>
+                                <th class="px-4 py-3 min-w-[300px]">Desc. Larga (Características)</th>
+                                <th class="px-4 py-3 w-28">Unidad</th>
+                                <th class="px-4 py-3 w-28">Cant.</th>
+                                <th class="px-4 py-3 w-32">Precio Unit.</th>
+                                <th class="px-4 py-3 w-32 text-right">Total</th>
+                                <th class="px-4 py-3 w-12"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="aut-tabla-items-edit" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end">
+                    <span class="text-base font-bold text-slate-600">Total Autorizado: Bs. <span id="aut-total-items" class="text-xl text-indigo-700 ml-2">0.00</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorAutorizacion()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button onclick="guardarAutorizacion('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-aut">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word
+            </button>
+            <button onclick="guardarAutorizacion('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-aut">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

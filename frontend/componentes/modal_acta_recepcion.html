@@ -1,0 +1,62 @@
+<!-- archivo: componentes/modal_acta_recepcion.html -->
+<div id="vista-acta-recepcion" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Actas de Entrega / Recepción</h2>
+            <p class="text-slate-400 text-sm mt-1">Fracciona la entrega en múltiples actas según el destinatario final.</p>
+        </div>
+        <button onclick="cerrarEditorActaRecepcion()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-4xl mx-auto space-y-6">
+            
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-indigo-900 font-bold text-lg mb-4 flex items-center gap-2">
+                    <i data-lucide="info" class="w-5 h-5"></i> Información General del Proceso
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="md:col-span-2">
+                        <span class="block text-indigo-700/70 font-bold mb-1 uppercase text-xs tracking-wider">Objeto de Contratación</span>
+                        <span id="acta-info-objeto" class="font-semibold text-slate-800 text-base"></span>
+                    </div>
+                    <div>
+                        <span class="block text-indigo-700/70 font-bold mb-1 uppercase text-xs tracking-wider">Responsable Solicitante</span>
+                        <span id="acta-info-responsable" class="font-medium text-slate-800"></span>
+                    </div>
+                    <div>
+                        <span class="block text-indigo-700/70 font-bold mb-1 uppercase text-xs tracking-wider">Unidad Solicitante</span>
+                        <span id="acta-info-unidad" class="font-medium text-slate-800"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-5 pt-4 border-t border-indigo-100/50 flex items-center justify-between">
+                    <label for="acta-fecha-entrega" class="text-sm font-bold text-indigo-900">Fecha de entrega física en el Acta:</label>
+                    <input type="date" id="acta-fecha-entrega" class="border border-indigo-200 rounded-lg p-2 text-sm text-slate-700 focus:border-indigo-500 outline-none w-48 font-bold">
+                </div>
+            </div>
+
+            <div id="contenedor-actas" class="space-y-6"></div>
+
+            <div class="mt-6 flex justify-center">
+                <button onclick="agregarLoteActa()" class="px-5 py-2.5 bg-slate-200 text-slate-700 hover:bg-slate-300 font-bold rounded-xl flex items-center gap-2 transition border border-slate-300 border-dashed">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Añadir otra Acta (Otro destinatario)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorActaRecepcion()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button onclick="guardarActaRecepcion('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-acta">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word
+            </button>
+            <button onclick="guardarActaRecepcion('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-acta">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

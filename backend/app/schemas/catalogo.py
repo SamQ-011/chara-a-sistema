@@ -42,3 +42,38 @@ class UnidadResponse(UnidadBase):
     id: int
     class Config:
         from_attributes = True
+
+
+class PoaProgramaCreate(BaseModel):
+    codigo: str
+    nombre: str
+
+class PoaProyectoCreate(BaseModel):
+    programa_id: int
+    codigo_proy: str
+    actividad: str
+    nombre: str
+
+class PoaPartidaCreate(BaseModel):
+    proyecto_id: int
+    codigo: str
+    descripcion: str
+    ff: str
+    of: str
+
+class PoaPartidaResponse(PoaPartidaCreate):
+    id: int
+    class Config:
+        from_attributes = True
+
+class PoaProyectoResponse(PoaProyectoCreate):
+    id: int
+    partidas: list[PoaPartidaResponse] = []
+    class Config:
+        from_attributes = True
+
+class PoaProgramaResponse(PoaProgramaCreate):
+    id: int
+    proyectos: list[PoaProyectoResponse] = []
+    class Config:
+        from_attributes = True

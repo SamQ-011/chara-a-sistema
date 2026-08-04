@@ -4,6 +4,8 @@ from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.table import _Row
 from docx.shared import Pt
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from num2words import num2words
 
 def numero_a_letras(monto: float):
@@ -44,6 +46,127 @@ def reemplazar_texto(doc, reemplazos):
             for celda in fila.cells:
                 for p in celda.paragraphs:
                     replace_in_paragraph(p)
+
+
+# ==========================================================
+# INYECCIÓN DINÁMICA DE NODOS (VIÑETAS Y LISTAS)
+# ==========================================================
+def inyectar_nodos_dinamicos(doc, marcador, lista_textos):
+    if not lista_textos:
+        reemplazar_texto(doc, {marcador: ""})
+        return
+
+    # Forzar a Word a que NO aplaste los párrafos del mismo estilo
+    def quitar_contextual_spacing(parrafo):
+        pPr = parrafo._p.get_or_add_pPr()
+        existente = pPr.find(qn('w:contextualSpacing'))
+        if existente is not None:
+            existente.set(qn('w:val'), '0')
+            return
+        nuevo = OxmlElement('w:contextualSpacing')
+        nuevo.set(qn('w:val'), '0')
+        rPr = pPr.find(qn('w:rPr'))
+        if rPr is not None:
+            rPr.addprevious(nuevo)
+        else:
+            pPr.append(nuevo)
+
+    def buscar_y_reemplazar_nodos(elementos):
+        for p in elementos:
+            if marcador in p.text:
+                padre = p._p.getparent()
+                indice = padre.index(p._p)
+                
+                # Extraer formato manual (tipografía) del marcador original
+                fuente_nombre = None
+                fuente_tamano = None
+                if p.runs:
+                    fuente_nombre = p.runs[0].font.name
+                    fuente_tamano = p.runs[0].font.size
+
+                for item in lista_textos:
+                    if isinstance(item, dict):
+                        # ==========================================
+                        # MODO "PUNTO EXTRA" (TÍTULO Y DESCRIPCIÓN)
+                        # ==========================================
+                        
+                        # 1. PÁRRAFO DEL TÍTULO (Mantiene la numeración)
+                        p_tit = deepcopy(p._p)
+                        parrafo_tit = Paragraph(p_tit, p._parent)
+                        parrafo_tit.clear()
+                        
+                        run_tit = parrafo_tit.add_run(str(item.get('titulo', '')).strip())
+                        run_tit.bold = True
+                        if fuente_nombre: run_tit.font.name = fuente_nombre
+                        if fuente_tamano: run_tit.font.size = fuente_tamano
+                        
+                        # Espaciado explícito: título pegado a su descripción
+                        quitar_contextual_spacing(parrafo_tit)
+                        parrafo_tit.paragraph_format.space_before = Pt(6)
+                        parrafo_tit.paragraph_format.space_after = Pt(6)
+                        
+                        padre.insert(indice, parrafo_tit._p)
+                        indice += 1
+                        
+                        # 2. PÁRRAFO DE LA DESCRIPCIÓN (Sin numeración, misma sangría)
+                        p_desc = deepcopy(p._p)
+                        parrafo_desc = Paragraph(p_desc, p._parent)
+                        parrafo_desc.clear()
+                        
+                        # TRUCO: Eliminar la etiqueta XML de numeración (numPr) pero dejar la sangría (ind)
+                        pPr = parrafo_desc._p.get_or_add_pPr()
+                        for child in list(pPr):
+                            if child.tag.endswith('numPr'):
+                                pPr.remove(child)
+                        quitar_contextual_spacing(parrafo_desc)
+                                
+                        run_desc = parrafo_desc.add_run(str(item.get('descripcion', '')).strip())
+                        run_desc.bold = False
+                        if fuente_nombre: run_desc.font.name = fuente_nombre
+                        if fuente_tamano: run_desc.font.size = fuente_tamano
+                        
+                        # Espaciado explícito: aire antes del siguiente punto
+                        parrafo_desc.paragraph_format.space_before = Pt(0)
+                        parrafo_desc.paragraph_format.space_after = Pt(12)
+                        
+                        padre.insert(indice, parrafo_desc._p)
+                        indice += 1
+                        
+                    else:
+                        # ==========================================
+                        # MODO "VIÑETA NORMAL" (Otras Condiciones)
+                        # ==========================================
+                        nuevo_p = deepcopy(p._p)
+                        nuevo_parrafo = Paragraph(nuevo_p, p._parent)
+                        nuevo_parrafo.clear()
+                        
+                        run_v = nuevo_parrafo.add_run(str(item).strip())
+                        if fuente_nombre: run_v.font.name = fuente_nombre
+                        if fuente_tamano: run_v.font.size = fuente_tamano
+                        
+                        # ESPACIADO: Pegamos las viñetas quitando el espacio posterior
+                        quitar_contextual_spacing(nuevo_parrafo)
+                        nuevo_parrafo.paragraph_format.space_before = Pt(0)
+                        nuevo_parrafo.paragraph_format.space_after = Pt(0)
+                        
+                        padre.insert(indice, nuevo_parrafo._p)
+                        indice += 1
+                        
+                # Destruimos el marcador original
+                padre.remove(p._p)
+                return True
+        return False
+
+    # Ejecutar la búsqueda en párrafos normales
+    encontrado = buscar_y_reemplazar_nodos(doc.paragraphs)
+    
+    # Si no estaba en el cuerpo, buscar dentro de las tablas
+    if not encontrado:
+        for tabla in doc.tables:
+            for fila in tabla.rows:
+                for celda in fila.cells:
+                    if buscar_y_reemplazar_nodos(celda.paragraphs):
+                        return
 
 # ==========================================================
 # LLENAR TABLAS DINÁMICAS (INTELIGENTE Y COMPACTO)
@@ -374,12 +497,18 @@ def llenar_tabla_acta_entrega(doc, items):
             set_celda(fila_actual, 4, "")
 
 def eliminar_fila_retencion(doc):
-    if not doc.tables:
-        return
-    tabla = doc.tables[0]
-    if len(tabla.rows) > 2:
-        fila = tabla.rows[2]
-        tabla._tbl.remove(fila._tr)
+    """Busca dinámicamente la fila de retenciones y la elimina desde el XML"""
+    for table in doc.tables:
+        for row in table.rows:
+            # Unimos todo el texto de la fila y lo pasamos a minúsculas para buscar
+            texto_fila = "".join(cell.text for cell in row.cells).lower()
+            
+            # Si encuentra la palabra clave de esa fila en el Word, la elimina
+            if "retención" in texto_fila or "retencion" in texto_fila or "retenciones" in texto_fila:
+                tbl = table._tbl
+                tr = row._tr
+                tbl.remove(tr)
+                return
 
 def insertar_documentos(doc, documentos):
     if not documentos:
@@ -448,7 +577,8 @@ def llenar_tabla_informe_conformidad(doc, items):
 def generar_documento_word(
     ruta_plantilla, ruta_salida, fecha="", cod="", nombre="", fechaInfo="", 
     retenc=False, porcentaje=0, objContr="", monto=0, plazoEntrega=0, 
-    seleccionados=None, items=None, gastos=None, variables_extra=None, lotes_actas=None
+    seleccionados=None, items=None, gastos=None, variables_extra=None, 
+    lotes_actas=None, puntos_extra=None, condiciones=None
 ):
     if not os.path.exists(ruta_plantilla):
         raise FileNotFoundError(f"Plantilla no encontrada: {ruta_plantilla}")
@@ -474,7 +604,7 @@ def generar_documento_word(
         llenar_tablas_scp(doc, items, gastos)
     elif "certificacionPresupuestaria" in ruta_plantilla:
         llenar_tabla_certificacion(doc, gastos)
-    elif "solicitudIniProcContr" in ruta_plantilla:
+    elif "solicitudIniProcContr" in ruta_plantilla or "espTec" in ruta_plantilla:
         llenar_tabla_solicitud_inicio(doc, items)
     elif "infoCotizacion" in ruta_plantilla:
         llenar_tabla_informe_cotizacion(doc, items)
@@ -497,26 +627,27 @@ def generar_documento_word(
                         continue
                     doc_master.element.body.append(deepcopy(element))
         
-        # Guardamos el archivo unificado gigante y terminamos (saltamos el resto de la función)
+        # Guardamos el archivo unificado gigante y terminamos
         if doc_master:
             doc_master.save(ruta_salida)
             return
+            
     elif "infoConformidad" in ruta_plantilla:
         llenar_tabla_informe_conformidad(doc, items)
 
-
-    # Ejecución de reemplazos para documentos normales (No multipágina)
+    if puntos_extra is not None:
+        inyectar_nodos_dinamicos(doc, "{PUNTOS_EXTRA}", puntos_extra)
+    
+    if condiciones is not None:
+        inyectar_nodos_dinamicos(doc, "{VIÑETAS_CONDICIONES}", condiciones)
+    
+    # Ejecución final limpia (sin duplicados)
     if "actaEntrega" not in ruta_plantilla:
         reemplazar_texto(doc, reemplazos)
+        
+        # Si NO hay retención y es la notificación, borramos la fila
         if not retenc and "notificAdjudic" in ruta_plantilla:
             eliminar_fila_retencion(doc)
+            
         insertar_documentos(doc, seleccionados)
-        doc.save(ruta_salida)      
-
-    reemplazar_texto(doc, reemplazos)
-
-    if not retenc and "notificAdjudic" in ruta_plantilla:
-        eliminar_fila_retencion(doc)
-
-    insertar_documentos(doc, seleccionados)
-    doc.save(ruta_salida)
+        doc.save(ruta_salida)

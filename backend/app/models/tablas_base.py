@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.core.base_datos import Base
 
 # Mixin para auditoría y borrado lógico (Soft Delete)
@@ -64,3 +65,33 @@ class UnidadMedida(Base, AuditoriaMixin):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(50), unique=True)
     sigla = Column(String(10))
+
+class PoaPrograma(Base, AuditoriaMixin):
+    __tablename__ = "poa_programas"
+    id = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String(10), index=True) 
+    nombre = Column(String(255))
+    
+    proyectos = relationship("PoaProyecto", back_populates="programa")
+
+class PoaProyecto(Base, AuditoriaMixin):
+    __tablename__ = "poa_proyectos"
+    id = Column(Integer, primary_key=True, index=True)
+    programa_id = Column(Integer, ForeignKey("poa_programas.id"))
+    codigo_proy = Column(String(10), index=True) 
+    actividad = Column(String(10), index=True)
+    nombre = Column(String(255))
+    
+    programa = relationship("PoaPrograma", back_populates="proyectos")
+    partidas = relationship("PoaPartida", back_populates="proyecto")
+
+class PoaPartida(Base, AuditoriaMixin):
+    __tablename__ = "poa_partidas"
+    id = Column(Integer, primary_key=True, index=True)
+    proyecto_id = Column(Integer, ForeignKey("poa_proyectos.id"))
+    codigo = Column(String(20)) 
+    descripcion = Column(String(255))
+    ff = Column(String(20))
+    of = Column(String(20))
+    
+    proyecto = relationship("PoaProyecto", back_populates="partidas")

@@ -1,11 +1,11 @@
 // archivo: js/fases_tramite/paso5_cotizacion.js
 let contadorCotizacion = 0;
+let montoTotalProcesoRespaldo = 0; // Guardamos esto para no usar variable global en el guardado
 
 async function cargarProveedoresDatalist() {
     try {
-        // RUTA RELATIVA APLICADA AQUÍ TAMBIÉN
         const res = await fetch(`/api/catalogos/proveedores`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
         });
         if (res.ok) {
             const proveedores = await res.json();
@@ -41,15 +41,20 @@ function agregarFilaCotizacion(data = null) {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-function abrirEditorInformeCotizacion() {
+function abrirEditorInformeCotizacion(proceso) {
     cargarProveedoresDatalist();
-    const docInfo = procesoActual.documentos?.find(d => d.clave_documento === "informe_cotizacion");
+    
+    // Guardamos el monto en variable de este scope para usarlo luego
+    montoTotalProcesoRespaldo = parseFloat(proceso.monto_total);
+
+    const docInfo = proceso.documentos?.find(d => d.clave_documento === "informe_cotizacion");
     const datosGuardados = docInfo?.datos_formulario || {};
 
     document.getElementById("inf-rpc").value = datosGuardados.encargado_rpc || "Gerson Elvis Vargas Conde";
     document.getElementById("inf-asistente").value = datosGuardados.asistente_adm || localStorage.getItem("user_nombre") || "";
     document.getElementById("inf-fecha-informe").value = datosGuardados.fecha_informe || new Date().toISOString().split('T')[0];
     document.getElementById("inf-fecha-cot").value = datosGuardados.fecha_cotizacion || new Date().toISOString().split('T')[0];
+    document.getElementById("inf-finalidad").value = datosGuardados.finalidad_contratacion || "";
     document.getElementById("inf-proveedor-ganador").value = datosGuardados.proveedor_ganador || "";
     document.getElementById("inf-tabla-cotizaciones").innerHTML = "";
     
@@ -69,11 +74,16 @@ function cerrarEditorInformeCotizacion() {
     vista.classList.add("hidden"); vista.classList.remove("flex");
 }
 
-async function guardarInformeCotizacion() {
+async function guardarInformeCotizacion(formato) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const PROCESO_ID = urlParams.get('id');
+    const botones = document.querySelectorAll(".btn-guardar-cot");
+    
     try {
-        const btn = document.querySelector('button[onclick="guardarInformeCotizacion()"]');
-        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
-        btn.disabled = true;
+        botones.forEach(b => {
+            b.disabled = true;
+            b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        });
 
         const cotizaciones = [];
         let montoAdjudicado = 0;
@@ -86,15 +96,12 @@ async function guardarInformeCotizacion() {
             
             cotizaciones.push({ pr, dec, pt });
             
-            // Si la fila coincide con el ganador, capturamos su precio total
             if (pr !== "" && pr === provGanador) {
                 montoAdjudicado = pt;
             }
         });
 
-        if (montoAdjudicado === 0) {
-            montoAdjudicado = parseFloat(procesoActual.monto_total);
-        }
+        if (montoAdjudicado === 0) montoAdjudicado = montoTotalProcesoRespaldo;
 
         const payload = {
             clave_documento: "informe_cotizacion",
@@ -104,6 +111,7 @@ async function guardarInformeCotizacion() {
                 asistente_adm: document.getElementById("inf-asistente").value.trim(),
                 fecha_informe: document.getElementById("inf-fecha-informe").value,
                 fecha_cotizacion: document.getElementById("inf-fecha-cot").value,
+                finalidad_contratacion: document.getElementById("inf-finalidad").value.trim(),
                 proveedor_ganador: document.getElementById("inf-proveedor-ganador").value.trim(),
                 nit_ganador: "S/N",
                 cotizaciones: cotizaciones,
@@ -114,14 +122,15 @@ async function guardarInformeCotizacion() {
         await window.API.procesos.guardarDocumento(PROCESO_ID, payload);
         cerrarEditorInformeCotizacion();
         await cargarDatosProceso(); 
-        await window.API.procesos.descargarDocumento(PROCESO_ID, "informe_cotizacion");
+        await window.API.procesos.descargarDocumento(PROCESO_ID, "informe_cotizacion", formato);
 
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
-        const btn = document.querySelector('button[onclick="guardarInformeCotizacion()"]');
-        btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Emitir Informe`;
-        btn.disabled = false;
+        botones.forEach((b, index) => {
+            b.disabled = false;
+            b.innerHTML = index === 0 ? `<i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
+        });
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

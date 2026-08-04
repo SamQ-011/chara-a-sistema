@@ -1,0 +1,96 @@
+<!-- archivo: componentes/modal_orden_compra.html -->
+<div id="vista-orden-compra" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Orden de Compra / Servicio</h2>
+            <p class="text-slate-400 text-sm mt-1">Ajuste de ítems al Precio Adjudicado final</p>
+        </div>
+        <button onclick="cerrarEditorOrdenCompra()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
+            <div class="grid grid-cols-4 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Proveedor Adjudicado</label>
+                    <input type="text" id="oc-proveedor" class="w-full border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-bold text-slate-700" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">NIT / CI</label>
+                    <input type="text" id="oc-nit" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-slate-700" placeholder="Ej. 1234567015">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nro. de Orden</label>
+                    <input type="text" id="oc-nro-orden" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 font-bold text-indigo-700">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Dirección del Proveedor</label>
+                    <input type="text" id="oc-direccion" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500" placeholder="Ej. Av. Panamericana Nro 123">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Teléfono / Celular</label>
+                    <input type="text" id="oc-telefono" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500" placeholder="Ej. 78945612">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Emisión</label>
+                    <input type="date" id="oc-fecha" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Detalle de Ítems Adjudicados</h3>
+                        <p class="text-xs text-slate-500 mt-1">Ajuste los precios unitarios para que coincidan con la propuesta ganadora.</p>
+                    </div>
+                    <div id="oc-alerta-validacion" class="px-4 py-2 rounded-lg font-bold text-sm bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 w-12 text-center">Nro</th>
+                                <th class="px-4 py-3 min-w-[200px]">Objeto Corto</th>
+                                <th class="px-4 py-3 w-28">Unidad</th>
+                                <th class="px-4 py-3 w-28">Cant.</th>
+                                <th class="px-4 py-3 w-32">Precio Unit. (Bs)</th>
+                                <th class="px-4 py-3 w-32 text-right">Subtotal (Bs)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oc-tabla-items" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                
+                <div class="bg-slate-100 px-6 py-5 border-t border-slate-200 flex justify-end items-center gap-8">
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Monto Adjudicado (Objetivo)</p>
+                        <p class="text-xl font-bold text-slate-800">Bs. <span id="oc-monto-objetivo">0.00</span></p>
+                    </div>
+                    <div class="h-10 w-px bg-slate-300"></div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Suma de Ítems (Actual)</p>
+                        <p class="text-2xl font-black text-indigo-600">Bs. <span id="oc-monto-actual">0.00</span></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorOrdenCompra()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button id="btn-guardar-oc" onclick="guardarOrdenCompra('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-oc">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Emitir Excel
+            </button>
+            <button onclick="guardarOrdenCompra('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-oc">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

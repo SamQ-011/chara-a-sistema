@@ -1,0 +1,88 @@
+<!-- archivo: componentes/modal_informe_conformidad.html -->
+<div id="vista-informe-conformidad" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Informe de Conformidad</h2>
+            <p class="text-slate-400 text-sm mt-1">Revisión de variables heredadas para la generación del documento.</p>
+        </div>
+        <button onclick="cerrarEditorInformeConformidad()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-4xl mx-auto space-y-6">
+            
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-indigo-900 font-bold text-lg mb-5 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5"></i> Datos a inyectar en el documento
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div class="md:col-span-2">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Objeto de Contratación</span>
+                        <span id="infoconf-objeto" class="font-semibold text-slate-800 text-base"></span>
+                    </div>
+                    <div class="md:col-span-2 border-t border-indigo-200/50 pt-4">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Proveedor Adjudicado</span>
+                        <span id="infoconf-proveedor" class="font-semibold text-slate-800 text-base"></span>
+                    </div>
+                    <div class="border-t border-indigo-200/50 pt-4">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Responsable / Emisor</span>
+                        <span id="infoconf-responsable" class="font-medium text-slate-800"></span>
+                    </div>
+                    <div class="border-t border-indigo-200/50 pt-4">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Cargo</span>
+                        <span id="infoconf-cargo" class="font-medium text-slate-800"></span>
+                    </div>
+                    <div class="border-t border-indigo-200/50 pt-4">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Fecha Solicitud de Inicio</span>
+                        <span id="infoconf-fecha-inicio" class="font-bold text-indigo-700 bg-indigo-100/50 px-2 py-1 rounded"></span>
+                    </div>
+                    <div class="border-t border-indigo-200/50 pt-4">
+                        <span class="block text-indigo-700/80 font-bold mb-1 uppercase text-xs tracking-wider">Fecha Acta de Entrega</span>
+                        <span id="infoconf-fecha-entrega" class="font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-5 border-t-2 border-indigo-200 flex items-center justify-between">
+                    <label for="info-conf-fecha" class="text-base font-bold text-indigo-900">Fecha actual del Informe:</label>
+                    <input type="date" id="info-conf-fecha" class="border border-indigo-300 rounded-lg p-2.5 text-slate-700 focus:border-indigo-600 outline-none w-48 font-bold shadow-sm">
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-slate-800 font-bold text-lg mb-4 flex items-center gap-2">
+                    <i data-lucide="list-checks" class="w-5 h-5 text-indigo-600"></i> Ítems consolidados (Extraídos de Orden de Compra)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-200">
+                                <th class="pb-2 px-2 font-semibold">Nº</th>
+                                <th class="pb-2 px-2 font-semibold">Descripción</th>
+                                <th class="pb-2 px-2 font-semibold text-center">Unidad</th>
+                                <th class="pb-2 px-2 font-semibold text-center">Cant.</th>
+                                <th class="pb-2 px-2 font-semibold text-right">Total (Bs.)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="infoconf-tabla-items">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorInformeConformidad()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button onclick="guardarInformeConformidad('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-infoconf">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word
+            </button>
+            <button onclick="guardarInformeConformidad('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-infoconf">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

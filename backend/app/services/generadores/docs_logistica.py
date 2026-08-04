@@ -23,7 +23,8 @@ def procesar_items_logistica(ctx, datos_modal):
     return items_locales
 
 def generar_ingreso_almacenes(ctx):
-    ruta = os.path.join(RUTA_RESULTADOS, f"{ctx['proceso'].nro_orden or ctx['proceso'].id}_1_IngresoAlmacenes.xlsx")
+    # INYECCIÓN DEL ID ÚNICO
+    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_1_IngresoAlmacenes.xlsx")
     doc_alm = next((d for d in ctx['proceso'].documentos if d.clave_documento == "almacenes"), None)
     datos_modal = doc_alm.datos_formulario if doc_alm and doc_alm.datos_formulario else {}
 
@@ -41,7 +42,8 @@ def generar_ingreso_almacenes(ctx):
     return ruta
 
 def generar_salida_almacenes(ctx):
-    ruta = os.path.join(RUTA_RESULTADOS, f"{ctx['proceso'].nro_orden or ctx['proceso'].id}_2_SalidaAlmacenes.xlsx")
+    # INYECCIÓN DEL ID ÚNICO
+    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_2_SalidaAlmacenes.xlsx")
     doc_alm = next((d for d in ctx['proceso'].documentos if d.clave_documento == "almacenes"), None)
     datos_modal = doc_alm.datos_formulario if doc_alm and doc_alm.datos_formulario else {}
 

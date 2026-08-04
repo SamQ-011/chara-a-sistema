@@ -20,10 +20,17 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         
     access_token = crear_token_acceso(data={"sub": str(usuario.id), "rol": usuario.rol})
     
+    # ==========================================
+    # MAGIA: CONCATENACIÓN SEGURA DEL TÍTULO
+    # ==========================================
+    # Si tiene título, le agregamos un espacio (Ej: "Lic. "). Si no tiene, lo dejamos vacío ("").
+    titulo_limpio = f"{usuario.titulo.strip()} " if usuario.titulo and str(usuario.titulo).strip() else ""
+    nombre_final = f"{titulo_limpio}{usuario.nombre_completo}"
+    
     return {
         "access_token": access_token, 
         "token_type": "bearer", 
         "rol": usuario.rol,
-        "nombre": usuario.nombre_completo,
-        "cargo": usuario.cargo # <--- AÑADE ESTA LÍNEA
+        "nombre": nombre_final,  
+        "cargo": usuario.cargo
     }

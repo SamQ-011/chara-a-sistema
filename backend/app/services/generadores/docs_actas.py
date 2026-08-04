@@ -6,7 +6,8 @@ RUTA_PLANTILLAS = "Plantillas"
 RUTA_RESULTADOS = "Resultados"
 
 def generar_acta_recepcion(ctx):
-    ruta = os.path.join(RUTA_RESULTADOS, f"{ctx['proceso'].nro_orden or ctx['proceso'].id}_6_ActaRecepcion.docx")
+    # INYECCIÓN DEL ID ÚNICO
+    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_{ctx['id_unico']}_6_ActaRecepcion.docx")
     doc_acta = next((d for d in ctx['proceso'].documentos if d.clave_documento == "acta_recepcion"), None)
     datos_modal = doc_acta.datos_formulario if doc_acta and doc_acta.datos_formulario else {}
 
@@ -44,7 +45,8 @@ def generar_acta_recepcion(ctx):
     return ruta
 
 def generar_informe_conformidad(ctx):
-    ruta = os.path.join(RUTA_RESULTADOS, f"{ctx['proceso'].nro_orden or ctx['proceso'].id}_7_InformeConformidad.docx")
+    # INYECCIÓN DEL ID ÚNICO
+    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_7_InformeConformidad.docx")
     
     doc_info = next((d for d in ctx['proceso'].documentos if d.clave_documento == "informe_conformidad"), None)
     fecha_informe = doc_info.datos_formulario.get("fecha_informe", ctx['fecha_corta']) if doc_info and doc_info.datos_formulario else ctx['fecha_corta']

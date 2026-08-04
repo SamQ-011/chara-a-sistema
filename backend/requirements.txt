@@ -14,3 +14,6 @@ passlib>=1.7.4
 pyjwt>=2.13.0
 cffi>=2.0.0 
 pycparser>=3.0
+docx2pdf>=0.1.8 
+pywin32>=312 
+tqdm>=4.69.0

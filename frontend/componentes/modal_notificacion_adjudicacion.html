@@ -1,0 +1,97 @@
+<!-- archivo: componentes/modal_notificacion_adjudicacion.html -->
+<div id="vista-notificacion" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Notificación de Adjudicación</h2>
+            <p class="text-slate-400 text-sm mt-1">Configuración de requisitos y retenciones para el proveedor</p>
+        </div>
+        <button onclick="cerrarEditorNotificacion()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-5xl mx-auto space-y-6">
+            
+            <div class="grid grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Proveedor Adjudicado</label>
+                    <input type="text" id="notif-proveedor" class="w-full border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-bold text-slate-700" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Monto Adjudicado (Bs)</label>
+                    <input type="number" step="0.01" id="notif-monto-adj" class="w-full border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-bold text-emerald-600" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Notificación</label>
+                    <input type="date" id="notif-fecha" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Plazo de Entrega (Días Hábiles)</label>
+                    <input type="number" id="notif-plazo" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-6 flex items-center gap-8">
+                <div class="flex items-center gap-3 w-1/2">
+                    <input type="checkbox" id="chk-retencion" onchange="toggleRetencion()" data-tipo="BIENES" class="w-5 h-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer">
+                    <label for="chk-retencion" id="lbl-tipo-retencion" class="text-base font-bold text-slate-800 cursor-pointer">Aplica Retención</label>
+                </div>
+                <div class="flex-1 border-l border-slate-200 pl-8">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Monto Calculado (Bs)</label>
+                    <input type="text" id="notif-retencion" class="w-full max-w-xs border border-slate-300 rounded-lg p-2.5 bg-slate-100 text-slate-500 cursor-not-allowed font-mono text-lg transition-all" value="0.00" readonly>
+                    <p class="text-xs text-slate-500 mt-1">Cálculo automático sobre el total de Bs. <span id="lbl-monto-base" class="font-bold text-slate-700">0.00</span></p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="text-base font-bold text-slate-800">Documentos Requeridos para el Contrato / Orden</h3>
+                </div>
+                <div class="p-6 grid grid-cols-2 gap-4" id="contenedor-checkboxes-docs">
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Fotocopia de C.I." class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">Fotocopia de C.I.</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Fotocopia de NIT." class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">Fotocopia de NIT.</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="RUPE." class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">RUPE.</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Fotocopia Matrícula SEPREC" class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">Fotocopia Matrícula SEPREC</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Fotocopia de certificado de no adeudo a la GESTORA" class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">No adeudo a la GESTORA</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Fotocopia Simple SIGEP" class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">Fotocopia Simple SIGEP</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition">
+                        <input type="checkbox" value="Poder del Testimonio de Representante Legal." class="chk-doc w-5 h-5 text-indigo-600 rounded">
+                        <span class="text-sm font-medium text-slate-700">Poder de Representante Legal</span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorNotificacion()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button onclick="guardarNotificacion('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-notif">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word
+            </button>
+            <button onclick="guardarNotificacion('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-notif">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

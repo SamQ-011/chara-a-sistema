@@ -1,0 +1,247 @@
+Programa 000: FUNCIONAMIENTO ORGANO EJECUTIVO
+Proyecto/Actividad 0/001: EJECUTIVO MUNICIPAL
+1.1.4 Aguinaldos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+1.1.7 Sueldos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+1.3.1.10 Regimen de Corto Plazo (Salud) - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0423
+1.3.1.20 PRIMA DE RIESGO PROFESIONAL REGIMEN DE LARGO PLAZO - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0999
+1.3.1.31 Aporte Patronal Solidario 3% - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0999
+1.3.2 Aporte Patronal para Vivienda - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0342
+2.1.2 Energia Eléctrica - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.1.3 Agua - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.1.6 INTERNET - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.2.5 Seguros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.3.4 Otros Alquileres - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.4.1.20 MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS, MAQUINARIA Y EQUIPOS - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.1.1.30 Mantenimiento y Reparación de Muebles y Enceres - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.3 Comisiones y Gastos Bancarios - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.6 Servicios de Imprenta, Fotocopiado y Fotográficos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.7 Capacitación del Personal - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.2.2 Productos de Artes Gráficas - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.1 MATERIAL DE LIMPIEZA E HIGIENE - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 01: FUNCIONAMIENTO ORGANO DELIBERATIVO
+Proyecto/Actividad 0/001: CONCEJO MUNICIPAL
+1.1.4 Aguinaldos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+1.1.7 Sueldos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+1.3.1.10 Regimen de Corto Plazo (Salud) - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0423
+1.3.1.20 PRIMA DE RIESGO PROFESIONAL REGIMEN DE LARGO PLAZO - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0999
+1.3.1.31 Aporte Patronal Solidario 3% - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0999
+1.3.2 Aporte Patronal para Vivienda - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0342
+2.5.6 Servicios de Imprenta, Fotocopiado y Fotográficos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.2.2 Productos de Artes Gráficas - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.3.3 Prendas de Vestir - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 97: PARTIDAS NO ASIGNABLES A PROGRAMAS-ACTIVOS FINANCIEROS
+Proyecto/Actividad 0/001: PROVISION PARA GASTOS DE CAPITAL
+5.7.1 Incremento de Caja y Bancos - Fte. Fin: 41, Org. Fin: 113 / 119, Ent. Trf: 0000
+Programa 99: PARTIDAS NO ASIGNABLES A PROGRAMAS-DEUDAS
+Proyecto/Actividad 0/003: PAGO DE DEUDA CON EL FNDR
+6.1.1 Amortización de la Deuda Pública Interna a Corto Plazo - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+6.1.2 Intereses de la Deuda Pública Interna a Corto Plazo - Fte. Fin: 41, Org. Fin: 113 / 119, Ent. Trf: 0000
+Proyecto/Actividad 0/004: DEUDAS GESTIONES ANTERIORES
+6.6.2.20 Gastos Devengados No Pagados por Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 100: PROMOCIÓN Y FOMENTO A LA PRODUCCIÓN AGROPECUARIA
+Proyecto/Actividad 0/001: SANIDAD ANIMAL
+3.4.2 Productos Químicos y Farmacéuticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/002: IMPLEMENTACION CENTROS MUNICIPALES DE MECANIZACION
+2.5.2.20 CONSULTORES INDIVIDUALES DE LÍNEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/004: EXPOFERIA DE CAMELIDOS SUDAMERICANOS
+2.2.3 Fletes y Almacenamiento - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.1.1.20 Gastos por Alimentación y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.8 Herramientas Menores - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/005: DESARROLLO PRODUCTIVO Y FORTALECIMIENTO
+2.6.9.90 Otros - Fte. Fin: 20 / 41, Org. Fin: 210 / 113, Ent. Trf: 0000
+Programa 110: SANEAMIENTO BÁSICO-MEJORAR Y AMPLIAR EL SISTEMA DE AGUA
+Proyecto/Actividad 0/004: CONTRAPARTE - CONST. POZOS PROFUNDOS - GADLP
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 120: CONSTRUCCIÓN Y MANTENIMIENTO DE MICRORIEGOS
+Proyecto/Actividad 0/001: MONITOREO DE BOFEDALES Y RIEGO
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 140: ASEO URBANO, MANEJO Y TRATAMIENTO DE RESIDUOS SÓLIDOS
+Proyecto/Actividad 0/001: LIMPIEZA URBANA Y RURAL
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 150: FUENTES DE ENERGIA Y APOYO A LA ELECTRIFICACIÓN AMPLIAR LA
+Proyecto/Actividad 0/002: CONTRAPARTE ELECTRIFICACION RURAL
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 160: SERVICIO DE ALUMBRADO PÚBLICO - MEJORAR LA COBERTURA DEL
+Proyecto/Actividad 0/001: MANTENIMIENTO DE ALUMBRADO PUBLICO
+3.9.7 Útiles y Materiales Eléctricos - Fte. Fin: 20 / 41, Org. Fin: 210 / 113, Ent. Trf: 0000
+Programa 170: INFRAESTRUCTURA URBANA Y RURAL - APOYO AL MANTENIMIENTO
+Proyecto/Actividad 0/001: APOYO MANTENIMIENTO PUENTE VEHICULAR QUENAMAYA
+2.6.9.90 Otras - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Proyecto/Actividad 0/004: MANTENIMIENTO Y MEJORAMIENTO DE CALLES E INFRAESTRUCTURA
+2.5.2.10 Consultorias por Producto - Fte. Fin: 20, Org. Fin: 210, Ent. Trf: 0000
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 20 / 41, Org. Fin: 210 / 119, Ent. Trf: 0000
+Proyecto/Actividad 0/008: APOYO MANTENIMIENTO PUENTE VEHICULAR MARCANSA
+3.40 Productos Metálicos - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Programa 180: GESTIÓN DE CAMINOS VECINALES MEJORAR Y AMPLIAR LA RED DE
+Proyecto/Actividad 0/001: MANTENIMIENTO DE CAMINOS VECINALES
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+3.9.8 Otros Repuestos y Accesorios - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 190: SERVICIO DE CATASTRO URBANO Y RURAL - BRINDAR SERVICIOS DE
+Proyecto/Actividad 0/001: CATASTRO URBANO
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 200: GESTIÓN DE SALUD
+Proyecto/Actividad 0/001: APOYO FUNCIONAMIENTO SERVICIOS DE SALUD
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.6.9.90 Otras - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.1.1.20 Gastos por Alimentación y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/002: PROGRAMA NUTRIBEBE
+3.4.2 Productos Químicos y Farmacéuticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/003: MANTENIMIENTO DE AMBULANCIAS Y MOTOCICLETAS
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.3 Llantas y Neumáticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.8 Otros Repuestos y Accesorios - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/004: CAMPAÑAS MOVILES DE SALUD
+2.5.6 Servicios de Imprenta, Fotocopiado y Fotográficos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.4 Instrumental Menor Médico-Quirúrgico - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/005: APOYO CON COMBUSTIBLE AMBULANCIA Y MOTOCICLETA / MANTENIMIENTO INFRAESTRUCTURA DE SALUD
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.5 Productos de Minerales no Metálicos y Plasticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/007: APOYO A FORTALECIMIENTO SAFCI
+3.3.3 Prendas de Vestir - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/009: APOYO PROGRAMA TELESALUD
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/010: APOYO PROGRAMA JUANA AZURDUY
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/011: EQUIPAMIENTO CENTROS DE SALUD
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/099: Servicios de Salud Universal y Gratuita - SUS
+2.5.1.20 Gastos Especializados por Atención Médica y otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.5 Servicios de Imprenta, Fotocopiado y Fotográficos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.2 Productos Quimicos y Farmaceuticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.1 MATERIAL DE LIMPIEZA E HIGIENE - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/150: Prevención, Control y Atención del Coronavirus
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.2 Material Deportivo y Recreativo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 210: GESTIÓN DE EDUCACIÓN
+Proyecto/Actividad 0/001: APOYO FUNCIONAMIENTO EDUCACION
+2.1.2 Energia Eléctrica - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.1.3 Agua - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.2.3 Fletes y Almacenamiento - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.1.1.20 Gastos por Alimentacion y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.7 Utiles y Materiales Electricos - Fte. Fin: 41, Org. Fin: 110, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/002: MANTENIMIENTO INFRAESTRUCTURA DE UNIDADES EDUCATIVAS
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.6 Productos Metalicos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.8 Herramientas Menores - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/003: OLIMPIADAS CIENTIFICAS ESTUDIANTILES
+2.2.3 Fletes y Almacenamiento - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.1.1.20 Gastos por Alimentacion y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/005: DESAYUNO ESCOLAR
+3.1.1.30 Alimentación Complementaria Escolar - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Proyecto/Actividad 0/009: APOYO A EXPOFERIAS DE EDUCACION ALTERNATIVA
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/012: SEGUIMIENTO Y SUPERVISION DIRECCION DISTRITAL
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/013: APOYO MATERIAL EDUCATIVO
+4.3.6 Equipo Educacional y Recreativo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/015: EQUIPAMIENTO UNIDADES EDUCATIVAS
+4.3.6 Equipo Educacional y Recreativo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/017: FORTALECIMIENTO A LAS ACTIVIDADES CULTURALES Y DEPORTES
+3.1.1.20 Gastos por Alimentacion y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.3.3 Prendas de Vestir - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/088: Fondo de Fomento a la Educación Civico Patriótica
+7.3.1 TRANSFERENCIAS CORRIENTES AL ORGANO EJECUTIVO DEL ESTADO - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0053
+Programa 220: DESARROLLO Y PROMOCIÓN DEL DEPORTE APOYO DESARROLLO
+Proyecto/Actividad 0/001: APOYO AL DEPORTE 3%
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.2 Productos Quimicos y Farmaceuticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.2 Material Deportivo y Recreativo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/002: APOYO A ESCUELAS DE DEPORTES
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 230: PROMOCIÓN Y CONSERVACIÓN DE CULTURA Y PATRIMONIO
+Proyecto/Actividad 0/001: APOYO A LA CULTURA
+3.1.1.20 Gastos por Alimentacion y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 240: DESARROLLO Y FOMENTO DEL TURISMO-PROMOVER LOS
+Proyecto/Actividad 0/001: DESARROLLO Y FOMENTO TURISMO CHARAÑA
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 250: PROMOCIÓN Y POLÍTICAS PARA GRUPOS VULNERABLES Y DE LA
+Proyecto/Actividad 0/001: APOYO EQUIDAD DE GENERO
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.1.1.20 Gastos por Alimentacion y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/003: APOYO PARA ADULTOS MAYORES
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/060: Otras actividades contra la violencia hacia la mujer
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/061: SERVICIOS LEGALES INTEGRALES MUNICIPALES-SLIM
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Proyecto/Actividad 0/062: APOYO FUNCIONAMIENTO SLIM
+3.9.1 MATERIAL DE LIMPIEZA E HIGIENE - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.9.90 Otros Materiales y Suministros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/081: Otras actividades en beneficio de las personas con Discapacidad
+2.6.9.90 Otros - Fte. Fin: N/A, Org. Fin: N/A, Ent. Trf: N/A
+Proyecto/Actividad 0/088: Renta Dignidad
+7.3.1 TRANSFERENCIAS CORRIENTES AL ORGANO EJECUTIVO DEL ESTADO - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/089: Ayuda Económica para Personas con Discapacidad
+7.1.6.10 A PERSONAS E INSTITUCIONES PRIVADAS SIN FINES DE LUCRO - Fte. Fin: 41, Org. Fin: 119 / 121, Ent. Trf: 0099 / 0999
+Programa 251: PROMOCIÓN Y POLÍTICAS PARA GRUPOS VULNERABLES Y DE LA
+Proyecto/Actividad 0/001: ACTIVIDADES DE PREVENCION DE LA VIOLENCIA HACIA LA MUJER
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 260: DEFENSA Y PROTECCIÓN DE LA NIÑEZ Y ADOLESCENCIA
+Proyecto/Actividad 0/001: FUNCIONAMIENTO DEFENSORIA DE LA NIÑEZ Y ADOLESCENCIA
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.1 MATERIAL DE LIMPIEZA E HIGIENE - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 310: GESTIÓN DE RIESGOS PREVENIR Y ATENDER DESASTRES
+Proyecto/Actividad 0/001: PREVENCION DESASTRES NATURALES
+2.2.3 Fletes y Almacenamiento - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+3.1.2 Alimentos para Animales - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Programa 330: SERVICIOS DE SEGURIDAD CIUDADANA
+Proyecto/Actividad 0/001: SEGURIDAD CIUDADANA
+3.4.3 Llantas y Neumaticos - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+3.4.5 Productos de Minerales no Metálicos y Plásticos - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+3.9.7 Utiles y Materiales Eléctricos - Fte. Fin: 41, Org. Fin: 119, Ent. Trf: 0000
+Proyecto/Actividad 0/080: Fortalecimiento a la FELCV
+3.9.5 Utiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113 / 119, Ent. Trf: 0000
+Proyecto/Actividad 0/081: Trata y Tráfico de personas
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Programa 340: FORTALECIMIENTO INSTITUCIONAL
+Proyecto/Actividad 0/001: AUDITORIAS EXTERNAS GESTIONES PASADAS, CONFIABILIDAD E IDH
+2.5.2.30 AUDITORIAS EXTERNAS - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/002: GASTOS DE APOYO TECNICO ADMINISTRATIVO
+2.5.2.10 Consultorias por Producto - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.6.9.30 Pago por Trabajos Dirigidos y Pasantias - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.2.1 Papel - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.3.3 Prendas de Vestir - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/003: GASTOS JUDICIALES
+2.6.2 Gastos Judiciales - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/005: MANTENIMIENTO MAQUINARIA PESADA (OPERADOR, MANTE)
+2.4.1.20 MANTENIMIENTO Y REPARACION DE VEHICULOS, MAQUINARIA Y EQUIPOS - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+2.5.2.20 CONSULTORES INDIVIDUALES DE LINEA - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.1.10 Combustibles, Lubricantes y Derivados para Consumo - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.4.3 Llantas y Neumaticos - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.8 Otros Repuestos y Accesorios - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/006: FORTALECIMIENTO MUNICIPAL
+3.1.1.20 Gastos por Alimentación y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+4.3.5 Equipo de Comunicación - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/007: GASTOS DE DELIMITACION TERRITORIAL SECCIONAL
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/009: REGISTRO UNICO PARA LA ADMINISTRACION TRIBUTARIA
+2.6.9.90 Otros - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+Proyecto/Actividad 0/088: Sistema Asociativo Municipal
+7.1.6.10 A PERSONAS E INSTITUCIONES PRIVADAS SIN FINES DE LUCRO - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0999
+Proyecto/Actividad 0/099: Participación y Control Social (PyCS)  
+3.1.1.20 Gastos por Alimentación y Otros Similares - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000
+3.9.5 Útiles de Escritorio y Oficina - Fte. Fin: 41, Org. Fin: 113, Ent. Trf: 0000

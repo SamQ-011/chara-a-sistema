@@ -1,0 +1,88 @@
+<!-- archivo: componentes/modal_informe_cotizacion.html -->
+<div id="vista-informe-cotizacion" class="fixed inset-0 bg-slate-50 z-50 hidden flex-col">
+    <header class="px-8 py-5 bg-slate-900 text-white flex justify-between items-center shrink-0 shadow-md">
+        <div>
+            <h2 class="text-2xl font-bold">Informe de Cotización y Evaluación</h2>
+            <p class="text-slate-400 text-sm mt-1">Evaluación de proformas y selección de proveedor</p>
+        </div>
+        <button onclick="cerrarEditorInformeCotizacion()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition">
+            <i data-lucide="x"></i>
+        </button>
+    </header>
+    
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
+            <div class="grid grid-cols-4 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Encargado RPC</label>
+                    <input type="text" id="inf-rpc" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Asistente Administrativo</label>
+                    <input type="text" id="inf-asistente" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha del Informe</label>
+                    <input type="date" id="inf-fecha-informe" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de Averiguaciones (Cotización)</label>
+                    <input type="date" id="inf-fecha-cot" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                </div>
+                <div class="col-span-4 border-t border-slate-100 pt-4 mt-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Finalidad de la Contratación (Complete la frase: "con la finalidad de...")</label>
+                    <textarea id="inf-finalidad" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all shadow-sm" placeholder="Ej. adquirir repuestos para el mantenimiento preventivo del tractor agrícola"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 border border-indigo-200 rounded-2xl shadow-sm p-6">
+                <h3 class="text-base font-bold text-indigo-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="award" class="w-5 h-5"></i> Proveedor Adjudicado (Ganador)
+                </h3>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="col-span-2 lg:col-span-1">
+                        <label class="block text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">Nombre / Razón Social</label>
+                        <input list="lista-proveedores" id="inf-proveedor-ganador" class="w-full border border-slate-300 rounded-lg p-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all text-base shadow-sm" placeholder="Buscar o escribir nuevo...">
+                        <datalist id="lista-proveedores"></datalist>
+                    </div>
+                </div>
+                <p class="text-sm text-indigo-600 mt-3 font-medium"><i data-lucide="info" class="w-4 h-4 inline mr-1"></i> Si el proveedor no existe en la base de datos, se registrará automáticamente al guardar.</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-base font-bold text-slate-800">Cuadro de Cotizaciones (Proformas evaluadas)</h3>
+                    <button type="button" onclick="agregarFilaCotizacion()" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-200 transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Agregar Proforma
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-3 min-w-[300px]">Proveedor / Empresa</th>
+                                <th class="px-6 py-3 min-w-[400px]">Descripción (Cumplimiento)</th>
+                                <th class="px-6 py-3 w-48 text-right">Precio Total (Bs)</th>
+                                <th class="px-6 py-3 w-12"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="inf-tabla-cotizaciones" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="px-8 py-5 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="cerrarEditorInformeCotizacion()" class="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+        <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+            <button onclick="guardarInformeCotizacion('word')" class="px-6 py-2 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-cot">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word
+            </button>
+            <button onclick="guardarInformeCotizacion('pdf')" class="px-6 py-2 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 font-bold disabled:opacity-50 btn-guardar-cot">
+                <i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF
+            </button>
+        </div>
+    </footer>
+</div>

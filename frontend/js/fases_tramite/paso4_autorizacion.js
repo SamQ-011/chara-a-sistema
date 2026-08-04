@@ -7,10 +7,10 @@ function agregarItemAutorizacion(data = null) {
     const tr = document.createElement("tr");
     tr.id = `aut-item-${contadorAutorizacion}`;
     
-    const v_obj = data ? data.objeto : "";
-    const v_desc = data ? data.descripcion : "";
-    const v_uni = data ? data.tipuni : "";
-    const v_cant = data ? data.cant : "0";
+    const v_obj = data ? (data.objeto || data.objeto_corto || "") : "";
+    const v_desc = data ? (data.descripcion || data.descripcion_larga || "") : "";
+    const v_uni = data ? (data.tipuni || data.unidad || "") : "";
+    const v_cant = data ? (data.cant || data.cantidad || "0") : "0";
     const v_prec = data ? data.precio_unitario : "0";
     const v_tot = data ? data.total_item : "0.00";
 
@@ -57,17 +57,18 @@ function calcularTotalAutorizacion() {
     document.getElementById("aut-total-items").textContent = granTotal.toFixed(2);
 }
 
-function abrirEditorAutorizacion() {
-    const docAuth = procesoActual.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
+// NUEVA ARQUITECTURA: Recibe "proceso" inyectado
+function abrirEditorAutorizacion(proceso) {
+    const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
     const datosGuardadosAuth = docAuth?.datos_formulario || {};
 
-    const docInicio = procesoActual.documentos?.find(d => d.clave_documento === "solicitud_inicio");
+    const docInicio = proceso.documentos?.find(d => d.clave_documento === "especificaciones_tecnicas");
     const datosGuardadosInicio = docInicio?.datos_formulario || {};
 
-    const cargoSol = procesoActual.cargo_tecnico_solicitante || "Área solicitante";
+    const cargoSol = proceso.cargo_tecnico_solicitante || "Área solicitante";
     document.getElementById("aut-solicitante").value = datosGuardadosAuth.unidad_solicitante || cargoSol;
     document.getElementById("aut-codigo").value = datosGuardadosAuth.codigo_proyecto || "S/N";
-    document.getElementById("aut-objeto").value = datosGuardadosAuth.objeto_contratacion || procesoActual.objeto_contratacion;
+    document.getElementById("aut-objeto").value = proceso.objeto_contratacion;
     document.getElementById("aut-fecha").value = datosGuardadosAuth.fecha_documento || new Date().toISOString().split('T')[0];
 
     document.getElementById("aut-tabla-items-edit").innerHTML = "";
@@ -81,8 +82,8 @@ function abrirEditorAutorizacion() {
     else if (datosGuardadosInicio.items_tecnicos && datosGuardadosInicio.items_tecnicos.length > 0) {
         itemsCarga = datosGuardadosInicio.items_tecnicos;
     } 
-    else if (procesoActual.items && procesoActual.items.length > 0) {
-        itemsCarga = procesoActual.items.map(i => ({
+    else if (proceso.items && proceso.items.length > 0) {
+        itemsCarga = proceso.items.map(i => ({
             nro: i.nro_item,
             objeto: i.objeto_corto,
             descripcion: i.descripcion_larga,
@@ -111,11 +112,18 @@ function cerrarEditorAutorizacion() {
     vista.classList.remove("flex");
 }
 
-async function guardarAutorizacion() {
+async function guardarAutorizacion(formato) {
+    // NUEVA ARQUITECTURA: Extrae ID de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const PROCESO_ID = urlParams.get('id');
+    
+    const botones = document.querySelectorAll(".btn-guardar-aut");
+
     try {
-        const btn = document.querySelector('button[onclick="guardarAutorizacion()"]');
-        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
-        btn.disabled = true;
+        botones.forEach(b => {
+            b.disabled = true;
+            b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        });
 
         const itemsAutorizados = [];
         const filas = document.getElementById("aut-tabla-items-edit").querySelectorAll("tr");
@@ -147,14 +155,15 @@ async function guardarAutorizacion() {
         cerrarEditorAutorizacion();
         
         await cargarDatosProceso(); 
-        await window.API.procesos.descargarDocumento(PROCESO_ID, "autorizacion_inicio");
+        await window.API.procesos.descargarDocumento(PROCESO_ID, "autorizacion_inicio", formato);
 
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
-        const btn = document.querySelector('button[onclick="guardarAutorizacion()"]');
-        btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Emitir Autorización`;
-        btn.disabled = false;
+        botones.forEach((b, index) => {
+            b.disabled = false;
+            b.innerHTML = index === 0 ? `<i data-lucide="file-text" class="w-5 h-5"></i> Emitir Word` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
+        });
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

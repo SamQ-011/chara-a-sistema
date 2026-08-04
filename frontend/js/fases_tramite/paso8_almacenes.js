@@ -24,47 +24,44 @@ function renderizarItemsAlmacen(items) {
     });
 }
 
-async function abrirEditorAlmacenes() {
-    const docAlm = procesoActual.documentos?.find(d => d.clave_documento === "almacenes");
+async function abrirEditorAlmacenes(proceso) {
+    const docAlm = proceso.documentos?.find(d => d.clave_documento === "almacenes");
     const datosGuardados = docAlm?.datos_formulario || {};
 
     document.getElementById("alm-fecha-ingreso").value = datosGuardados.fecha_ingreso || new Date().toISOString().split('T')[0];
     document.getElementById("alm-fecha-salida").value = datosGuardados.fecha_salida || new Date().toISOString().split('T')[0];
     document.getElementById("alm-proyecto-corto").value = datosGuardados.proyecto_corto || "";
 
-    // Respaldos de proveedor
-    const docInfo = procesoActual.documentos?.find(d => d.clave_documento === "informe_cotizacion");
+    const docInfo = proceso.documentos?.find(d => d.clave_documento === "informe_cotizacion");
     document.getElementById("alm-proveedor").value = docInfo?.datos_formulario?.proveedor_ganador || "Buscando...";
 
-    if (procesoActual.proveedor_id) {
+    if (proceso.proveedor_id) {
         try {
             const res = await fetch(`/api/catalogos/proveedores`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
             });
             const proveedores = await res.json();
-            const proveedorData = proveedores.find(p => p.id === procesoActual.proveedor_id);
+            const proveedorData = proveedores.find(p => p.id === proceso.proveedor_id);
             if (proveedorData) {
                 document.getElementById("alm-proveedor").value = proveedorData.razon_social;
             }
         } catch (e) { console.warn("Usando proveedor de respaldo."); }
     }
 
-    // Heredar ítems obligatoriamente de Orden de Compra (Paso 7), o fallback.
     let itemsCarga = [];
-    const docOC = procesoActual.documentos?.find(d => d.clave_documento === "orden_compra");
+    const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
     
     if (datosGuardados.items_almacen && datosGuardados.items_almacen.length > 0) {
         itemsCarga = datosGuardados.items_almacen;
     } else if (docOC?.datos_formulario?.items_orden && docOC.datos_formulario.items_orden.length > 0) {
         itemsCarga = docOC.datos_formulario.items_orden;
     } else {
-        itemsCarga = procesoActual.items.map(i => ({
+        itemsCarga = proceso.items.map(i => ({
             nro: i.nro_item, objeto: i.objeto_corto, descripcion: i.descripcion_larga,
             tipuni: i.unidad, cant: i.cantidad
         }));
     }
 
-    // Guardamos los ítems temporalmente en el DOM para extraerlos al guardar
     window.itemsAlmacenTemp = itemsCarga;
     renderizarItemsAlmacen(itemsCarga);
 
@@ -79,11 +76,16 @@ function cerrarEditorAlmacenes() {
     vista.classList.remove("flex");
 }
 
-async function guardarAlmacenes() {
+async function guardarAlmacenes(formato) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const PROCESO_ID = urlParams.get('id');
+    const botones = document.querySelectorAll(".btn-guardar-alm");
+
     try {
-        const btn = document.getElementById("btn-guardar-alm");
-        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Zipeando...`;
-        btn.disabled = true;
+        botones.forEach(b => {
+            b.disabled = true;
+            b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        });
 
         const payload = {
             clave_documento: "almacenes",
@@ -100,20 +102,19 @@ async function guardarAlmacenes() {
         cerrarEditorAlmacenes();
         await cargarDatosProceso(); 
         
-        // 1. Descarga el ingreso
-        await window.API.procesos.descargarDocumento(PROCESO_ID, "ingreso_almacenes");
+        await window.API.procesos.descargarDocumento(PROCESO_ID, "ingreso_almacenes", formato);
         
-        // 2. Espera 1.5 segundos y descarga la salida
         setTimeout(async () => {
-            await window.API.procesos.descargarDocumento(PROCESO_ID, "salida_almacenes");
+            await window.API.procesos.descargarDocumento(PROCESO_ID, "salida_almacenes", formato);
         }, 1500);
 
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
-        const btn = document.getElementById("btn-guardar-alm");
-        btn.innerHTML = `<i data-lucide="package-check" class="w-5 h-5"></i> Emitir Ingreso y Salida (ZIP)`;
-        btn.disabled = false;
+        botones.forEach((b, index) => {
+            b.disabled = false;
+            b.innerHTML = index === 0 ? `<i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Emitir Word` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
+        });
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

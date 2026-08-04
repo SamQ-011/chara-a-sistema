@@ -1,6 +1,6 @@
 // archivo: js/fases_tramite/paso7_orden_compra.js
 
-let montoAdjudicadoObjetivo = 0;
+let montoAdjudicadoObjetivo = 0; // Esta variable vive solo para el modal, está bien aquí.
 
 function agregarItemOrdenCompra(data) {
     const tr = document.createElement("tr");
@@ -41,18 +41,17 @@ function calcularTotalOrdenCompra() {
 
     document.getElementById("oc-monto-actual").textContent = granTotal.toFixed(2);
     
-    // Validación estricta para habilitar el botón
-    const btnGuardar = document.getElementById("btn-guardar-oc");
+    // Validación para habilitar los dos botones
+    const botonesGuardar = document.querySelectorAll(".btn-guardar-oc");
     const alerta = document.getElementById("oc-alerta-validacion");
     
-    // Comparamos permitiendo un margen de error de redondeo de 1 centavo
     if (Math.abs(granTotal - montoAdjudicadoObjetivo) < 0.02) {
-        btnGuardar.disabled = false;
+        botonesGuardar.forEach(b => b.disabled = false);
         alerta.classList.remove("bg-amber-100", "text-amber-800", "border-amber-200");
         alerta.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-200");
         alerta.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Cuadre perfecto`;
     } else {
-        btnGuardar.disabled = true;
+        botonesGuardar.forEach(b => b.disabled = true);
         alerta.classList.add("bg-amber-100", "text-amber-800", "border-amber-200");
         alerta.classList.remove("bg-emerald-100", "text-emerald-800", "border-emerald-200");
         alerta.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden`;
@@ -60,32 +59,29 @@ function calcularTotalOrdenCompra() {
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-async function abrirEditorOrdenCompra() {
-    const docOC = procesoActual.documentos?.find(d => d.clave_documento === "orden_compra");
+async function abrirEditorOrdenCompra(proceso) {
+    const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
     const datosGuardados = docOC?.datos_formulario || {};
 
-    // 1. Datos Generales
-    document.getElementById("oc-nro-orden").value = datosGuardados.nro_orden || procesoActual.nro_orden || "";
+    document.getElementById("oc-nro-orden").value = datosGuardados.nro_orden || proceso.nro_orden || "";
     document.getElementById("oc-fecha").value = datosGuardados.fecha_documento || new Date().toISOString().split('T')[0];
     
-    montoAdjudicadoObjetivo = parseFloat(procesoActual.monto_adjudicado) || parseFloat(procesoActual.monto_total) || 0;
+    montoAdjudicadoObjetivo = parseFloat(proceso.monto_adjudicado) || parseFloat(proceso.monto_total) || 0;
     document.getElementById("oc-monto-objetivo").textContent = montoAdjudicadoObjetivo.toFixed(2);
 
-    // 2. Extraer datos del Proveedor (Respaldo Híbrido: BD -> JSON Paso 5)
     document.getElementById("oc-proveedor").value = "Buscando...";
     document.getElementById("oc-nit").value = "Buscando...";
     
-    const docInfo = procesoActual.documentos?.find(d => d.clave_documento === "informe_cotizacion");
+    const docInfo = proceso.documentos?.find(d => d.clave_documento === "informe_cotizacion");
     const provGanadorJSON = docInfo?.datos_formulario?.proveedor_ganador || "";
 
-    if (procesoActual.proveedor_id) {
+    if (proceso.proveedor_id) {
         try {
-            // RUTA RELATIVA PARA EVITAR EL ERROR CORS
             const res = await fetch(`/api/catalogos/proveedores`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
             });
             const proveedores = await res.json();
-            const proveedorData = proveedores.find(p => p.id === procesoActual.proveedor_id);
+            const proveedorData = proveedores.find(p => p.id === proceso.proveedor_id);
             
             if (proveedorData) {
                 document.getElementById("oc-proveedor").value = proveedorData.razon_social;
@@ -106,18 +102,17 @@ async function abrirEditorOrdenCompra() {
         document.getElementById("oc-nit").value = "";
     }
 
-    // 3. Cargar Ítems
     document.getElementById("oc-tabla-items").innerHTML = "";
     
     let itemsCarga = [];
     if (datosGuardados.items_orden && datosGuardados.items_orden.length > 0) {
         itemsCarga = datosGuardados.items_orden;
     } else {
-        const docAuth = procesoActual.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
+        const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
         if (docAuth?.datos_formulario?.items_tecnicos) {
             itemsCarga = docAuth.datos_formulario.items_tecnicos;
         } else {
-            itemsCarga = procesoActual.items.map(i => ({
+            itemsCarga = proceso.items.map(i => ({
                 nro: i.nro_item, objeto: i.objeto_corto, descripcion: i.descripcion_larga,
                 tipuni: i.unidad, cant: i.cantidad, precio_unitario: i.precio_unitario, total_item: i.total_item
             }));
@@ -145,11 +140,16 @@ function cerrarEditorOrdenCompra() {
     vista.classList.remove("flex");
 }
 
-async function guardarOrdenCompra() {
+async function guardarOrdenCompra(formato) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const PROCESO_ID = urlParams.get('id');
+    const botones = document.querySelectorAll(".btn-guardar-oc");
+
     try {
-        const btn = document.getElementById("btn-guardar-oc");
-        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
-        btn.disabled = true;
+        botones.forEach(b => {
+            b.disabled = true;
+            b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        });
 
         const itemsFinales = [];
         document.getElementById("oc-tabla-items").querySelectorAll("tr").forEach(fila => {
@@ -172,7 +172,7 @@ async function guardarOrdenCompra() {
                 nro_orden: document.getElementById("oc-nro-orden").value.trim(),
                 direccion: document.getElementById("oc-direccion").value.trim(),
                 telefono: document.getElementById("oc-telefono").value.trim(),
-                nit: document.getElementById("oc-nit").value.trim(), // <--- SE ENVÍA EL NIT EDITADO
+                nit: document.getElementById("oc-nit").value.trim(),
                 items_orden: itemsFinales
             }
         };
@@ -180,14 +180,15 @@ async function guardarOrdenCompra() {
         await window.API.procesos.guardarDocumento(PROCESO_ID, payload);
         cerrarEditorOrdenCompra();
         await cargarDatosProceso(); 
-        await window.API.procesos.descargarDocumento(PROCESO_ID, "orden_compra");
+        await window.API.procesos.descargarDocumento(PROCESO_ID, "orden_compra", formato);
 
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
-        const btn = document.getElementById("btn-guardar-oc");
-        btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Emitir Orden`;
-        btn.disabled = false;
+        botones.forEach((b, index) => {
+            b.disabled = false;
+            b.innerHTML = index === 0 ? `<i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Emitir Excel` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
+        });
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

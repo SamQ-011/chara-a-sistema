@@ -74,3 +74,8 @@ class ProcesoUpdate(ProcesoCreate):
     # Hereda variables_ui, items y gastos de ProcesoCreate.
     # Si en el futuro necesitas un campo extra solo para la edición (ej: motivo_edicion), iría aquí.
     pass
+
+class FusionPayload(BaseModel):
+    ids_origen: List[int]
+    objeto_unificado: str
+    hoja_ruta_master: str

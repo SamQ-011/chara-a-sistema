@@ -1,17 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
-from fastapi.responses import FileResponse
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from fastapi.responses import FileResponse, StreamingResponse
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, joinedload
 from typing import Optional
+from docx2pdf import convert
+from io import BytesIO
+import pythoncom
 import os
 import shutil
+import zipfile
+
 
 from app.core.base_datos import get_db
 from app.core.seguridad import obtener_usuario_actual
 from app.core.config import MATRIZ_REQUISITOS
 from app.models.tablas_transaccionales import Proceso, ItemProceso, EstadoProceso, GastoProceso, DocumentoProceso, EstadoDocumento
-from app.models.tablas_base import Proyecto, Unidad, Proveedor
-from app.schemas.proceso import ProcesoCreate, PayloadDocumento, ProcesoUpdate
+from app.models.tablas_base import Proyecto, Unidad, Proveedor, Usuario
+from app.schemas.proceso import ProcesoCreate, PayloadDocumento, ProcesoUpdate, FusionPayload
 from app.services.generador_documentos import orquestar_generacion_documento
 
 def evaluar_estado_proceso(proceso):
@@ -46,61 +51,152 @@ router = APIRouter(
 )
 
 @router.get("/")
-def listar_procesos(db: Session = Depends(get_db), usuario_actual = Depends(obtener_usuario_actual)):
-    query = db.query(Proceso).filter(Proceso.activo == True)
+def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
+    # Cargamos también la relación con la Unidad
+    query = db.query(Proceso).options(
+        joinedload(Proceso.documentos),
+        joinedload(Proceso.unidad_solicitante)
+    ).filter(Proceso.activo == True)
+
+    if unidad_id:
+        query = query.filter(Proceso.unidad_solicitante_id == unidad_id)
     
-    # Filtro automático: El admin ve todo, el solicitante solo lo suyo
-    if usuario_actual.rol == "SOLICITANTE":
-        query = query.filter(Proceso.usuario_id == usuario_actual.id)
+    if usuario_actual.get("rol") == "SOLICITANTE":
+        user_id = usuario_actual.get("user_id")
+        usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
         
-    return query.all()
+        if usuario_db and usuario_db.unidad_id:
+            query = query.filter(
+                or_(
+                    Proceso.usuario_id == int(user_id),
+                    Proceso.unidad_solicitante_id == usuario_db.unidad_id
+                )
+            )
+        else:
+            query = query.filter(Proceso.usuario_id == int(user_id))
+    
+    procesos_db = query.all()
+        
+    resultado = []
+    for p in procesos_db:
+        estado_str = p.estado.value if hasattr(p.estado, 'value') else p.estado
+        
+        docs_fin = [
+            d.clave_documento for d in p.documentos 
+            if (d.estado.value if hasattr(d.estado, 'value') else d.estado) == "FINALIZADO"
+        ]
+        
+        resultado.append({
+            "id": p.id,
+            "codigo_proceso": p.codigo_proceso,
+            "objeto_contratacion": p.objeto_contratacion,
+            "estado": estado_str,
+            "unidad_nombre": p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla / Sin Asignar"),
+            "docs_finalizados": docs_fin
+        })
+        
+    return resultado
+
 
 @router.get("/dashboard")
-def obtener_estadisticas_dashboard(db: Session = Depends(get_db), usuario_actual = Depends(obtener_usuario_actual)):
-    query = db.query(Proceso.estado, func.count(Proceso.id)).filter(Proceso.activo == True)
+def obtener_estadisticas_dashboard(db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
+    rol = usuario_actual.get("rol")
+    user_id = usuario_actual.get("user_id")
     
-    if usuario_actual.rol == "SOLICITANTE":
-        query = query.filter(Proceso.usuario_id == usuario_actual.id)
+    # 1. CONTEO BÁSICO DE ESTADOS (Con filtro de privacidad)
+    query_estados = db.query(Proceso.estado, func.count(Proceso.id)).filter(Proceso.activo == True)
+    
+    if rol == "SOLICITANTE":
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Usuario no identificado.")
+            
+        usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
         
-    conteos = query.group_by(Proceso.estado).all()
+        if usuario_db and usuario_db.unidad_id:
+            query_estados = query_estados.filter(
+                or_(
+                    Proceso.usuario_id == int(user_id),
+                    Proceso.unidad_solicitante_id == usuario_db.unidad_id
+                )
+            )
+        else:
+            query_estados = query_estados.filter(Proceso.usuario_id == int(user_id))
+
+    conteos = query_estados.group_by(Proceso.estado).all()
     
     stats = {
-        "total": 0,
-        "BORRADOR": 0,
-        "EN CURSO": 0,
-        "CON PENDIENTES": 0,
-        "FINALIZADO": 0,
-        "ANULADO": 0
-
+        "total": 0, "BORRADOR": 0, "EN CURSO": 0, "CON PENDIENTES": 0, "FINALIZADO": 0, "ANULADO": 0
     }
     
     for estado, cantidad in conteos:
-        # estado.value extrae el string del Enum
         if estado.value in stats:
             stats[estado.value] = cantidad
         stats["total"] += cantidad
         
+    response_data = {"conteos": stats}
+
+    # 2. MÉTRICAS AVANZADAS (Exclusivo para alta gerencia)
+    if rol in ["ADMIN", "RPC"]:
+        # A. Presupuesto Total Solicitado (Monto de las hojas de ruta en curso)
+        presupuesto_sol_db = db.query(func.sum(Proceso.monto_total))\
+            .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.ANULADO).scalar()
+            
+        # B. Presupuesto Total Adjudicado (Dinero real comprometido con proveedores)
+        presupuesto_ejecutado_db = db.query(func.sum(Proceso.monto_adjudicado))\
+            .filter(Proceso.activo == True, Proceso.estado == EstadoProceso.FINALIZADO).scalar()
+            
+        # C. Cuellos de botella por Unidad Solicitante (Uso de JOIN para traer el nombre)
+        unidades_conteo = db.query(Unidad.nombre, func.count(Proceso.id))\
+            .join(Proceso, Unidad.id == Proceso.unidad_solicitante_id)\
+            .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.FINALIZADO)\
+            .group_by(Unidad.nombre).all()
+            
+        response_data["metricas_globales"] = {
+            "presupuesto_solicitado": float(presupuesto_sol_db or 0),
+            "presupuesto_ejecutado": float(presupuesto_ejecutado_db or 0),
+            "carga_por_unidad": [{"unidad": u[0], "cantidad": u[1]} for u in unidades_conteo]
+        }
+        
     return {
         "success": True,
-        "data": stats
+        "data": response_data
     }
 
 @router.post("/")
-def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db)):
+def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         ui = datos.variables_ui
-        
-        proyecto_db = db.query(Proyecto).filter(Proyecto.codigo_proyecto == ui.cod_proy).first()
-        unidad_db = db.query(Unidad).filter(Unidad.nombre == ui.uni_solic).first()
-        
+        user_id = usuario_actual.get("user_id")
+        rol_usuario = usuario_actual.get("rol")
+            
+        proyecto_db = db.query(Proyecto).filter(Proyecto.codigo_proyecto == getattr(ui, "cod_proy", "")).first()
         proy_id = proyecto_db.id if proyecto_db else None
-        uni_id = unidad_db.id if unidad_db else None
         
+        # --- NUEVA LÓGICA DE ASIGNACIÓN DE UNIDAD POR ROL ---
+        uni_id = None
+        
+        if rol_usuario == "SOLICITANTE":
+            # 1. Si es técnico, ignoramos el frontend y le asignamos SU propia unidad
+            usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
+            if usuario_db:
+                uni_id = usuario_db.unidad_id
+        else:
+            # 2. Si es SECRETARIA o ADMIN, respetamos a quién derivó en el select
+            uni_solic_val = str(getattr(ui, "uni_solic", "")).strip()
+            unidad_db = None
+            if uni_solic_val.isdigit():
+                unidad_db = db.query(Unidad).filter(Unidad.id == int(uni_solic_val), Unidad.activo == True).first()
+            elif uni_solic_val:
+                unidad_db = db.query(Unidad).filter(Unidad.nombre == uni_solic_val, Unidad.activo == True).first()
+            
+            uni_id = unidad_db.id if unidad_db else None
+
         nuevo_proceso = Proceso(
             codigo_proceso=ui.codigo,
+            hoja_ruta=getattr(ui, "hoja_ruta", ""),
             nro_orden=ui.n_orden,
             objeto_contratacion=ui.objeto,
-            desca_contextual=ui.desca,
+            desca_contextual=ui.objeto[:50] if ui.objeto else "",
             tipo_pago=ui.tipo_pago,
             tipo_contratacion=ui.tipo_contratacion,
             plazo_entrega=ui.plazo,
@@ -113,7 +209,8 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db)):
             cargo_tecnico_solicitante=ui.cargo_tecnico,
             proyecto_id=proy_id,           
             unidad_solicitante_id=uni_id,  
-            proveedor_id=None, # <--- ¡AQUÍ ESTABA EL ERROR DEL PANTALLAZO!          
+            proveedor_id=None,
+            usuario_id=int(user_id), # <--- SE GUARDA AQUÍ
             estado=EstadoProceso.EN_CURSO 
         )
         
@@ -160,6 +257,63 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback() 
         raise HTTPException(status_code=500, detail=f"Error crítico al guardar: {str(e)}")
+
+@router.post("/fusionar")
+def fusionar_procesos(payload: FusionPayload, db: Session = Depends(get_db)):
+    if len(payload.ids_origen) < 2:
+        raise HTTPException(status_code=400, detail="Debe seleccionar al menos 2 trámites para fusionar.")
+
+    # 1. Recuperamos los procesos originales
+    procesos_origen = db.query(Proceso).filter(Proceso.id.in_(payload.ids_origen)).all()
+    if not procesos_origen:
+        raise HTTPException(status_code=404, detail="Procesos no encontrados.")
+
+    # Usamos al primer proceso como base para heredar unidad, usuario, proyecto, etc.
+    base = procesos_origen[0]
+
+    # 2. Creamos el Proceso Maestro
+    import time
+    nuevo_proceso = Proceso(
+        codigo_proceso=f"MSTR-{int(time.time())}",
+        hoja_ruta=payload.hoja_ruta_master,
+        objeto_contratacion=payload.objeto_unificado,
+        desca_contextual=payload.objeto_unificado[:50],
+        estado=EstadoProceso.EN_CURSO,
+        ubicacion_actual=base.ubicacion_actual,
+        proveedor_id=base.proveedor_id,
+        proyecto_id=base.proyecto_id,
+        unidad_solicitante_id=base.unidad_solicitante_id,
+        usuario_id=base.usuario_id,
+        monto_total=0.00 # Se calculará cuando llenen las especificaciones
+    )
+    
+    db.add(nuevo_proceso)
+    db.commit()
+    db.refresh(nuevo_proceso)
+
+    # 3. Traslado Físico Documental (Copiar PDFs)
+    ruta_maestro = os.path.join("Resultados", f"Proceso_{nuevo_proceso.id}")
+    os.makedirs(ruta_maestro, exist_ok=True)
+
+    for p in procesos_origen:
+        ruta_origen = os.path.join("Resultados", f"Proceso_{p.id}")
+        if os.path.exists(ruta_origen):
+            # Buscamos PDFs en la carpeta origen
+            for archivo in os.listdir(ruta_origen):
+                if archivo.endswith(".pdf"):
+                    src_file = os.path.join(ruta_origen, archivo)
+                    # Renombramos para identificar de qué proceso original vino
+                    dst_file = os.path.join(ruta_maestro, f"Solicitud_Anexada_{p.hoja_ruta or p.id}.pdf")
+                    shutil.copy2(src_file, dst_file)
+        
+        # 4. Cambiamos estado de los hijos y marcamos trazabilidad
+        p.estado = EstadoProceso.ANULADO # O crea un EstadoProceso.FUSIONADO en tu Enum
+        p.fusionado_en_id = nuevo_proceso.id
+    
+    db.commit()
+    
+    return {"message": "Fusión exitosa", "proceso_maestro_id": nuevo_proceso.id}
+
 
 @router.put("/{proceso_id}")
 def actualizar_proceso(proceso_id: int, datos: ProcesoUpdate, db: Session = Depends(get_db)):
@@ -297,10 +451,66 @@ def obtener_proceso_individual(proceso_id: int, db: Session = Depends(get_db)):
     }
 
 @router.post("/{proceso_id}/documentos")
-def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Session = Depends(get_db)):
+def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
     proceso = db.query(Proceso).filter(Proceso.id == proceso_id).first()
     if not proceso:
         raise HTTPException(status_code=404, detail="Proceso no encontrado")
+
+    if payload.clave_documento == "especificaciones_tecnicas":
+        # 1. Actualizar nombre oficial
+        nuevo_nombre = payload.datos_formulario.get("nuevo_objeto_contratacion")
+        if nuevo_nombre:
+            proceso.objeto_contratacion = nuevo_nombre
+            proceso.desca_contextual = nuevo_nombre[:50]
+
+        # 2. Poblar la tabla ItemProceso para que los demás pasos hereden
+        items_tecnicos = payload.datos_formulario.get("items_tecnicos", [])
+        if items_tecnicos:
+            db.query(ItemProceso).filter(ItemProceso.proceso_id == proceso_id).delete()
+            for item in items_tecnicos:
+                nuevo_item = ItemProceso(
+                    proceso_id=proceso_id,
+                    nro_item=item.get("nro", 0),
+                    objeto_corto=item.get("objeto", ""),
+                    descripcion_larga=item.get("descripcion", ""),
+                    unidad=item.get("tipuni", ""),
+                    cantidad=item.get("cant", 0),
+                    precio_unitario=item.get("precio_unitario", 0),
+                    total_item=item.get("total_item", 0)
+                )
+                db.add(nuevo_item)
+            
+            # Forzamos la actualización del monto total
+            proceso.monto_total = sum(float(item.get("total_item", 0)) for item in items_tecnicos)
+
+    if payload.clave_documento == "solicitud_cp":
+        
+        # 1. Guardar Estructura de Gastos (POA)
+        gastos_payload = payload.datos_formulario.get("gastos", [])
+        if gastos_payload:
+            db.query(GastoProceso).filter(GastoProceso.proceso_id == proceso_id).delete()
+            for g in gastos_payload:
+                nuevo_gasto = GastoProceso(
+                    proceso_id=proceso_id,
+                    partida=g.get("partida", ""),
+                    prog=g.get("prog", ""),
+                    proy=g.get("proy", ""),
+                    act=g.get("act", ""),
+                    ff=g.get("ff", ""),
+                    of=g.get("of", ""),
+                    descripcion=g.get("descripcion", ""),
+                    monto=g.get("monto", 0)
+                )
+                db.add(nuevo_gasto)
+
+        # 2. Guardar variables globales del trámite
+        fecha_doc = payload.datos_formulario.get("fecha_documento")
+        if fecha_doc:
+            proceso.fecha_solicitud = fecha_doc
+            
+        distrito_doc = payload.datos_formulario.get("distrito_comunidad")
+        if distrito_doc is not None:
+            proceso.distrito_comunidad = distrito_doc
 
     # Guardado de Asignación Financiera FF-OF en la base de datos (Paso 2)
     if payload.clave_documento == "cert_presupuestaria" and "gastos" in payload.datos_formulario:
@@ -376,6 +586,15 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
             datos_formulario=payload.datos_formulario
         )
         db.add(doc_db)
+
+    if not proceso.tecnico_solicitante and payload.clave_documento in ["especificaciones_tecnicas", "solicitud_cp"]:
+        user_id = usuario_actual.get("user_id") or usuario_actual.get("sub")
+        if user_id:
+            usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
+            if usuario_db:
+                titulo = f"{usuario_db.titulo.strip()} " if usuario_db.titulo else ""
+                proceso.tecnico_solicitante = f"{titulo}{usuario_db.nombre_completo}"
+                proceso.cargo_tecnico_solicitante = usuario_db.cargo
     
     db.flush() # Obliga a BD a registrar el documento temporalmente en la sesión
     evaluar_estado_proceso(proceso)
@@ -394,50 +613,148 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
 def descargar_documento_individual(
     proceso_id: int, 
     tipo_documento: str, 
+    formato: Optional[str] = "word",
     fecha_corta: Optional[str] = None, 
     fecha_larga: Optional[str] = None, 
     db: Session = Depends(get_db)
 ):
     try:
-        ruta_archivo = orquestar_generacion_documento(proceso_id, tipo_documento, db, fecha_corta, fecha_larga)
+        ruta_word_relativa = orquestar_generacion_documento(proceso_id, tipo_documento, db, fecha_corta, fecha_larga)
         
-        if not os.path.exists(ruta_archivo):
-            raise HTTPException(status_code=500, detail="El archivo se generó pero no se encuentra en el disco.")
+        if not ruta_word_relativa:
+            raise HTTPException(status_code=500, detail="El orquestador no devolvió ninguna ruta de archivo.")
+
+        ruta_word = os.path.abspath(str(ruta_word_relativa).strip())
+        
+        if not os.path.exists(ruta_word):
+            raise HTTPException(status_code=500, detail="El archivo se generó pero no se encuentra en el disco duro.")
             
-        nombre_descarga = os.path.basename(ruta_archivo)
-        
-        return FileResponse(
-            path=ruta_archivo, 
-            filename=nombre_descarga,
-            media_type="application/octet-stream"
-        )
+        if formato == "word":
+            # Si el documento es un Excel, ajustamos el tipo MIME para que el navegador lo entienda
+            is_excel = ruta_word.lower().endswith(".xlsx")
+            m_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if is_excel else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            
+            return FileResponse(
+                path=ruta_word, 
+                filename=os.path.basename(ruta_word),
+                media_type=m_type
+            )
+            
+        elif formato == "pdf":
+            # Extraemos el nombre y le clavamos la extensión .pdf
+            ruta_pdf = os.path.splitext(ruta_word)[0] + ".pdf"
+            
+            pythoncom.CoInitialize()
+            try:
+                # MOTOR 1: Si es Word
+                if ruta_word.lower().endswith(".docx"):
+                    from docx2pdf import convert
+                    convert(ruta_word, ruta_pdf)
+                
+                # MOTOR 2: Si es Excel (Soluciona el problema de la Autorización)
+                elif ruta_word.lower().endswith(".xlsx"):
+                    import win32com.client
+                    excel = win32com.client.Dispatch("Excel.Application")
+                    excel.Visible = False
+                    wb = excel.Workbooks.Open(ruta_word)
+                    wb.ExportAsFixedFormat(0, ruta_pdf) # El código '0' le dice a Excel que exporte a PDF
+                    wb.Close(False)
+                    excel.Quit()
+                
+                else:
+                    raise HTTPException(status_code=500, detail=f"No hay motor PDF para este formato: {ruta_word}")
+            except Exception as ex:
+                raise HTTPException(status_code=500, detail=f"Error convirtiendo a PDF: {str(ex)}")
+            finally:
+                pythoncom.CoUninitialize() 
+                
+            if not os.path.exists(ruta_pdf):
+                raise HTTPException(status_code=500, detail="Falló la conversión a PDF mediante COM.")
+                
+            return FileResponse(
+                path=ruta_pdf, 
+                filename=os.path.basename(ruta_pdf),
+                media_type="application/pdf"
+            )
+            
+        else:
+            raise HTTPException(status_code=400, detail="Formato no soportado.")
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando documento: {str(e)}")
+        print("=== ERROR CRÍTICO EN GENERACIÓN ===")
+        import traceback
+        traceback.print_exc()
+        print("===================================")
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+    
 
 @router.post("/{proceso_id}/subir-solicitud")
 async def subir_pdf_solicitud(proceso_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    # 1. Validar que el proceso exista
     proceso = db.query(Proceso).filter(Proceso.id == proceso_id).first()
     if not proceso:
         raise HTTPException(status_code=404, detail="Proceso no encontrado en la base de datos.")
 
-    # 2. Validar que sea un PDF
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="El archivo adjunto debe ser estrictamente un PDF.")
 
-    # 3. Crear la carpeta si no existe (Mismo concepto del legacy, pero local/nube)
-    directorio = "Uploads/solicitudes_iniciales"
+    # Guardamos directamente en su expediente (Resultados/Proceso_X/)
+    directorio = f"Resultados/Proceso_{proceso_id}"
     os.makedirs(directorio, exist_ok=True)
 
-    # 4. Guardar el archivo con el ID del proceso (ej: 15_solicitud.pdf)
-    ruta_guardado = os.path.join(directorio, f"{proceso_id}_solicitud.pdf")
+    ruta_guardado = os.path.join(directorio, f"0_Solicitud_Inicial_{proceso_id}.pdf")
 
     with open(ruta_guardado, "wb") as buffer:
+        import shutil
         shutil.copyfileobj(file.file, buffer)
 
-    return {
-        "success": True, 
-        "message": "Archivo PDF resguardado correctamente.", 
-        "ruta_pdf": ruta_guardado
-    }
+    return {"success": True, "message": "Archivo PDF resguardado.", "ruta_pdf": ruta_guardado}
 
+@router.get("/{proceso_id}/ver-solicitud")
+def ver_pdf_solicitud(proceso_id: int, db: Session = Depends(get_db)):
+    proceso = db.query(Proceso).filter(Proceso.id == proceso_id).first()
+    if not proceso:
+        raise HTTPException(status_code=404, detail="Proceso no encontrado")
+
+    ruta_pdf = f"Resultados/Proceso_{proceso_id}/0_Solicitud_Inicial_{proceso_id}.pdf"
+    
+    if not os.path.exists(ruta_pdf):
+        raise HTTPException(status_code=404, detail="El PDF inicial no se encuentra en el servidor.")
+        
+    return FileResponse(
+        path=ruta_pdf, 
+        filename=f"Solicitud_Inicial_{proceso.hoja_ruta or proceso_id}.pdf",
+        media_type="application/pdf"
+    )
+
+
+@router.get("/{proceso_id}/descargar-zip")
+def descargar_expediente_zip(proceso_id: int, db: Session = Depends(get_db)):
+    proceso = db.query(Proceso).filter(Proceso.id == proceso_id, Proceso.activo == True).first()
+    if not proceso:
+        raise HTTPException(status_code=404, detail="Proceso no encontrado")
+
+    ruta_directorio = f"Resultados/Proceso_{proceso_id}"
+    
+    if not os.path.exists(ruta_directorio):
+        raise HTTPException(status_code=404, detail="Este expediente aún no tiene documentos generados.")
+
+    zip_buffer = BytesIO()
+
+    # Comprime todo lo que encuentre en esa subcarpeta exacta
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for root, _, files in os.walk(ruta_directorio):
+            for file in files:
+                ruta_completa = os.path.join(root, file)
+                # arcname=file evita que el zip contenga toda la ruta "Resultados/Proceso_15/..." internamente
+                zip_file.write(ruta_completa, arcname=file)
+
+    zip_buffer.seek(0)
+    nombre_zip = f"Expediente_{proceso.hoja_ruta or proceso.codigo_proceso or proceso_id}.zip"
+
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]), 
+        media_type="application/zip", 
+        headers={"Content-Disposition": f"attachment; filename={nombre_zip}"}
+    )

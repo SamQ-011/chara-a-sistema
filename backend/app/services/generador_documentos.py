@@ -1,4 +1,5 @@
 import os
+import time
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
@@ -6,7 +7,7 @@ from app.models.tablas_transaccionales import Proceso
 from app.services.generadores.utils import formatear_fecha_literal, monto_a_letras_bolivianos
 
 # --- SE DESCOMENTARÁN EN EL SIGUIENTE PASO ---
-from app.services.generadores.docs_iniciales import generar_solicitud_cp, generar_cert_presupuestaria, generar_solicitud_inicio
+from app.services.generadores.docs_iniciales import generar_solicitud_cp, generar_cert_presupuestaria, generar_solicitud_inicio, generar_especificaciones_tecnicas
 from app.services.generadores.docs_contratacion import generar_autorizacion_inicio, generar_informe_cotizacion, generar_orden_compra, generar_notificacion_adjudicacion
 from app.services.generadores.docs_logistica import generar_ingreso_almacenes, generar_salida_almacenes, generar_ambos_almacenes
 from app.services.generadores.docs_actas import generar_acta_recepcion, generar_informe_conformidad
@@ -15,9 +16,7 @@ RUTA_PLANTILLAS = "Plantillas"
 RUTA_RESULTADOS = "Resultados"
 
 def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Session, fecha_corta_manual: str = None, fecha_larga_manual: str = None):
-    # =================================================================
-    # 1. LA SÚPER CONSULTA (Eager Loading - 0 problemas de N+1)
-    # =================================================================
+    # 1. LA SÚPER CONSULTA
     proceso = db.query(Proceso).options(
         joinedload(Proceso.items),
         joinedload(Proceso.gastos),
@@ -28,8 +27,12 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
         raise HTTPException(status_code=404, detail="Proceso no encontrado.")
 
     # =================================================================
-    # 2. CONSTRUCCIÓN DE CONTEXTO GLOBAL (En memoria, instantáneo)
+    # NUEVA ARQUITECTURA: SUBCARPETA ÚNICA POR PROCESO
     # =================================================================
+    ruta_proceso = os.path.join(RUTA_RESULTADOS, f"Proceso_{proceso_id}")
+    os.makedirs(ruta_proceso, exist_ok=True)
+
+    # 2. CONSTRUCCIÓN DE CONTEXTO GLOBAL
     proveedor = proceso.proveedor
     proyecto = proceso.proyecto
     unidad = proceso.unidad_solicitante
@@ -41,8 +44,6 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
     fecha_literal = formatear_fecha_literal(fecha_corta)
     monto_total = float(proceso.monto_total) if proceso.monto_total else 0.0
     retencion_val = float(proceso.retencion_monto) if proceso.retencion_monto else 0.0
-
-    os.makedirs(RUTA_RESULTADOS, exist_ok=True)
 
     variables = {
         "{PROVEEDOR}": razon_social, "{PROV}": razon_social,
@@ -63,20 +64,50 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
         "{FECHA}": fecha_literal, "{FECHA_ACTUAL}": fecha_corta
     }
 
-    # Búsqueda rápida en memoria para la solicitud de inicio
+    doc_specs = next((d for d in proceso.documentos if d.clave_documento == "especificaciones_tecnicas"), None)
     doc_inicio = next((d for d in proceso.documentos if d.clave_documento == "solicitud_inicio"), None)
     
     items_mapeados = [{"nro": i.nro_item, "objeto": i.objeto_corto, "descripcion": i.descripcion_larga, "tipuni": i.unidad, "cant": float(i.cantidad), "precio_unitario": float(i.precio_unitario), "total_item": float(i.total_item)} for i in proceso.items]
-    if doc_inicio and doc_inicio.datos_formulario and doc_inicio.datos_formulario.get("items_tecnicos"):
+    if doc_specs and doc_specs.datos_formulario and doc_specs.datos_formulario.get("items_tecnicos"):
+        items_mapeados = doc_specs.datos_formulario["items_tecnicos"]
+    elif doc_inicio and doc_inicio.datos_formulario and doc_inicio.datos_formulario.get("items_tecnicos"):
         items_mapeados = doc_inicio.datos_formulario["items_tecnicos"]
+
+    doc_cert = next((d for d in proceso.documentos if d.clave_documento == "cert_presupuestaria"), None)
+    nombres_meta = {}
+    if doc_cert and doc_cert.datos_formulario and "gastos" in doc_cert.datos_formulario:
+        for g_data in doc_cert.datos_formulario["gastos"]:
+            nombres_meta[str(g_data.get("id"))] = {
+                "prog": g_data.get("nombre_prog", ""),
+                "proy": g_data.get("nombre_proy", "")
+            }
 
     gastos_mapeados = []
     for g in proceso.gastos:
         p_prog = str(g.prog) if g.prog else "00"
         p_proy = str(g.proy)
         p_act = str(g.act).zfill(3) if g.act else "000"
-        gastos_mapeados.append({"partida": g.partida, "prog": p_prog, "proy": p_proy, "act": p_act, "ff": g.ff, "of": g.of, "descripcion": g.descripcion, "monto": float(g.monto), "prog_header": f"{p_prog} 000 000", "proy_header": f"{p_prog} {p_proy} {p_act}"})
+        
+        meta = nombres_meta.get(str(g.id), {})
+        nom_prog = meta.get("prog", "")
+        nom_proy = meta.get("proy", "")
+        
+        str_prog_header = f"{p_prog} 000 000 - {nom_prog}" if nom_prog else f"{p_prog} 000 000"
+        str_proy_header = f"{p_prog} {p_proy} {p_act} - {nom_proy}" if nom_proy else f"{p_prog} {p_proy} {p_act}"
 
+        gastos_mapeados.append({
+            "partida": g.partida, 
+            "prog": p_prog, 
+            "proy": p_proy, 
+            "act": p_act, 
+            "ff": g.ff, 
+            "of": g.of, 
+            "descripcion": g.descripcion, 
+            "monto": float(g.monto), 
+            "prog_header": str_prog_header,
+            "proy_header": str_proy_header
+        })
+        
     contexto = {
         "proceso": proceso,
         "variables": variables,
@@ -85,13 +116,13 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
         "fecha_corta": fecha_corta,
         "fecha_literal": fecha_literal,
         "monto_total": monto_total,
-        "razon_social": razon_social
+        "razon_social": razon_social,
+        #"id_unico": id_unico,
+        "ruta_directorio": ruta_proceso # <--- MAGIA: Le pasamos la ruta exacta a los generadores
     }
 
-    # =================================================================
-    # 3. DICCIONARIO DE RUTEO
-    # =================================================================
     estrategias = {
+        "especificaciones_tecnicas": generar_especificaciones_tecnicas,
         "solicitud_cp": generar_solicitud_cp,
         "cert_presupuestaria": generar_cert_presupuestaria,
         "solicitud_inicio": generar_solicitud_inicio,
@@ -108,6 +139,6 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
     
     estrategia = estrategias.get(tipo_documento)
     if not estrategia:
-        raise HTTPException(status_code=400, detail=f"El documento '{tipo_documento}' no está configurado (o está comentado).")
+        raise HTTPException(status_code=400, detail=f"El documento '{tipo_documento}' no está configurado.")
     
     return estrategia(contexto)

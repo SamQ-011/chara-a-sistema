@@ -22,6 +22,7 @@ class Proceso(Base, AuditoriaMixin):
     __tablename__ = "procesos"
     id = Column(Integer, primary_key=True, index=True)
     codigo_proceso = Column(String(50), unique=True, index=True)
+    hoja_ruta = Column(String(50), nullable=True)
     nro_orden = Column(String(50), nullable=True)
     objeto_contratacion = Column(String(500))
     desca_contextual = Column(String(255), nullable=True)
@@ -44,6 +45,7 @@ class Proceso(Base, AuditoriaMixin):
     
     # --- NUEVO: RASTREO DE LA CARPETA FÍSICA ---
     ubicacion_actual = Column(String(150), default="SOLICITANTE")
+    fusionado_en_id = Column(Integer, ForeignKey("procesos.id"), nullable=True)
 
     proveedor_id = Column(Integer, ForeignKey("proveedores.id"), nullable=True)
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=True)
@@ -62,7 +64,7 @@ class ItemProceso(Base, AuditoriaMixin):
     id = Column(Integer, primary_key=True, index=True)
     proceso_id = Column(Integer, ForeignKey("procesos.id"))
     nro_item = Column(Integer)
-    objeto_corto = Column(String(200))
+    objeto_corto = Column(String(250))
     descripcion_larga = Column(String(1000), nullable=True)
     unidad = Column(String(50)) 
     cantidad = Column(Numeric(10, 2))

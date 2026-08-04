@@ -32,7 +32,9 @@ def poblar_usuarios():
             Usuario(username="francisco.cusi", password_hash=password_default, titulo="", nombre_completo="Francisco Cusi Cusi", cargo="Encargado Almacenes y Limpieza", rol="SOLICITANTE"),
             Usuario(username="adela.dorado", password_hash=password_default, titulo="Lic.", nombre_completo="Adela Dorado Garrado", cargo="Responsable de Presupuesto y Contabilidad", rol="PRESUPUESTO"),
             Usuario(username="gerson.vargas", password_hash=password_default, titulo="", nombre_completo="Gerson Elvis Vargas Conde", cargo="Responsable de Procesos de Contratación (RPA - RPC)", rol="RPC"),
-            Usuario(username="rosa.aduviri", password_hash=password_default, titulo="Tec.", nombre_completo="Rosa Aduviri Vichini", cargo="Asistente Contable", rol="ADMIN")
+            Usuario(username="rosa.aduviri", password_hash=password_default, titulo="Tec.", nombre_completo="Rosa Aduviri Vichini", cargo="Asistente Contable", rol="ADMIN"),
+            Usuario(username="maria.ventanilla", password_hash=password_default, titulo="Tec.", nombre_completo="Maria Gomez", cargo="Recepción", rol="SECRETARIA")
+
         ]
         
         db.bulk_save_objects(usuarios_seed)
