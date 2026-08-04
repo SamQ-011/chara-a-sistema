@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from app.api import catalogos, procesos, rutas_auth
+from app.api import catalogos, procesos, rutas_auth, rutas_usuarios
 
 app = FastAPI(title="API Hoja de Ruta - GAMCH")
 
@@ -22,7 +22,7 @@ class NoCacheStaticMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         if request.url.path.startswith("/static/") and (
-            request.url.path.endswith(".js") or request.url.path.endswith(".css")
+            request.url.path.endswith(".js") or request.url.path.endswith(".css") or request.url.path.endswith(".html")
         ):
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
@@ -37,6 +37,7 @@ app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 app.include_router(catalogos.router)
 app.include_router(procesos.router)
 app.include_router(rutas_auth.router, prefix="/api/auth", tags=["Autenticación"])
+app.include_router(rutas_usuarios.router)
 
 @app.get("/")
 def read_index():

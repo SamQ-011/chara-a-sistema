@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (btnCatalogos) btnCatalogos.style.display = "none";
     }
 
+    if (!["SOLICITANTE", "SECRETARIA"].includes(rolUsuario)) {
+        const btnSidebar = document.getElementById("btn-nuevo-proceso-sidebar");
+        if (btnSidebar) btnSidebar.style.display = "none";
+    }
+
     document.getElementById('fecha_solicitud').valueAsDate = new Date();
     try {
         const unidades = await window.API.unidades.listar();

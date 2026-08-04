@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Trámites - GAMCH</title>
+    <link href="css/output.css?v=2.0" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8fafc; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-900">
+
+    <!-- SIDEBAR INSTITUCIONAL -->
+    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-xl border-r border-slate-800 shrink-0">
+        <div class="p-6 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
+                    <i data-lucide="landmark" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg leading-none text-white tracking-tight">GAMCH</h1>
+                    <p class="text-blue-300 text-xs font-semibold mt-1">Gobierno Municipal</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="index.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
+                <span>Bandeja de Procesos</span>
+            </a>
+
+            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-slate-400"></i>
+                <span>Nuevo Proceso</span>
+            </a>
+
+            <a id="menu-catalogos" href="catalogos.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+                <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
+                <span>Catálogos & Usuarios</span>
+            </a>
+            
+            <a href="seguimiento.html" class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
+                <i data-lucide="search" class="w-4 h-4 text-blue-400"></i>
+                <span>Seguimiento Público</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto flex flex-col bg-slate-50">
+        <!-- HEADER INSTITUCIONAL -->
+        <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Consulta & Seguimiento de Hojas de Ruta</h1>
+                <p class="text-xs text-slate-500 mt-0.5">Verificación de ubicación física, estado de avance y documentos emitidos</p>
+            </div>
+        </header>
+
+        <!-- SECCIÓN DE BÚSQUEDA -->
+        <section class="p-8 max-w-4xl w-full mx-auto space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Buscar Trámite</h3>
+                <div class="flex gap-3">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="input-codigo-seguimiento" placeholder="Ingrese el Código del Proceso u Hoja de Ruta (ej. HR-2026-001)..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-700 outline-none">
+                    </div>
+                    <button onclick="buscarTramiteSeguimiento()" class="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-lg shadow-xs transition flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        <span>Consultar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTADO DEL SEGUIMIENTO -->
+            <div id="resultado-seguimiento" class="hidden space-y-6">
+                <!-- Inyección JS -->
+            </div>
+        </section>
+    </main>
+
+    <script>lucide.createIcons();</script>
+    <script src="js/api.js"></script>
+    <script>
+    async function buscarTramiteSeguimiento() {
+        const query = document.getElementById("input-codigo-seguimiento")?.value.trim();
+        if (!query) return alert("Ingrese un código de proceso u hoja de ruta.");
+
+        mostrarCarga("Consultando estado del trámite...");
+        try {
+            const procesos = await request("/procesos/");
+            const encontrado = procesos.find(p => 
+                (p.codigo_proceso && p.codigo_proceso.toLowerCase() === query.toLowerCase()) ||
+                (p.objeto_contratacion && p.objeto_contratacion.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            const container = document.getElementById("resultado-seguimiento");
+            if (!encontrado) {
+                container.classList.remove("hidden");
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-xl border border-slate-200 text-center text-slate-500">
+                        <i data-lucide="folder-search" class="w-10 h-10 mx-auto mb-2 text-slate-400"></i>
+                        <p class="font-bold text-sm text-slate-800">No se encontró ningún trámite con la referencia ingresada.</p>
+                        <p class="text-xs text-slate-400 mt-1">Verifique el número e intente de nuevo.</p>
+                    </div>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                ocultarCarga();
+                return;
+            }
+
+            // Cargar detalle completo
+            const detalle = await request(`/procesos/${encontrado.id}`);
+            
+            let badgeClass = "bg-blue-50 text-blue-800 border-blue-200";
+            if (detalle.estado === "FINALIZADO") badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
+            else if (detalle.estado === "CON PENDIENTES") badgeClass = "bg-amber-50 text-amber-800 border-amber-200";
+            else if (detalle.estado === "ANULADO") badgeClass = "bg-rose-50 text-rose-800 border-rose-200";
+
+            const docsFinCount = (detalle.documentos || []).filter(d => d.estado === "FINALIZADO").length;
+
+            container.classList.remove("hidden");
+            container.innerHTML = `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código de Expediente</span>
+                            <h2 class="text-xl font-extrabold text-blue-900 font-mono">${detalle.codigo_proceso}</h2>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}">
+                            ${detalle.estado}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="md:col-span-2">
+                            <p class="text-slate-500 font-bold uppercase text-[10px] mb-1">Objeto de Contratación</p>
+                            <p class="font-semibold text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200">${detalle.objeto_contratacion}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 font-bold uppercase text-[10px] mb-1">Monto del Trámite</p>
+                            <p class="font-extrabold text-emerald-700 text-lg tabular-nums">Bs. ${parseFloat(detalle.monto_total || 0).toLocaleString('es-BO', {minimumFractionDigits: 2})}</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-xs text-slate-500">Documentos oficiales emitidos: <strong class="text-slate-800">${docsFinCount} de 11</strong></span>
+                        <a href="detalle_proceso.html?id=${detalle.id}" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-lg transition flex items-center gap-2">
+                            <span>Ver Expediente Completo</span>
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
+                </div>`;
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        } catch (err) {
+            alert("Error al buscar el trámite: " + (err.message || err));
+        } finally {
+            ocultarCarga();
+        }
+    }
+    </script>
+</body>
+</html>

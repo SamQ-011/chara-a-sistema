@@ -541,6 +541,10 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
         if distrito_doc is not None:
             proceso.distrito_comunidad = distrito_doc
 
+        enc_finanzas_doc = payload.datos_formulario.get("encargado_presupuesto") or payload.datos_formulario.get("enc_finanzas")
+        if enc_finanzas_doc:
+            proceso.responsable_presupuesto = enc_finanzas_doc
+
     # Guardado de Asignación Financiera FF-OF en la base de datos (Paso 2)
     if payload.clave_documento == "cert_presupuestaria" and "gastos" in payload.datos_formulario:
         for g_data in payload.datos_formulario["gastos"]:

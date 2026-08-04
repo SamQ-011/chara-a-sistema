@@ -60,6 +60,8 @@ class Usuario(Base, AuditoriaMixin):
     rol = Column(String(50)) # ej: ADMIN, SECRETARIA
     unidad_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
 
+    unidad = relationship("Unidad", lazy="joined")
+
 class UnidadMedida(Base, AuditoriaMixin):
     __tablename__ = "unidades_medida"
     id = Column(Integer, primary_key=True, index=True)

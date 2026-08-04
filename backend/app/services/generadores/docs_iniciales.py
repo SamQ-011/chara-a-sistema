@@ -29,10 +29,13 @@ def generar_solicitud_cp(ctx):
                 "total_item": i.get("total_item", 0)
             })
             
+    enc_finanzas_val = datos.get("encargado_presupuesto") or datos.get("enc_finanzas") or ctx['proceso'].responsable_presupuesto or ""
+    vars_sol = {**ctx['variables'], "{ENCFINANZAS}": enc_finanzas_val}
+            
     generar_documento_word(
         f"{RUTA_PLANTILLAS}/solicitudCP.docx", ruta, ctx['fecha_literal'], ctx['proceso'].codigo_proceso or "",
         ctx['proceso'].tecnico_solicitante or "", ctx['fecha_corta'], False, 0, ctx['proceso'].objeto_contratacion or "",
-        ctx['monto_total'], ctx['proceso'].plazo_entrega or 0, None, items_normalizados, ctx['gastos_mapeados'], ctx['variables']
+        ctx['monto_total'], ctx['proceso'].plazo_entrega or 0, None, items_normalizados, ctx['gastos_mapeados'], vars_sol
     )
     return ruta
 

@@ -390,6 +390,11 @@ async function abrirEditorSolicitudCP(proceso) {
     const docCP = proceso.documentos?.find(d => d.clave_documento === "solicitud_cp");
     const datosGuardados = docCP?.datos_formulario || {};
 
+    const elEncFinanzas = document.getElementById("cp-encargado-presupuesto");
+    if (elEncFinanzas) {
+        elEncFinanzas.value = datosGuardados.encargado_presupuesto || datosGuardados.enc_finanzas || proceso.responsable_presupuesto || "Lic. Adela Dorado Garrado";
+    }
+
     // 2. Extraemos los ítems generales (el JSON)
     let itemsParaCargar = [];
     if (datosGuardados.items_generales && datosGuardados.items_generales.length > 0) {
@@ -467,6 +472,9 @@ async function guardarSolicitudCP(formato) {
             total_item: parseFloat(fila.querySelector(".total-cp").value) || 0
         }));
 
+        const elEnc = document.getElementById("cp-encargado-presupuesto");
+        const encFinanzasVal = elEnc ? elEnc.value.trim() : "";
+
         // MAGIA: Inyectamos todo en el documento sin usar el peligroso PUT global
         const payloadDoc = {
             clave_documento: "solicitud_cp",
@@ -474,6 +482,8 @@ async function guardarSolicitudCP(formato) {
             datos_formulario: {
                 fecha_documento: document.getElementById("cp-fecha").value,
                 distrito_comunidad: document.getElementById("cp-distrito").value.trim(),
+                encargado_presupuesto: encFinanzasVal,
+                enc_finanzas: encFinanzasVal,
                 gastos: gastosPayload,
                 items_generales: itemsPayload
             }

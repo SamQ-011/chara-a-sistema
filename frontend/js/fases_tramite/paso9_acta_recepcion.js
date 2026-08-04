@@ -12,6 +12,8 @@ function abrirEditorActaRecepcion(proceso) {
     const docAlm = proceso.documentos?.find(d => d.clave_documento === "almacenes");
     const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
     const docInicio = proceso.documentos?.find(d => d.clave_documento === "solicitud_inicio");
+    const docSpecs = proceso.documentos?.find(d => d.clave_documento === "especificaciones_tecnicas");
+    const docCP = proceso.documentos?.find(d => d.clave_documento === "solicitud_cp");
 
     if (docAlm && docAlm.datos_formulario?.items_almacen?.length > 0) {
         itemsCrudos = docAlm.datos_formulario.items_almacen;
@@ -19,16 +21,20 @@ function abrirEditorActaRecepcion(proceso) {
         itemsCrudos = docOC.datos_formulario.items_orden;
     } else if (docInicio && docInicio.datos_formulario?.items_tecnicos?.length > 0) {
         itemsCrudos = docInicio.datos_formulario.items_tecnicos;
+    } else if (docSpecs && docSpecs.datos_formulario?.items_tecnicos?.length > 0) {
+        itemsCrudos = docSpecs.datos_formulario.items_tecnicos;
+    } else if (docCP && docCP.datos_formulario?.items_generales?.length > 0) {
+        itemsCrudos = docCP.datos_formulario.items_generales;
     } else {
         itemsCrudos = proceso.items || [];
     }
 
     itemsBaseGlobal = itemsCrudos.map(i => ({
-        nro: i.nro || i.nro_item || "",
-        objeto: i.objeto || i.objeto_corto || "",
-        descripcion: i.descripcion || i.descripcion_larga || "",
-        tipuni: i.tipuni || i.unidad || "",
-        cant: parseFloat(i.cant || i.cantidad || 0)
+        nro: i.nro ?? i.nro_item ?? "",
+        objeto: i.objeto ?? i.objeto_corto ?? "",
+        descripcion: i.descripcion ?? i.descripcion_larga ?? "",
+        tipuni: i.tipuni ?? i.unidad ?? "",
+        cant: parseFloat(i.cant ?? i.cantidad ?? 0)
     }));
     
     const docActaGuardada = proceso.documentos?.find(d => d.clave_documento === "acta_recepcion");
@@ -108,11 +114,22 @@ function actualizarCantLote(loteIndex, itemIndex, val) {
 }
 
 function agregarLoteActa() {
-    const itemsCero = JSON.parse(JSON.stringify(itemsBaseGlobal)).map(i => {
-        i.cant = 0;
-        return i;
+    const nuevosItems = itemsBaseGlobal.map((itemBase, itemIndex) => {
+        const cantAsignada = lotesActasGlobal.reduce((sum, lote) => {
+            const itemLote = lote.items[itemIndex];
+            const val = parseFloat(itemLote?.cant || 0);
+            return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+
+        const totalOriginal = parseFloat(itemBase.cant || 0);
+        const sobrante = Math.max(0, totalOriginal - cantAsignada);
+
+        const itemClon = JSON.parse(JSON.stringify(itemBase));
+        itemClon.cant = parseFloat(sobrante.toFixed(2));
+        return itemClon;
     });
-    lotesActasGlobal.push({ id: Date.now(), items: itemsCero });
+
+    lotesActasGlobal.push({ id: Date.now(), items: nuevosItems });
     renderizarLotesActas();
 }
 

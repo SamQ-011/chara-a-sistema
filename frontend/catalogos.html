@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogos POA - GAMCH</title>
-    <link href="css/output.css" rel="stylesheet">
+    <title>Catálogos y Usuarios - GAMCH</title>
+    <link href="css/output.css?v=2.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background: #f1f5f9; }
     </style>
+    <script src="js/auth.js"></script>
 </head>
 <body class="flex h-screen overflow-hidden">
 
@@ -18,7 +19,7 @@
     <aside class="w-72 bg-gradient-to-b from-slate-900 via-indigo-900 to-indigo-800 text-white flex flex-col shadow-2xl">
         <div class="p-8 border-b border-indigo-700">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-lg text-indigo-800">🏛️</div>
+                <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-lg text-indigo-800 text-2xl">🏛️</div>
                 <div>
                     <h1 class="font-bold text-2xl">GAMCH</h1>
                     <p class="text-indigo-200 text-sm">Sistema Municipal</p>
@@ -29,118 +30,318 @@
             <a href="index.html" class="flex items-center gap-3 rounded-xl px-5 py-4 transition hover:bg-white/10">
                 <i data-lucide="layout-dashboard"></i> Bandeja de Procesos
             </a>
-            <a href="nuevo_proceso.html" class="flex items-center gap-3 rounded-xl px-5 py-4 transition hover:bg-white/10">
+            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar" class="flex items-center gap-3 rounded-xl px-5 py-4 transition hover:bg-white/10">
                 <i data-lucide="file-input"></i> Recepción (Ventanilla)
             </a>
             <a href="catalogos.html" class="flex items-center gap-3 bg-white/15 rounded-xl px-5 py-4 transition hover:bg-white/20">
-                <i data-lucide="database"></i> Gestión Catálogos
+                <i data-lucide="database"></i> Catálogos & Usuarios
             </a>
         </nav>
     </aside>
 
     <!-- Contenido Principal -->
-    <main class="flex-1 overflow-y-auto">
-        <header class="bg-white border-b px-10 py-6">
-            <h1 class="text-3xl font-bold text-slate-800">Gestión de Catálogo POA</h1>
-            <p class="text-gray-500 mt-1">Administración centralizada de Programas, Proyectos y Partidas Presupuestarias.</p>
+    <main class="flex-1 overflow-y-auto flex flex-col">
+        <!-- HEADER CON PESTAÑAS -->
+        <header class="bg-white border-b px-10 pt-6 pb-0 shadow-xs">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Administración del Sistema</h1>
+                    <p class="text-gray-500 text-sm mt-1">Configuración centralizada de Catálogos POA y Cuentas de Usuarios.</p>
+                </div>
+            </div>
+
+            <!-- TAB BAR -->
+            <div class="flex gap-4 border-b border-slate-200" id="tabs-header">
+                <button onclick="cambiarTab('poa')" id="tab-btn-poa" class="tab-button px-6 py-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2">
+                    <i data-lucide="folder-tree" class="w-4 h-4"></i> Catálogo POA
+                </button>
+                <button onclick="cambiarTab('usuarios')" id="tab-btn-usuarios" class="tab-button px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition hidden flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4"></i> Gestión de Usuarios
+                </button>
+            </div>
         </header>
 
-        <!-- EL COMPONENTE QUE CREAMOS ANTES -->
-        <div class="p-8 max-w-7xl mx-auto space-y-6">
+        <!-- SECCIÓN 1: CATÁLOGO POA -->
+        <div id="content-poa" class="p-8 max-w-7xl mx-auto space-y-6 w-full">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 <!-- 1. NUEVO PROGRAMA -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-bold text-indigo-700 mb-4 border-b pb-2">1. Nuevo Programa</h3>
+                    <h3 class="text-lg font-bold text-indigo-700 mb-4 border-b pb-2 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-5 h-5"></i> 1. Nuevo Programa
+                    </h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">CÓDIGO</label>
-                            <input type="text" id="admin-prog-cod" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-indigo-500 outline-none" placeholder="Ej. 210">
+                            <input type="text" id="admin-prog-cod" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-indigo-500 outline-none" placeholder="Ej. 210">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">NOMBRE DEL PROGRAMA</label>
-                            <input type="text" id="admin-prog-nom" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-indigo-500 outline-none" placeholder="Ej. GESTIÓN DE EDUCACIÓN">
+                            <input type="text" id="admin-prog-nom" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-indigo-500 outline-none" placeholder="Ej. GESTIÓN DE EDUCACIÓN">
                         </div>
-                        <button onclick="guardarAdminPrograma()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-sm transition">Guardar Programa</button>
+                        <button onclick="guardarAdminPrograma()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-sm">Guardar Programa</button>
                     </div>
                 </div>
 
                 <!-- 2. NUEVO PROYECTO / ACTIVIDAD -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-bold text-emerald-700 mb-4 border-b pb-2">2. Nuevo Proyecto</h3>
+                    <h3 class="text-lg font-bold text-emerald-700 mb-4 border-b pb-2 flex items-center gap-2">
+                        <i data-lucide="git-branch" class="w-5 h-5"></i> 2. Nuevo Proyecto
+                    </h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">PROGRAMA PADRE</label>
-                            <select id="admin-proy-prog" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-emerald-500 outline-none">
+                            <select id="admin-proy-prog" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 outline-none">
                                 <option value="">-- Seleccionar --</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1">CÓD. PROYECTO</label>
-                                <input type="text" id="admin-proy-cod" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. 0000">
+                                <input type="text" id="admin-proy-cod" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. 0000">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1">ACTIVIDAD</label>
-                                <input type="text" id="admin-proy-act" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. 001">
+                                <input type="text" id="admin-proy-act" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. 001">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">NOMBRE DEL PROYECTO</label>
-                            <input type="text" id="admin-proy-nom" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. APOYO FUNCIONAMIENTO...">
+                            <input type="text" id="admin-proy-nom" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 outline-none" placeholder="Ej. APOYO FUNCIONAMIENTO...">
                         </div>
-                        <button onclick="guardarAdminProyecto()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-sm transition">Guardar Proyecto</button>
+                        <button onclick="guardarAdminProyecto()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-sm">Guardar Proyecto</button>
                     </div>
                 </div>
 
                 <!-- 3. NUEVA PARTIDA -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-bold text-amber-700 mb-4 border-b pb-2">3. Nueva Partida</h3>
+                    <h3 class="text-lg font-bold text-amber-700 mb-4 border-b pb-2 flex items-center gap-2">
+                        <i data-lucide="receipt" class="w-5 h-5"></i> 3. Nueva Partida
+                    </h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">PROGRAMA</label>
-                            <select id="admin-part-prog" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none" onchange="cargarSelectProyectos()">
+                            <select id="admin-part-prog" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none" onchange="cargarSelectProyectos()">
                                 <option value="">-- Seleccionar --</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">PROYECTO PADRE</label>
-                            <select id="admin-part-proy" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none">
+                            <select id="admin-part-proy" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none">
                                 <option value="">-- Seleccionar --</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">CÓDIGO Y DESCRIPCIÓN</label>
                             <div class="flex gap-2">
-                                <input type="text" id="admin-part-cod" class="w-24 p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="39500">
-                                <input type="text" id="admin-part-desc" class="flex-1 p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none" placeholder="Ej. Útiles">
+                                <input type="text" id="admin-part-cod" class="w-24 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="39500">
+                                <input type="text" id="admin-part-desc" class="flex-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none" placeholder="Ej. Útiles">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1">FF</label>
-                                <input type="text" id="admin-part-ff" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="41">
+                                <input type="text" id="admin-part-ff" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="41">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1">OF</label>
-                                <input type="text" id="admin-part-of" class="w-full p-2 bg-slate-50 border rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="113">
+                                <input type="text" id="admin-part-of" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-amber-500 outline-none text-center" placeholder="113">
                             </div>
                         </div>
-                        <button onclick="guardarAdminPartida()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg text-sm transition">Guardar Partida</button>
+                        <button onclick="guardarAdminPartida()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-sm">Guardar Partida</button>
                     </div>
                 </div>
 
             </div>
         </div>
+
+        <!-- SECCIÓN 2: GESTIÓN DE USUARIOS (SOLO RPC) -->
+        <div id="content-usuarios" class="p-8 max-w-7xl mx-auto space-y-6 w-full hidden">
+            <!-- Barra de Acciones y Filtros -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="relative flex-1 max-w-md">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="search-usuarios" onkeyup="filtrarUsuarios()" placeholder="Buscar por username, nombre o cargo..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none">
+                    </div>
+                    <select id="filter-rol-usuario" onchange="filtrarUsuarios()" class="p-2 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-700 outline-none">
+                        <option value="">-- Todos los Roles --</option>
+                        <option value="RPC">RPC</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="PRESUPUESTO">PRESUPUESTO</option>
+                        <option value="SOLICITANTE">SOLICITANTE</option>
+                        <option value="SECRETARIA">SECRETARIA</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="contador-usuarios" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border">0 usuario(s)</span>
+                    <button onclick="abrirModalCrearUsuario()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-sm transition">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Crear Usuario
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de Usuarios -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/80 text-slate-500 font-bold text-xs uppercase border-b border-slate-200">
+                                <th class="px-6 py-3.5">Usuario</th>
+                                <th class="px-6 py-3.5">Nombre Completo</th>
+                                <th class="px-6 py-3.5">Cargo</th>
+                                <th class="px-6 py-3.5">Rol</th>
+                                <th class="px-6 py-3.5">Unidad Organizacional</th>
+                                <th class="px-6 py-3.5">Estado</th>
+                                <th class="px-6 py-3.5 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-usuarios-body">
+                            <!-- Inyección JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- MODAL CREAR / EDITAR USUARIO -->
+    <div id="modal-usuario" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="modal-usuario-titulo" class="text-lg font-bold text-slate-800">Crear Nuevo Usuario</h3>
+                <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="form-usuario" onsubmit="guardarUsuario(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">USERNAME (Nombre de Usuario)</label>
+                    <input type="text" id="modal-user-username" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none font-mono" placeholder="ej. jose.ramos" required>
+                </div>
+                
+                <div id="contenedor-modal-user-pass">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">CONTRASEÑA INICIAL</label>
+                    <input type="password" id="modal-user-pass" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">TÍTULO</label>
+                        <input type="text" id="modal-user-titulo" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Lic., Ing., Tec.">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">NOMBRE COMPLETO</label>
+                        <input type="text" id="modal-user-nombre" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Nombre y Apellidos" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">CARGO INSTITUCIONAL</label>
+                    <input type="text" id="modal-user-cargo" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="ej. Responsable de Salud">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">ROL EN EL SISTEMA</label>
+                        <select id="modal-user-rol" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none font-semibold text-slate-800" required>
+                            <option value="SOLICITANTE">SOLICITANTE</option>
+                            <option value="RPC">RPC</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="PRESUPUESTO">PRESUPUESTO</option>
+                            <option value="SECRETARIA">SECRETARIA</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">UNIDAD ORGANIZACIONAL</label>
+                        <select id="modal-user-unidad" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none">
+                            <option value="">-- Cargar Unidades --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t">
+                    <button type="button" onclick="cerrarModalUsuario()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 font-bold text-sm rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl shadow-md transition">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL RESET DE CONTRASEÑA -->
+    <div id="modal-reset-pass" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Resetear Contraseña</h3>
+                <button onclick="cerrarModalResetPassword()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500">
+                Está a punto de establecer una nueva contraseña para el usuario <strong id="reset-pass-user-title" class="text-indigo-600"></strong>.
+            </p>
+            <form onsubmit="guardarResetPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">NUEVA CONTRASEÑA</label>
+                    <input type="password" id="modal-reset-new-pass" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="cerrarModalResetPassword()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 font-bold text-sm rounded-xl transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm rounded-xl shadow-md transition">Cambiar Contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE CARGA -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl shadow-xl flex items-center gap-4">
+            <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <span id="loading-text" class="text-slate-700 font-medium text-sm">Cargando...</span>
+        </div>
+    </div>
 
     <script>lucide.createIcons();</script>
     <script src="js/api.js"></script>
     <script src="js/gestion_poa.js"></script>
+    <script src="js/gestion_usuarios.js"></script>
     <script>
-    if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(localStorage.getItem("user_rol"))) {
+    const userRolCat = localStorage.getItem("user_rol");
+
+    if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(userRolCat)) {
         window.location.replace("index.html");
     }
-</script>
+
+    if (!["SOLICITANTE", "SECRETARIA"].includes(userRolCat)) {
+        const btnSidebar = document.getElementById("btn-nuevo-proceso-sidebar");
+        if (btnSidebar) btnSidebar.style.display = "none";
+    }
+
+    // SI ES RPC, HABILITAMOS PESTAÑA DE USUARIOS
+    if (userRolCat === "RPC") {
+        const btnTabUsuarios = document.getElementById("tab-btn-usuarios");
+        if (btnTabUsuarios) btnTabUsuarios.classList.remove("hidden");
+    }
+
+    function cambiarTab(tabName) {
+        const tabPoa = document.getElementById("content-poa");
+        const tabUsuarios = document.getElementById("content-usuarios");
+        const btnPoa = document.getElementById("tab-btn-poa");
+        const btnUsuarios = document.getElementById("tab-btn-usuarios");
+
+        if (tabName === 'poa') {
+            tabPoa.classList.remove("hidden");
+            tabUsuarios.classList.add("hidden");
+            btnPoa.className = "tab-button px-6 py-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+            if (btnUsuarios) btnUsuarios.className = "tab-button px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition flex items-center gap-2";
+        } else if (tabName === 'usuarios') {
+            tabPoa.classList.add("hidden");
+            tabUsuarios.classList.remove("hidden");
+            btnUsuarios.className = "tab-button px-6 py-3 font-semibold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+            btnPoa.className = "tab-button px-6 py-3 font-semibold text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition flex items-center gap-2";
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    </script>
 </body>
 </html>

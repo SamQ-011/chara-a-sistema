@@ -3,201 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - GAMCH</title>
-    <link href="css/output.css" rel="stylesheet">
+    <title>Acceso Institucional - GAMCH</title>
+    <link href="css/output.css?v=3.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
-        body { background: #f8fafc; } /* slate-50 */
+        
+        /* Patrón sutil para el fondo institucional */
+        .bg-pattern {
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at 100% 100%, #1e3a8a 0, transparent 50%), 
+                              radial-gradient(circle at 0% 0%, #1e40af 0, transparent 50%);
+        }
+        
+        /* Animación suave de entrada */
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-slate-950">
+<body class="h-screen bg-slate-50 flex overflow-hidden selection:bg-blue-900 selection:text-white">
 
-<div class="grid min-h-screen lg:grid-cols-2">
-
-    <!-- PANEL IZQUIERDO -->
-    <section class="relative hidden overflow-hidden lg:flex">
-
-        <!-- Fondo -->
-        <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-700"></div>
-
-        <!-- Efectos -->
-        <div class="absolute -left-24 top-10 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl"></div>
-        <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-500/30 blur-3xl"></div>
-
-        <!-- Contenido -->
-        <div class="relative z-10 flex flex-col justify-center px-20 text-white">
-
-            <div class="mb-10 flex h-24 w-24 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md">
-                <i data-lucide="landmark" class="h-12 w-12"></i>
+    <!-- LADO IZQUIERDO: HERO INSTITUCIONAL (PREMIUM) -->
+    <div class="hidden lg:flex lg:w-5/12 bg-pattern relative flex-col justify-between p-12 text-white border-r border-slate-800 shadow-2xl z-10">
+        <!-- Logo Top -->
+        <div class="flex items-center gap-3 fade-in-up" style="animation-delay: 0.1s;">
+            <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-lg">
+                <i data-lucide="landmark" class="w-6 h-6"></i>
             </div>
-
-            <h1 class="mb-4 text-5xl font-extrabold leading-tight">
-                GAMCH
-            </h1>
-
-            <p class="mb-10 text-xl text-slate-200">
-                Sistema de Gestión de Hojas de Ruta y Procesos Administrativos.
-            </p>
-
-            <div class="space-y-6">
-
-                <div class="flex items-center gap-4">
-                    <div class="rounded-xl bg-white/10 p-3">
-                        <i data-lucide="shield-check"></i>
-                    </div>
-
-                    <div>
-                        <h3 class="font-semibold">
-                            Acceso Seguro
-                        </h3>
-
-                        <p class="text-sm text-slate-300">
-                            Información protegida mediante autenticación.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <div class="rounded-xl bg-white/10 p-3">
-                        <i data-lucide="workflow"></i>
-                    </div>
-
-                    <div>
-                        <h3 class="font-semibold">
-                            Gestión Centralizada
-                        </h3>
-
-                        <p class="text-sm text-slate-300">
-                            Control de documentos y procesos desde un solo lugar.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <div class="rounded-xl bg-white/10 p-3">
-                        <i data-lucide="clock-3"></i>
-                    </div>
-
-                    <div>
-                        <h3 class="font-semibold">
-                            Mayor Productividad
-                        </h3>
-
-                        <p class="text-sm text-slate-300">
-                            Optimiza el seguimiento de cada trámite.
-                        </p>
-                    </div>
-                </div>
-
+            <div>
+                <h2 class="text-xl font-extrabold tracking-tight">GAMCH</h2>
+                <p class="text-blue-200 text-xs font-medium uppercase tracking-wider">Gobierno Municipal</p>
             </div>
-
         </div>
 
-    </section>
+        <!-- Contenido Central -->
+        <div class="fade-in-up" style="animation-delay: 0.2s;">
+            <h1 class="text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+                Sistema de <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">
+                    Seguimiento Documental
+                </span>
+            </h1>
+            <p class="text-slate-300 text-lg leading-relaxed max-w-md font-light">
+                Plataforma oficial para la gestión, control y trazabilidad de procesos y expedientes municipales.
+            </p>
+        </div>
 
-    <!-- PANEL DERECHO -->
-    <section class="flex items-center justify-center bg-slate-100 px-6 py-12">
+        <!-- Footer Izquierdo -->
+        <div class="fade-in-up flex items-center gap-4 text-sm text-slate-400" style="animation-delay: 0.3s;">
+            <div class="flex-1 h-px bg-slate-700/50"></div>
+            <span>v1.0 Producción</span>
+        </div>
+        
+        <!-- Elemento decorativo sutil -->
+        <div class="absolute bottom-0 right-0 w-64 h-64 bg-blue-600/10 rounded-tl-full blur-3xl pointer-events-none"></div>
+    </div>
 
-        <div class="w-full max-w-md rounded-3xl bg-white p-10 shadow-2xl">
+    <!-- LADO DERECHO: FORMULARIO DE ACCESO -->
+    <div class="w-full lg:w-7/12 flex items-center justify-center p-6 relative">
+        
+        <!-- Botón de Soporte (Top Right) -->
+        <div class="absolute top-8 right-8 hidden sm:block">
+            <div class="flex items-center gap-2 text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                <i data-lucide="headset" class="w-4 h-4 text-blue-700"></i> Soporte: Dirección de Sistemas
+            </div>
+        </div>
 
-            <div class="mb-10 text-center">
-
-                <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
-                    <i data-lucide="landmark" class="h-10 w-10"></i>
+        <div class="w-full max-w-md fade-in-up" style="animation-delay: 0.1s;">
+            
+            <!-- Logo Mobile -->
+            <div class="lg:hidden flex flex-col items-center mb-10">
+                <div class="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg mb-4">
+                    <i data-lucide="landmark" class="w-7 h-7"></i>
                 </div>
+                <h2 class="text-2xl font-extrabold text-slate-900">GAMCH</h2>
+                <p class="text-slate-500 text-sm font-medium">Sistema de Seguimiento Documental</p>
+            </div>
 
-                <h2 class="text-3xl font-bold text-slate-800">
-                    Bienvenido
-                </h2>
-
-                <p class="mt-2 text-slate-500">
-                    Inicia sesión para continuar
-                </p>
-
+            <!-- Cabecera del Formulario -->
+            <div class="mb-10 text-center lg:text-left">
+                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Bienvenido</h3>
+                <p class="text-slate-500">Ingrese sus credenciales institucionales para acceder.</p>
             </div>
 
             <form id="form-login" class="space-y-6">
-
-                <div
-                    id="mensaje-error"
-                    class="hidden rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+                
+                <!-- Alerta de Error -->
+                <div id="mensaje-error" class="hidden flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 font-medium shadow-sm">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+                    <span id="mensaje-texto" class="leading-relaxed">Error de autenticación</span>
                 </div>
 
-                <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-slate-700">
-                        Usuario
-                    </label>
-
-                    <div class="relative">
-
-                        <i data-lucide="user"
-                           class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
-
-                        <input
-                            id="username"
-                            type="text"
-                            required
-                            autocomplete="username"
-                            placeholder="Ingrese su usuario"
-                            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-12 pr-4 transition focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
-
+                <!-- Campos de Input -->
+                <div class="space-y-5">
+                    
+                    <div class="space-y-1.5 group">
+                        <label for="username" class="block text-sm font-bold text-slate-700">Nombre de Usuario</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-700 transition-colors">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                            </div>
+                            <input id="username" name="username" type="text" required autocomplete="username" 
+                                class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition-all shadow-sm" 
+                                placeholder="ej. juan.perez">
+                        </div>
                     </div>
 
-                </div>
-
-                <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-slate-700">
-                        Contraseña
-                    </label>
-
-                    <div class="relative">
-
-                        <i data-lucide="lock"
-                           class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
-
-                        <input
-                            id="password"
-                            type="password"
-                            required
-                            autocomplete="current-password"
-                            placeholder="Ingrese su contraseña"
-                            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-12 pr-4 transition focus:border-indigo-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200">
-
+                    <div class="space-y-1.5 group">
+                        <label for="password" class="block text-sm font-bold text-slate-700">Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-700 transition-colors">
+                                <i data-lucide="lock" class="w-5 h-5"></i>
+                            </div>
+                            <input id="password" name="password" type="password" required autocomplete="current-password" 
+                                class="w-full pl-11 pr-12 py-3.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-blue-700 transition-all shadow-sm" 
+                                placeholder="••••••••">
+                            <button type="button" id="toggle-password" tabindex="-1" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                                <i data-lucide="eye" id="eye-icon" class="w-5 h-5"></i>
+                            </button>
+                        </div>
                     </div>
-
                 </div>
 
-                <button
-                    id="btn-login"
-                    type="submit"
-                    class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 font-semibold text-white transition duration-300 hover:-translate-y-1 hover:bg-indigo-700 hover:shadow-xl">
-
-                    <span>Ingresar al Sistema</span>
-
-                    <i data-lucide="arrow-right"></i>
-
+                <!-- Botón Submit -->
+                <button id="btn-login" type="submit" 
+                    class="w-full py-4 px-6 bg-slate-900 hover:bg-blue-900 text-white font-bold text-base rounded-xl shadow-lg shadow-slate-900/20 hover:shadow-blue-900/30 transition-all duration-300 flex items-center justify-center gap-3 relative overflow-hidden group">
+                    <span class="relative z-10">Ingresar al Sistema</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"></i>
+                    <!-- Efecto hover interior -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-800 to-blue-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
-
             </form>
 
-            <div class="mt-10 border-t pt-5 text-center text-xs text-slate-400">
-                © 2026 GAMCH · Gobierno Autónomo Municipal
+            <div class="mt-8 text-center lg:text-left">
+                <p class="text-sm text-slate-500">
+                    <i data-lucide="shield-check" class="w-4 h-4 inline-block text-emerald-600 mr-1 -mt-0.5"></i>
+                    Acceso seguro y monitoreado.
+                </p>
             </div>
 
         </div>
+    </div>
 
-    </section>
-
-</div>
-
-<script>
-    lucide.createIcons();
-</script>
-
-<script src="js/login.js"></script>
-
+    <script>lucide.createIcons();</script>
+    <script src="js/api.js"></script>
+    <script src="js/login.js"></script>
+    <script>
+        // Funcionalidad para mostrar/ocultar contraseña
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Re-renderizar el icono de Lucide reemplazándolo manualmente (ya que createIcons() inicial no observa mutaciones dinámicas)
+            const iconHtml = type === 'password' 
+                ? '<i data-lucide="eye" class="w-5 h-5"></i>' 
+                : '<i data-lucide="eye-off" class="w-5 h-5"></i>';
+            togglePassword.innerHTML = iconHtml;
+            lucide.createIcons();
+        });
+    </script>
 </body>
+</html>

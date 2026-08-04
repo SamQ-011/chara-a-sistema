@@ -7,7 +7,8 @@ RUTA_RESULTADOS = "Resultados"
 
 def generar_acta_recepcion(ctx):
     # INYECCIÓN DEL ID ÚNICO
-    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_{ctx['id_unico']}_6_ActaRecepcion.docx")
+    id_u = ctx.get('id_unico', '1')
+    ruta = os.path.join(ctx['ruta_directorio'], f"{ctx['proceso'].id}_{id_u}_6_ActaRecepcion.docx")
     doc_acta = next((d for d in ctx['proceso'].documentos if d.clave_documento == "acta_recepcion"), None)
     datos_modal = doc_acta.datos_formulario if doc_acta and doc_acta.datos_formulario else {}
 
@@ -60,10 +61,13 @@ def generar_informe_conformidad(ctx):
     doc_oc = next((d for d in ctx['proceso'].documentos if d.clave_documento == "orden_compra"), None)
     items_oficiales = doc_oc.datos_formulario.get("items_orden", ctx['items_mapeados']) if doc_oc and doc_oc.datos_formulario else ctx['items_mapeados']
 
+    resumen_items = doc_info.datos_formulario.get("resumen_items", ctx['proceso'].desca_contextual or "bienes solicitados") if doc_info and doc_info.datos_formulario else (ctx['proceso'].desca_contextual or "bienes solicitados")
+
     vars_info_conf = {
         "{FECHA}": formatear_fecha_literal(fecha_informe),
         "{FECHA_ENTREGA}": formatear_fecha_literal(fecha_entrega),
-        "{FECHA_SOLICITUD}": formatear_fecha_literal(fecha_solicitud)
+        "{FECHA_SOLICITUD}": formatear_fecha_literal(fecha_solicitud),
+        "{ITEMS}": resumen_items
     }
     
     generar_documento_word(

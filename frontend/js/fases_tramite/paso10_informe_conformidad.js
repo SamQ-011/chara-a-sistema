@@ -27,20 +27,44 @@ function abrirEditorInformeConformidad(proceso) {
         ? docInfo.datos_formulario.fecha_informe 
         : hoy;
 
+    const elResumen = document.getElementById("info-conf-items-resumen");
+    if (elResumen) {
+        elResumen.value = (docInfo && docInfo.datos_formulario?.resumen_items)
+            ? docInfo.datos_formulario.resumen_items
+            : (proceso.desca_contextual || "bienes solicitados");
+    }
+
     const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
-    const itemsOficiales = docOC?.datos_formulario?.items_orden || proceso.items || [];
+    const docAlm = proceso.documentos?.find(d => d.clave_documento === "almacenes");
+    const docSpecs = proceso.documentos?.find(d => d.clave_documento === "especificaciones_tecnicas");
+    const docCP = proceso.documentos?.find(d => d.clave_documento === "solicitud_cp");
+
+    let itemsOficiales = [];
+    if (docOC && docOC.datos_formulario?.items_orden?.length > 0) {
+        itemsOficiales = docOC.datos_formulario.items_orden;
+    } else if (docAlm && docAlm.datos_formulario?.items_almacen?.length > 0) {
+        itemsOficiales = docAlm.datos_formulario.items_almacen;
+    } else if (docInicio && docInicio.datos_formulario?.items_tecnicos?.length > 0) {
+        itemsOficiales = docInicio.datos_formulario.items_tecnicos;
+    } else if (docSpecs && docSpecs.datos_formulario?.items_tecnicos?.length > 0) {
+        itemsOficiales = docSpecs.datos_formulario.items_tecnicos;
+    } else if (docCP && docCP.datos_formulario?.items_generales?.length > 0) {
+        itemsOficiales = docCP.datos_formulario.items_generales;
+    } else {
+        itemsOficiales = proceso.items || [];
+    }
     
     const tbody = document.getElementById("infoconf-tabla-items");
     tbody.innerHTML = "";
     
     itemsOficiales.forEach(item => {
-        const nro = item.nro || item.nro_item || "";
-        const obj = item.objeto || item.objeto_corto || "";
-        const desc = item.descripcion || item.descripcion_larga || "";
+        const nro = item.nro ?? item.nro_item ?? "";
+        const obj = item.objeto ?? item.objeto_corto ?? "";
+        const desc = item.descripcion ?? item.descripcion_larga ?? "";
         const textoUnido = desc ? `${obj} - ${desc}` : obj;
-        const uni = item.tipuni || item.unidad || "";
-        const cant = item.cant || item.cantidad || 0;
-        const total = parseFloat(item.total_item || 0).toLocaleString('es-BO', { minimumFractionDigits: 2 });
+        const uni = item.tipuni ?? item.unidad ?? "";
+        const cant = item.cant ?? item.cantidad ?? 0;
+        const total = parseFloat(item.total_item || (cant * (item.precio_unitario || 0))).toLocaleString('es-BO', { minimumFractionDigits: 2 });
 
         tbody.innerHTML += `
             <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
@@ -76,11 +100,15 @@ async function guardarInformeConformidad(formato) {
             b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
         });
 
+        const elResumen = document.getElementById("info-conf-items-resumen");
+        const resumenVal = elResumen ? elResumen.value.trim() : "";
+
         const payload = {
             clave_documento: "informe_conformidad",
             estado: "FINALIZADO",
             datos_formulario: { 
-                fecha_informe: document.getElementById("info-conf-fecha").value 
+                fecha_informe: document.getElementById("info-conf-fecha").value,
+                resumen_items: resumenVal
             }
         };
 

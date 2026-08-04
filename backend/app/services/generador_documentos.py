@@ -66,12 +66,15 @@ def orquestar_generacion_documento(proceso_id: int, tipo_documento: str, db: Ses
 
     doc_specs = next((d for d in proceso.documentos if d.clave_documento == "especificaciones_tecnicas"), None)
     doc_inicio = next((d for d in proceso.documentos if d.clave_documento == "solicitud_inicio"), None)
+    doc_cp = next((d for d in proceso.documentos if d.clave_documento == "solicitud_cp"), None)
     
     items_mapeados = [{"nro": i.nro_item, "objeto": i.objeto_corto, "descripcion": i.descripcion_larga, "tipuni": i.unidad, "cant": float(i.cantidad), "precio_unitario": float(i.precio_unitario), "total_item": float(i.total_item)} for i in proceso.items]
     if doc_specs and doc_specs.datos_formulario and doc_specs.datos_formulario.get("items_tecnicos"):
         items_mapeados = doc_specs.datos_formulario["items_tecnicos"]
     elif doc_inicio and doc_inicio.datos_formulario and doc_inicio.datos_formulario.get("items_tecnicos"):
         items_mapeados = doc_inicio.datos_formulario["items_tecnicos"]
+    elif doc_cp and doc_cp.datos_formulario and doc_cp.datos_formulario.get("items_generales"):
+        items_mapeados = doc_cp.datos_formulario["items_generales"]
 
     doc_cert = next((d for d in proceso.documentos if d.clave_documento == "cert_presupuestaria"), None)
     nombres_meta = {}

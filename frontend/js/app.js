@@ -11,11 +11,11 @@ let listasClasificadas = { pendientes: [], procesados: [] };
 let tabActual = "PENDIENTES";
 
 const estados = {
-    BORRADOR: { color: "bg-gray-100 text-gray-700", icono: "📝" },
-    "EN CURSO": { color: "bg-blue-100 text-blue-700", icono: "🔄" },
-    "CON PENDIENTES": { color: "bg-yellow-100 text-yellow-700", icono: "⚠️" },
-    FINALIZADO: { color: "bg-green-100 text-green-700", icono: "✔" },
-    ANULADO: { color: "bg-red-100 text-red-700", icono: "❌" }
+    BORRADOR: { color: "bg-slate-100 text-slate-700 border-slate-300", icono: "📝" },
+    "EN CURSO": { color: "bg-blue-50 text-blue-800 border-blue-200 font-semibold", icono: "🔄" },
+    "CON PENDIENTES": { color: "bg-amber-50 text-amber-800 border-amber-200 font-semibold", icono: "⚠️" },
+    FINALIZADO: { color: "bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold", icono: "✔" },
+    ANULADO: { color: "bg-rose-50 text-rose-800 border-rose-200 font-semibold", icono: "❌" }
 };
 
 // Matriz de responsabilidades: ¿Qué debe generar cada rol para considerar su trabajo "terminado"?
@@ -84,7 +84,6 @@ async function cargarProcesosYClasificar() {
 
     try {
         const [procesosData, statsData] = await Promise.all([
-            // Si el select tiene algo, le pasamos ?unidad_id=X a la API (tu API en api.js lo manejará por los params)
             window.API.procesos.listar(unidadSeleccionada ? { unidad_id: unidadSeleccionada } : {}),
             window.API.procesos.dashboard() 
         ]);
@@ -98,7 +97,7 @@ async function cargarProcesosYClasificar() {
         }
 
     } catch (error) {
-        tabla.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-500 font-medium">❌ Error: ${error.message}</td></tr>`;
+        tabla.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-rose-600 font-medium">❌ Error: ${error.message}</td></tr>`;
     }
 }
 
@@ -116,27 +115,51 @@ function clasificarBandeja() {
         }
 
         if (rol === "SOLICITANTE") {
-            // El solicitante considera procesado cuando el trámite muere (Finalizado globalmente)
             if (p.estado === "FINALIZADO") listasClasificadas.procesados.push(p);
             else listasClasificadas.pendientes.push(p);
         } else {
-            // Lógica para Presupuesto, RPC, Admin
             const tareasObligatorias = TAREAS_POR_ROL[rol] || [];
-            
-            // ¿El trámite ya tiene TODOS los documentos que este rol debe emitir?
             const termineMiTrabajo = tareasObligatorias.length > 0 && tareasObligatorias.every(doc => p.docs_finalizados && p.docs_finalizados.includes(doc));
             
             if (termineMiTrabajo) {
-                listasClasificadas.procesados.push(p); // Se va de la bandeja al historial
+                listasClasificadas.procesados.push(p);
             } else {
-                listasClasificadas.pendientes.push(p); // Se queda pidiendo atención
+                listasClasificadas.pendientes.push(p);
             }
         }
     });
 
-    // Actualizamos las 4 tarjetas de arriba usando nuestra propia data matemática
     actualizarKPIs(rol);
 }
+
+/*=========================================
+    FILTRADO DESDE CARDS DE KPI
+=========================================*/
+window.filtrarPorKpi = function(tipo) {
+    const cards = ['card-kpi-total', 'card-kpi-encurso', 'card-kpi-pendientes', 'card-kpi-finalizados'];
+    cards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('ring-2', 'ring-blue-700', 'border-blue-700');
+    });
+
+    let datosFiltrados = [];
+    if (tipo === 'TODOS') {
+        document.getElementById('card-kpi-total')?.classList.add('ring-2', 'ring-blue-700');
+        datosFiltrados = procesosCache.filter(p => p.estado !== "ANULADO");
+    } else if (tipo === 'ENCURSO') {
+        document.getElementById('card-kpi-encurso')?.classList.add('ring-2', 'ring-blue-700');
+        datosFiltrados = procesosCache.filter(p => p.estado === "EN CURSO" || p.estado === "CON PENDIENTES");
+    } else if (tipo === 'PENDIENTES') {
+        document.getElementById('card-kpi-pendientes')?.classList.add('ring-2', 'ring-blue-700');
+        cambiarTab('PENDIENTES');
+        return;
+    } else if (tipo === 'FINALIZADOS') {
+        document.getElementById('card-kpi-finalizados')?.classList.add('ring-2', 'ring-blue-700');
+        datosFiltrados = procesosCache.filter(p => p.estado === "FINALIZADO");
+    }
+
+    pintarTabla(datosFiltrados);
+};
 
 /*=========================================
     RENDERIZADO DE UI
@@ -148,14 +171,13 @@ window.cambiarTab = function(tab) {
     const btnProcesados = document.getElementById("btn-tab-procesados");
 
     if(tab === "PENDIENTES") {
-        btnPendientes.className = "pb-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all";
-        btnProcesados.className = "pb-2 text-sm font-medium text-slate-400 hover:text-slate-700 transition-all";
+        btnPendientes.className = "text-xs font-bold text-blue-900 border-b-2 border-blue-900 pb-2 transition flex items-center gap-2";
+        btnProcesados.className = "text-xs font-semibold text-slate-500 hover:text-slate-800 pb-2 transition flex items-center gap-2";
     } else {
-        btnProcesados.className = "pb-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all";
-        btnPendientes.className = "pb-2 text-sm font-medium text-slate-400 hover:text-slate-700 transition-all";
+        btnProcesados.className = "text-xs font-bold text-blue-900 border-b-2 border-blue-900 pb-2 transition flex items-center gap-2";
+        btnPendientes.className = "text-xs font-semibold text-slate-500 hover:text-slate-800 pb-2 transition flex items-center gap-2";
     }
     
-    // Al cambiar de tab, limpiamos el buscador
     if(buscador) buscador.value = "";
     renderizarVistaActual();
 };
@@ -190,7 +212,6 @@ const LISTA_DOCS_COMPLETA = [
 
 function pintarTabla(datos) {
     if (!datos.length) {
-        // CAMBIO 1: Cambié colspan="5" a colspan="6" porque agregamos la columna del checkbox
         tabla.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-400 font-medium">No se encontraron trámites en esta vista.</td></tr>`;
         return;
     }
@@ -201,79 +222,72 @@ function pintarTabla(datos) {
         const estadoObj = estados[p.estado] || estados.BORRADOR;
         const docsListos = p.docs_finalizados || [];
         
-        // Estilos del botón según pestaña y rol
         let btnTexto = "Abrir Expediente";
-        let btnColor = "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200 text-white"; 
+        let btnColor = "bg-blue-900 hover:bg-blue-800 text-white shadow-xs"; 
         
         if (tabActual === "PROCESADOS") {
             btnTexto = "Ver Expediente";
-            btnColor = "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300";
+            btnColor = "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300";
         } else {
             if (rol === "PRESUPUESTO") {
                 btnTexto = "Atender Trámite";
-                btnColor = "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 text-white";
+                btnColor = "bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs";
             } else if (rol === "ADMIN" || rol === "RPC") {
                 btnTexto = "Revisar / Emitir";
-                btnColor = "bg-slate-700 hover:bg-slate-800 shadow-slate-200 text-white";
+                btnColor = "bg-slate-900 hover:bg-slate-800 text-white shadow-xs";
             }
         }
 
-        // CONSTRUCCIÓN DEL SEMÁFORO DE LOS 11 DOCUMENTOS
         const semaforoHtml = LISTA_DOCS_COMPLETA.map(doc => {
             const estaCompletado = docsListos.includes(doc.id);
             if (estaCompletado) {
-                return `<span class="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded shadow-xs" title="${doc.nombre}: COMPLETADO">${doc.sigla}</span>`;
+                return `<span class="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded shadow-xs" title="${doc.nombre}: COMPLETADO">${doc.sigla}</span>`;
             } else {
-                return `<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-400 border border-slate-200 rounded opacity-60" title="${doc.nombre}: PENDIENTE">${doc.sigla}</span>`;
+                return `<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 rounded opacity-60" title="${doc.nombre}: PENDIENTE">${doc.sigla}</span>`;
             }
         }).join("");
 
-        // ==========================================
-        // CAMBIO 2: LÓGICA DEL CHECKBOX DE FUSIÓN
-        // Solo se permite fusionar si está EN CURSO o BORRADOR y en la pestaña de pendientes
-        // ==========================================
         let checkboxHabilitado = "";
         if (tabActual !== "PROCESADOS" && (p.estado === "EN CURSO" || p.estado === "BORRADOR")) {
-            checkboxHabilitado = `<input type="checkbox" value="${p.id}" data-hr="${p.hoja_ruta || p.codigo_proceso}" class="chk-tramite w-4 h-4 cursor-pointer text-indigo-600 rounded focus:ring-indigo-500" onchange="verificarSeleccion()">`;
+            checkboxHabilitado = `<input type="checkbox" value="${p.id}" data-hr="${p.hoja_ruta || p.codigo_proceso}" class="chk-tramite w-4 h-4 cursor-pointer text-blue-900 rounded border-slate-300 focus:ring-blue-700" onchange="verificarSeleccion()">`;
         } else {
             checkboxHabilitado = `<input type="checkbox" disabled class="w-4 h-4 opacity-30 cursor-not-allowed">`;
         }
 
         return `
-        <tr class="hover:bg-slate-50 transition duration-200 border-b border-slate-100 last:border-0">
-            <!-- NUEVA COLUMNA: CHECKBOX -->
-            <td class="px-6 py-5 text-center align-middle">
+        <tr class="hover:bg-slate-50/80 transition duration-150 border-b border-slate-100 last:border-0">
+            <td class="px-4 py-4 text-center align-middle">
                 ${checkboxHabilitado}
             </td>
 
-            <td class="px-8 py-5 font-bold text-indigo-700 whitespace-nowrap align-middle">${p.hoja_ruta || p.codigo_proceso}</td>
+            <td class="px-6 py-4 font-mono font-bold text-blue-900 text-xs whitespace-nowrap align-middle">${p.hoja_ruta || p.codigo_proceso}</td>
             
-            <td class="px-8 py-5 text-slate-600 font-medium align-middle">
+            <td class="px-6 py-4 text-slate-700 align-middle">
                 <div class="flex flex-col gap-1">
-                    <span class="line-clamp-2 font-semibold text-slate-800" title="${p.objeto_contratacion || 'Sin objeto definido'}">
+                    <span class="line-clamp-2 font-semibold text-slate-900 text-xs leading-snug" title="${p.objeto_contratacion || 'Sin objeto definido'}">
                         ${p.objeto_contratacion || 'Sin objeto definido'}
                     </span>
-                    <span class="text-xs font-bold text-indigo-600 flex items-center gap-1">
-                        🏢 ${p.unidad_nombre || 'Sin Unidad Asignada'}
+                    <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> ${p.unidad_nombre || 'Sin Unidad Asignada'}
                     </span>
                 </div>
             </td>
 
-            <td class="px-8 py-5 align-middle">
+            <td class="px-6 py-4 align-middle">
                 <div class="flex flex-wrap gap-1 max-w-[280px]">
                     ${semaforoHtml}
                 </div>
             </td>
 
-            <td class="px-8 py-5 whitespace-nowrap align-middle">
-                <span class="px-3 py-1.5 rounded-lg text-xs font-bold ${estadoObj.color} border border-current/10">
+            <td class="px-6 py-4 whitespace-nowrap align-middle">
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${estadoObj.color} border">
                     ${estadoObj.icono} ${p.estado}
                 </span>
             </td>
 
-            <td class="px-8 py-5 text-center whitespace-nowrap align-middle">
-                <button onclick="gestionarProceso(${p.id})" class="${btnColor} px-5 py-2.5 rounded-xl transition-all shadow-sm font-semibold text-sm flex items-center gap-2 justify-center mx-auto">
-                    ${btnTexto} <i data-lucide="${tabActual === 'PROCESADOS' ? 'folder-open' : 'arrow-right'}" class="w-4 h-4"></i>
+            <td class="px-6 py-4 text-center whitespace-nowrap align-middle">
+                <button onclick="gestionarProceso(${p.id})" class="${btnColor} px-3.5 py-2 rounded-lg transition-all font-bold text-xs flex items-center gap-1.5 justify-center mx-auto whitespace-nowrap">
+                    <span>${btnTexto}</span> <i data-lucide="${tabActual === 'PROCESADOS' ? 'folder-open' : 'arrow-right'}" class="w-3.5 h-3.5"></i>
                 </button>
             </td>
         </tr>

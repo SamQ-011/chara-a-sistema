@@ -2,6 +2,108 @@
 const API_BASE_URL = window.ENV?.API_URL || "http://127.0.0.1:8000/api";
 
 /* =========================================
+   SISTEMA DE NOTIFICACIONES TOAST (MODERNO)
+========================================= */
+
+window.mostrarToast = function(mensaje, tipo = "auto", duracion = 4500) {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "fixed top-5 right-5 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none px-4";
+        document.body.appendChild(container);
+    }
+
+    const lowerMsg = String(mensaje).toLowerCase();
+
+    // Auto-detección inteligente del tipo de mensaje
+    let finalTipo = tipo;
+    if (tipo === "auto") {
+        if (lowerMsg.includes("éxito") || lowerMsg.includes("correctamente") || lowerMsg.includes("completad") || lowerMsg.includes("guardado") || lowerMsg.includes("registrado") || lowerMsg.includes("exitosamente")) {
+            finalTipo = "success";
+        } else if (lowerMsg.includes("error") || lowerMsg.includes("falló") || lowerMsg.includes("inválid") || lowerMsg.includes("denegad") || lowerMsg.includes("cancelad") || lowerMsg.includes("incorrect")) {
+            finalTipo = "error";
+        } else if (lowerMsg.includes("advertencia") || lowerMsg.includes("obligatorio") || lowerMsg.includes("debe") || lowerMsg.includes("atención") || lowerMsg.includes("⚠️") || lowerMsg.includes("⛔")) {
+            finalTipo = "warning";
+        } else {
+            finalTipo = "info";
+        }
+    }
+
+    // Configuración visual según el tipo
+    let bgClasses = "bg-slate-900/95 text-slate-100 border-slate-700 shadow-slate-950/30";
+    let iconMarkup = `<i data-lucide="info" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>`;
+
+    if (finalTipo === "success") {
+        bgClasses = "bg-slate-900/95 text-emerald-100 border-emerald-500/50 shadow-emerald-950/20";
+        iconMarkup = `<div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-4 h-4"></i></div>`;
+    } else if (finalTipo === "error") {
+        bgClasses = "bg-slate-900/95 text-rose-100 border-rose-500/50 shadow-rose-950/20";
+        iconMarkup = `<div class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0"><i data-lucide="alert-circle" class="w-4 h-4"></i></div>`;
+    } else if (finalTipo === "warning") {
+        bgClasses = "bg-slate-900/95 text-amber-100 border-amber-500/50 shadow-amber-950/20";
+        iconMarkup = `<div class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>`;
+    } else if (finalTipo === "info") {
+        bgClasses = "bg-slate-900/95 text-blue-100 border-blue-500/50 shadow-blue-950/20";
+        iconMarkup = `<div class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0"><i data-lucide="info" class="w-4 h-4"></i></div>`;
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 ${bgClasses}`;
+
+    // Limpiar emojis repetidos si el texto ya trae
+    let mensajeLimpio = mensaje.replace(/^[❌⚠️⛔✅]\s*/, "");
+
+    toast.innerHTML = `
+        ${iconMarkup}
+        <div class="flex-1 text-sm font-medium leading-snug break-words">${mensajeLimpio}</div>
+        <button class="toast-close-btn text-slate-400 hover:text-white transition p-1 -mr-1 -mt-1 rounded-lg">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    `;
+
+    container.appendChild(toast);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Animación de entrada
+    requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-2", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+    });
+
+    // Handler para cerrar manualmente
+    const closeBtn = toast.querySelector(".toast-close-btn");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => removerToast(toast));
+    }
+
+    // Auto-cierre
+    const timer = setTimeout(() => removerToast(toast), duracion);
+
+    function removerToast(t) {
+        clearTimeout(timer);
+        t.classList.remove("translate-y-0", "opacity-100");
+        t.classList.add("translate-x-4", "opacity-0");
+        setTimeout(() => {
+            if (t.parentElement) t.remove();
+        }, 300);
+    }
+};
+
+// Sobreescritura global transparente de alert()
+window.alert = function(msg) {
+    if (msg) window.mostrarToast(msg, "auto");
+};
+
+// Helper Toast global
+window.toast = {
+    success: (msg, dur) => window.mostrarToast(msg, "success", dur),
+    error: (msg, dur) => window.mostrarToast(msg, "error", dur),
+    warning: (msg, dur) => window.mostrarToast(msg, "warning", dur),
+    info: (msg, dur) => window.mostrarToast(msg, "info", dur)
+};
+
+/* =========================================
    CORE FETCH WRAPPER
 ========================================= */
 
