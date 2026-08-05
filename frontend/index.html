@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bandeja de Procesos - GAMCH</title>
     <link href="css/output.css?v=2.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        body { background: #f8fafc; }
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f8fafc;
+        }
     </style>
     <script src="js/auth.js"></script>
 </head>
+
 <body class="flex h-screen overflow-hidden text-slate-900">
 
     <!-- SIDEBAR INSTITUCIONAL -->
@@ -20,7 +28,8 @@
         <!-- Logo y Municipio -->
         <div class="p-6 border-b border-slate-800">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
+                <div
+                    class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
                     <i data-lucide="landmark" class="w-6 h-6"></i>
                 </div>
                 <div>
@@ -32,22 +41,26 @@
 
         <!-- Navegación Principal -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="index.html" class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
+            <a href="index.html"
+                class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
                 <i data-lucide="layout-dashboard" class="w-4 h-4 text-blue-400"></i>
                 <span>Bandeja de Procesos</span>
             </a>
 
-            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar"
+                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
                 <i data-lucide="plus-circle" class="w-4 h-4 text-slate-400"></i>
                 <span>Nuevo Proceso</span>
             </a>
 
-            <a id="menu-catalogos" href="catalogos.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+            <a id="menu-catalogos" href="catalogos.html"
+                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
                 <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
                 <span>Catálogos & Usuarios</span>
             </a>
-            
-            <a href="seguimiento.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+
+            <a href="seguimiento.html"
+                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
                 <span>Seguimiento Público</span>
             </a>
@@ -68,19 +81,24 @@
         <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Bandeja de Procesos</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Gestión y seguimiento continuo de Hojas de Ruta de Contratación</p>
+                <p class="text-xs text-slate-500 mt-0.5">Gestión y seguimiento continuo de Hojas de Ruta de Contratación
+                </p>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
-                    <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-bold text-xs">
+                    <div
+                        class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-bold text-xs">
                         <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
                     </div>
                     <div class="text-right">
                         <p id="ui-user-name" class="font-semibold text-xs text-slate-900">Cargando...</p>
-                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol</p>
+                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol
+                        </p>
                     </div>
-                    <button onclick="cerrarSesion()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Cerrar Sesión">
+                    <button onclick="cerrarSesion()"
+                        class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        title="Cerrar Sesión">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -92,47 +110,63 @@
 
             <!-- TARJETAS DE MÉTRES / KPI INTERACTIVAS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
+
                 <!-- TOTAL PROCESOS -->
-                <div id="card-kpi-total" onclick="filtrarPorKpi('TODOS')" class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 transition-all group">
+                <div id="card-kpi-total" onclick="filtrarPorKpi('TODOS')"
+                    class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-slate-400 hover:-translate-y-0.5 transition-all group">
                     <div>
-                        <p id="lbl-kpi-total" class="text-xs font-bold text-slate-500 uppercase tracking-wide group-hover:text-slate-700 transition">Total Procesos</p>
+                        <p id="lbl-kpi-total"
+                            class="text-xs font-bold text-slate-500 uppercase tracking-wide group-hover:text-slate-700 transition">
+                            Total Procesos</p>
                         <h2 id="totalProcesos" class="text-3xl font-extrabold text-slate-900 mt-1 tabular-nums">0</h2>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition">
                         <i data-lucide="folder-kanban" class="w-6 h-6"></i>
                     </div>
                 </div>
 
                 <!-- EN CURSO -->
-                <div id="card-kpi-encurso" onclick="filtrarPorKpi('ENCURSO')" class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all group">
+                <div id="card-kpi-encurso" onclick="filtrarPorKpi('ENCURSO')"
+                    class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all group">
                     <div>
-                        <p id="lbl-kpi-encurso" class="text-xs font-bold text-blue-700 uppercase tracking-wide group-hover:text-blue-900 transition">En Curso</p>
+                        <p id="lbl-kpi-encurso"
+                            class="text-xs font-bold text-blue-700 uppercase tracking-wide group-hover:text-blue-900 transition">
+                            En Curso</p>
                         <h2 id="enCurso" class="text-3xl font-extrabold text-blue-800 mt-1 tabular-nums">0</h2>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200 group-hover:bg-blue-900 group-hover:text-white transition">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200 group-hover:bg-blue-900 group-hover:text-white transition">
                         <i data-lucide="clock" class="w-6 h-6"></i>
                     </div>
                 </div>
 
                 <!-- PENDIENTES -->
-                <div id="card-kpi-pendientes" onclick="filtrarPorKpi('PENDIENTES')" class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-amber-400 hover:-translate-y-0.5 transition-all group">
+                <div id="card-kpi-pendientes" onclick="filtrarPorKpi('PENDIENTES')"
+                    class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-amber-400 hover:-translate-y-0.5 transition-all group">
                     <div>
-                        <p id="lbl-kpi-pendientes" class="text-xs font-bold text-amber-700 uppercase tracking-wide group-hover:text-amber-900 transition">Pendientes</p>
+                        <p id="lbl-kpi-pendientes"
+                            class="text-xs font-bold text-amber-700 uppercase tracking-wide group-hover:text-amber-900 transition">
+                            Pendientes</p>
                         <h2 id="pendientes" class="text-3xl font-extrabold text-amber-800 mt-1 tabular-nums">0</h2>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 group-hover:bg-amber-600 group-hover:text-white transition">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 group-hover:bg-amber-600 group-hover:text-white transition">
                         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
                     </div>
                 </div>
 
                 <!-- FINALIZADOS -->
-                <div id="card-kpi-finalizados" onclick="filtrarPorKpi('FINALIZADOS')" class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-emerald-400 hover:-translate-y-0.5 transition-all group">
+                <div id="card-kpi-finalizados" onclick="filtrarPorKpi('FINALIZADOS')"
+                    class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:shadow-md hover:border-emerald-400 hover:-translate-y-0.5 transition-all group">
                     <div>
-                        <p id="lbl-kpi-finalizados" class="text-xs font-bold text-emerald-700 uppercase tracking-wide group-hover:text-emerald-900 transition">Finalizados</p>
+                        <p id="lbl-kpi-finalizados"
+                            class="text-xs font-bold text-emerald-700 uppercase tracking-wide group-hover:text-emerald-900 transition">
+                            Finalizados</p>
                         <h2 id="finalizados" class="text-3xl font-extrabold text-emerald-800 mt-1 tabular-nums">0</h2>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 group-hover:bg-emerald-700 group-hover:text-white transition">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 group-hover:bg-emerald-700 group-hover:text-white transition">
                         <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                     </div>
                 </div>
@@ -141,9 +175,10 @@
 
             <!-- PANEL GERENCIAL (RESUMEN FINANCIERO Y CUELLOS DE BOTELLA) -->
             <div id="panel-gerencial" class="hidden space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600">Resumen Financiero y Operativo</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600">Resumen Financiero y Operativo
+                </h3>
                 <div class="grid lg:grid-cols-2 gap-4">
-                    
+
                     <!-- Tarjeta: Ejecución Presupuestaria -->
                     <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
                         <div class="flex items-center gap-2.5 mb-4 pb-2 border-b border-slate-100">
@@ -152,12 +187,16 @@
                         </div>
                         <div class="space-y-3 text-sm">
                             <div class="flex justify-between items-center">
-                                <span class="text-xs font-medium text-slate-500">Presupuesto Solicitado (En Curso)</span>
-                                <span id="monto-solicitado" class="font-bold text-slate-900 tabular-nums">Bs. 0.00</span>
+                                <span class="text-xs font-medium text-slate-500">Presupuesto Solicitado (En
+                                    Curso)</span>
+                                <span id="monto-solicitado" class="font-bold text-slate-900 tabular-nums">Bs.
+                                    0.00</span>
                             </div>
                             <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-                                <span class="text-xs font-medium text-slate-500">Presupuesto Adjudicado (Finalizado)</span>
-                                <span id="monto-adjudicado" class="font-bold text-emerald-700 tabular-nums">Bs. 0.00</span>
+                                <span class="text-xs font-medium text-slate-500">Presupuesto Adjudicado
+                                    (Finalizado)</span>
+                                <span id="monto-adjudicado" class="font-bold text-emerald-700 tabular-nums">Bs.
+                                    0.00</span>
                             </div>
                         </div>
                     </div>
@@ -177,16 +216,19 @@
 
             <!-- TABLA DE EXPEDIENTES Y CONTROLES -->
             <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-                
+
                 <!-- CONTROL BAR -->
-                <div class="p-5 border-b border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-50/50">
+                <div
+                    class="p-5 border-b border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-50/50">
                     <div>
                         <div class="flex gap-4 border-b border-slate-200 pb-2">
-                            <button id="btn-tab-pendientes" onclick="cambiarTab('PENDIENTES')" class="text-xs font-bold text-blue-900 border-b-2 border-blue-900 pb-2 transition flex items-center gap-2">
+                            <button id="btn-tab-pendientes" onclick="cambiarTab('PENDIENTES')"
+                                class="text-xs font-bold text-blue-900 border-b-2 border-blue-900 pb-2 transition flex items-center gap-2">
                                 <i data-lucide="inbox" class="w-4 h-4"></i>
                                 <span>Pendientes de Acción</span>
                             </button>
-                            <button id="btn-tab-procesados" onclick="cambiarTab('PROCESADOS')" class="text-xs font-semibold text-slate-500 hover:text-slate-800 pb-2 transition flex items-center gap-2">
+                            <button id="btn-tab-procesados" onclick="cambiarTab('PROCESADOS')"
+                                class="text-xs font-semibold text-slate-500 hover:text-slate-800 pb-2 transition flex items-center gap-2">
                                 <i data-lucide="archive" class="w-4 h-4"></i>
                                 <span>Historial / Procesados</span>
                             </button>
@@ -196,20 +238,25 @@
                     <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                         <!-- Filtro Unidad Gerencial -->
                         <div id="contenedor-filtro-unidad" class="hidden relative w-full sm:w-56">
-                            <i data-lucide="building" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                            <select id="filtro-unidad" onchange="recargarBandejaPorUnidad()" class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 text-slate-800 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-700 outline-none cursor-pointer">
+                            <i data-lucide="building"
+                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                            <select id="filtro-unidad" onchange="recargarBandejaPorUnidad()"
+                                class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 text-slate-800 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-700 outline-none cursor-pointer">
                                 <option value="">Todas las Unidades</option>
                             </select>
                         </div>
-                        
+
                         <!-- Buscador -->
                         <div class="relative flex-1 sm:w-64">
-                            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                            <input type="text" id="buscador" placeholder="Buscar por código u objeto..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-700 outline-none">
+                            <i data-lucide="search"
+                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                            <input type="text" id="buscador" placeholder="Buscar por código u objeto..."
+                                class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-blue-700 outline-none">
                         </div>
 
                         <!-- Botón Nuevo Proceso -->
-                        <a href="nuevo_proceso.html" id="btn-nuevo-proceso-main" class="bg-blue-900 hover:bg-blue-800 text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2 text-xs font-bold transition shadow-xs whitespace-nowrap">
+                        <a href="nuevo_proceso.html" id="btn-nuevo-proceso-main"
+                            class="bg-blue-900 hover:bg-blue-800 text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2 text-xs font-bold transition shadow-xs whitespace-nowrap">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Nuevo Proceso</span>
                         </a>
@@ -220,8 +267,12 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-100/80 text-slate-600 font-bold text-[11px] uppercase tracking-wider border-b border-slate-200">
-                                <th class="px-4 py-3 w-10 text-center"><input type="checkbox" id="chk-master" onclick="toggleAllCheckboxes(this)" class="rounded border-slate-300 text-blue-900 focus:ring-blue-700 cursor-pointer"></th>
+                            <tr
+                                class="bg-slate-100/80 text-slate-600 font-bold text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                <th class="px-4 py-3 w-10 text-center"><input type="checkbox" id="chk-master"
+                                        onclick="toggleAllCheckboxes(this)"
+                                        class="rounded border-slate-300 text-blue-900 focus:ring-blue-700 cursor-pointer">
+                                </th>
                                 <th class="px-6 py-3">Código</th>
                                 <th class="px-6 py-3">Objeto de Contratación</th>
                                 <th class="px-6 py-3">Avance (11 Docs)</th>
@@ -239,61 +290,81 @@
     </main>
 
     <!-- BARRA DE ACCIÓN MASIVA (FUSIÓN) -->
-    <div id="barra-accion-masiva" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center gap-4 z-[5000] hidden border border-slate-700">
+    <div id="barra-accion-masiva"
+        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center gap-4 z-[5000] hidden border border-slate-700">
         <div class="flex items-center gap-2">
-            <div class="bg-blue-600 text-white rounded-lg px-2.5 py-0.5 font-bold text-xs" id="txt-seleccionados">0</div>
+            <div class="bg-blue-600 text-white rounded-lg px-2.5 py-0.5 font-bold text-xs" id="txt-seleccionados">0
+            </div>
             <span class="text-xs font-medium text-slate-300">Trámites marcados</span>
         </div>
         <div class="h-4 w-px bg-slate-700"></div>
-        <button onclick="abrirModalFusion()" class="bg-blue-800 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-2">
+        <button onclick="abrirModalFusion()"
+            class="bg-blue-800 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition flex items-center gap-2">
             <i data-lucide="merge" class="w-3.5 h-3.5"></i>
             <span>Fusionar Trámites</span>
         </button>
     </div>
 
     <!-- MODAL FUSIÓN DE TRÁMITES -->
-    <div id="modal-fusion" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden flex-col items-center justify-center transition-all p-4 z-[99999]">
+    <div id="modal-fusion"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden flex-col items-center justify-center transition-all p-4 z-[99999]">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
-            <header class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
+            <header
+                class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
                 <div>
-                    <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="merge" class="w-4 h-4 text-blue-400"></i> Consolidación de Trámites</h3>
+                    <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="merge"
+                            class="w-4 h-4 text-blue-400"></i> Consolidación de Trámites</h3>
                     <p class="text-xs text-slate-400 mt-0.5">Creación de expediente maestro unificado.</p>
                 </div>
-                <button onclick="cerrarModalFusion()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="cerrarModalFusion()" class="text-slate-400 hover:text-white transition"><i
+                        data-lucide="x" class="w-5 h-5"></i></button>
             </header>
-            
+
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nuevo Objeto de Contratación Unificado <span class="text-rose-600">*</span></label>
-                    <textarea id="fusion-objeto" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-blue-700 outline-none font-medium text-slate-900" placeholder="Ej. Adquisición de Material Escolar de Escritorio (Consolidado)..."></textarea>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nuevo Objeto de Contratación
+                        Unificado <span class="text-rose-600">*</span></label>
+                    <textarea id="fusion-objeto" rows="2"
+                        class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-blue-700 outline-none font-medium text-slate-900"
+                        placeholder="Ej. Adquisición de Material Escolar de Escritorio (Consolidado)..."></textarea>
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <label class="block text-xs font-bold text-slate-700 uppercase">Definición de Hoja de Ruta Oficial</label>
-                    
+                    <label class="block text-xs font-bold text-slate-700 uppercase">Definición de Hoja de Ruta
+                        Oficial</label>
+
                     <label class="flex items-start gap-3 cursor-pointer">
-                        <input type="radio" name="tipo_hr" value="concatenar" checked class="mt-0.5 text-blue-900 focus:ring-blue-700" onchange="toggleInputsHR()">
+                        <input type="radio" name="tipo_hr" value="concatenar" checked
+                            class="mt-0.5 text-blue-900 focus:ring-blue-700" onchange="toggleInputsHR()">
                         <div>
                             <span class="block text-xs font-bold text-slate-800">Concatenar Automáticamente</span>
-                            <span class="block text-[11px] text-slate-500 mb-1">Unirá los códigos de los trámites seleccionados.</span>
-                            <input type="text" id="fusion-hr-auto" readonly class="w-full bg-slate-200 border border-slate-300 rounded p-2 text-xs font-mono text-slate-700 cursor-not-allowed">
+                            <span class="block text-[11px] text-slate-500 mb-1">Unirá los códigos de los trámites
+                                seleccionados.</span>
+                            <input type="text" id="fusion-hr-auto" readonly
+                                class="w-full bg-slate-200 border border-slate-300 rounded p-2 text-xs font-mono text-slate-700 cursor-not-allowed">
                         </div>
                     </label>
 
                     <label class="flex items-start gap-3 cursor-pointer pt-3 border-t border-slate-200">
-                        <input type="radio" name="tipo_hr" value="nueva" class="mt-0.5 text-blue-900 focus:ring-blue-700" onchange="toggleInputsHR()">
+                        <input type="radio" name="tipo_hr" value="nueva"
+                            class="mt-0.5 text-blue-900 focus:ring-blue-700" onchange="toggleInputsHR()">
                         <div>
-                            <span class="block text-xs font-bold text-slate-800">Ingresar Nueva Hoja de Ruta Master</span>
-                            <span class="block text-[11px] text-slate-500 mb-1">Si ventanilla generó un código único.</span>
-                            <input type="text" id="fusion-hr-manual" disabled placeholder="Ej. HR-2026-9999" class="w-full bg-white border border-slate-300 rounded p-2 text-xs font-mono focus:ring-2 focus:ring-blue-700 outline-none disabled:opacity-50 disabled:bg-slate-100">
+                            <span class="block text-xs font-bold text-slate-800">Ingresar Nueva Hoja de Ruta
+                                Master</span>
+                            <span class="block text-[11px] text-slate-500 mb-1">Si ventanilla generó un código
+                                único.</span>
+                            <input type="text" id="fusion-hr-manual" disabled placeholder="Ej. HR-2026-9999"
+                                class="w-full bg-white border border-slate-300 rounded p-2 text-xs font-mono focus:ring-2 focus:ring-blue-700 outline-none disabled:opacity-50 disabled:bg-slate-100">
                         </div>
                     </label>
                 </div>
             </div>
 
             <footer class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-                <button onclick="cerrarModalFusion()" class="px-4 py-2 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-200 transition">Cancelar</button>
-                <button id="btn-ejecutar-fusion" onclick="ejecutarFusion()" class="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-bold text-xs transition flex items-center gap-2 shadow-xs">
+                <button onclick="cerrarModalFusion()"
+                    class="px-4 py-2 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-200 transition">Cancelar</button>
+                <button id="btn-ejecutar-fusion" onclick="ejecutarFusion()"
+                    class="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-bold text-xs transition flex items-center gap-2 shadow-xs">
                     <i data-lucide="check-circle" class="w-4 h-4"></i>
                     <span>Fusionar y Crear Expediente</span>
                 </button>
@@ -302,8 +373,10 @@
     </div>
 
     <!-- OVERLAY CARGA GLOBAL -->
-    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[9999] hidden flex-col items-center justify-center transition-all">
-        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-slate-200 max-w-xs text-center">
+    <div id="loading-overlay"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[9999] hidden flex-col items-center justify-center transition-all">
+        <div
+            class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-slate-200 max-w-xs text-center">
             <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-900 rounded-full animate-spin mb-3"></div>
             <h3 id="loading-text" class="text-sm font-bold text-slate-800">Procesando documento...</h3>
             <p class="text-xs text-slate-500 mt-1">Generando vista previa nativa</p>
@@ -311,8 +384,10 @@
     </div>
 
     <!-- MODAL VISOR DE PDF INTEGRADO -->
-    <div id="modal-visor-pdf" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[9000] hidden flex-col transition-all">
-        <header class="px-6 py-3.5 bg-slate-900 text-white flex justify-between items-center shrink-0 border-b border-slate-800">
+    <div id="modal-visor-pdf"
+        class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[9000] hidden flex-col transition-all">
+        <header
+            class="px-6 py-3.5 bg-slate-900 text-white flex justify-between items-center shrink-0 border-b border-slate-800">
             <div class="flex items-center gap-3">
                 <div class="p-1.5 bg-blue-900/50 rounded-lg text-blue-400 border border-blue-700/50">
                     <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -322,12 +397,14 @@
                     <p class="text-[11px] text-slate-400">Visor Oficial de Expedientes GAMCH</p>
                 </div>
             </div>
-            <button onclick="cerrarVisorPDF()" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition">
+            <button onclick="cerrarVisorPDF()"
+                class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </header>
         <div class="flex-1 bg-slate-950 p-4 relative">
-            <iframe id="iframe-visor-pdf" class="w-full h-full rounded-xl border-0 shadow-xl bg-white" src="about:blank"></iframe>
+            <iframe id="iframe-visor-pdf" class="w-full h-full rounded-xl border-0 shadow-xl bg-white"
+                src="about:blank"></iframe>
         </div>
     </div>
 
@@ -336,4 +413,5 @@
     <script src="js/app.js"></script>
     <script src="js/gestion_poa.js"></script>
 </body>
+
 </html>

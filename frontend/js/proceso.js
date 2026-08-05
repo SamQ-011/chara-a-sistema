@@ -1,9 +1,15 @@
 const form = document.getElementById("form-proceso");
 const btnGuardar = document.getElementById("btn-guardar");
 const selectArea = document.getElementById("area_solicitante");
+const pdfInput = document.getElementById("pdf_solicitud");
+const dropzone = document.getElementById("pdf-dropzone");
+const dropzonePrompt = document.getElementById("dropzone-prompt");
+const dropzoneSelected = document.getElementById("dropzone-selected");
+const fileNamePreview = document.getElementById("file-name-preview");
+const fileSizePreview = document.getElementById("file-size-preview");
+const btnRemovePdf = document.getElementById("btn-remove-pdf");
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // CORRECCIÓN AQUÍ: Usamos la llave exacta de tu auth.js
     const rolUsuario = localStorage.getItem("user_rol"); 
     
     const contenedorDerivacion = document.getElementById("contenedor_derivacion");
@@ -24,85 +30,145 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (btnSidebar) btnSidebar.style.display = "none";
     }
 
-    document.getElementById('fecha_solicitud').valueAsDate = new Date();
+    const fechaEl = document.getElementById('fecha_solicitud');
+    if (fechaEl && !fechaEl.value) {
+        fechaEl.valueAsDate = new Date();
+    }
+
     try {
         const unidades = await window.API.unidades.listar();
-        selectArea.innerHTML = '<option value="">Seleccione el Área a derivar...</option>';
-        
-        unidades.forEach(unidad => {
-            const option = document.createElement("option");
-            option.value = unidad.id; 
-            option.textContent = unidad.nombre; 
-            selectArea.appendChild(option);
-        });
+        if (selectArea) {
+            selectArea.innerHTML = '<option value="">Seleccione el Área a derivar...</option>';
+            unidades.forEach(unidad => {
+                const option = document.createElement("option");
+                option.value = unidad.id; 
+                option.textContent = unidad.nombre; 
+                selectArea.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error("Error al cargar unidades:", error);
-        selectArea.innerHTML = '<option value="">Error al cargar áreas desde el servidor</option>';
+        if (selectArea) selectArea.innerHTML = '<option value="">Error al cargar áreas desde el servidor</option>';
+    }
+
+    // Lógica del Dropzone PDF
+    if (pdfInput) {
+        pdfInput.addEventListener("change", manejarSeleccionArchivo);
+
+        if (dropzone) {
+            ["dragenter", "dragover"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add("border-indigo-500", "bg-indigo-50/80");
+                }, false);
+            });
+
+            ["dragleave", "drop"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove("border-indigo-500", "bg-indigo-50/80");
+                }, false);
+            });
+        }
+
+        if (btnRemovePdf) {
+            btnRemovePdf.addEventListener("click", (e) => {
+                e.stopPropagation();
+                pdfInput.value = "";
+                resetearDropzone();
+            });
+        }
     }
 });
 
-form.addEventListener("submit", async (e) => {
-    e.preventDefault(); 
-    
-    const pdfInput = document.getElementById("pdf_solicitud");
-    if (!pdfInput.files.length) {
-        alert("Debe adjuntar la solicitud escaneada en formato PDF.");
-        return;
+function manejarSeleccionArchivo() {
+    if (pdfInput && pdfInput.files.length > 0) {
+        const file = pdfInput.files[0];
+        if (file.type !== "application/pdf") {
+            toast.warning("Por favor adjunte un archivo en formato PDF.");
+            pdfInput.value = "";
+            resetearDropzone();
+            return;
+        }
+
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        if (fileNamePreview) fileNamePreview.textContent = file.name;
+        if (fileSizePreview) fileSizePreview.textContent = `${sizeMB} MB`;
+
+        if (dropzonePrompt) dropzonePrompt.classList.add("hidden");
+        if (dropzoneSelected) {
+            dropzoneSelected.classList.remove("hidden");
+            dropzoneSelected.classList.add("flex");
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } else {
+        resetearDropzone();
     }
+}
 
-    const rolUsuario = localStorage.getItem("user_rol");
-
-    // Solo SECRETARIA/ADMIN necesitan seleccionar un área de derivación
-    if (rolUsuario !== "SOLICITANTE" && !selectArea.value) {
-        alert("Debe seleccionar un área de derivación válida.");
-        return;
+function resetearDropzone() {
+    if (dropzonePrompt) dropzonePrompt.classList.remove("hidden");
+    if (dropzoneSelected) {
+        dropzoneSelected.classList.add("hidden");
+        dropzoneSelected.classList.remove("flex");
     }
+}
 
-    btnGuardar.disabled = true;
-    btnGuardar.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
-    lucide.createIcons();
-
-    // Payload simplificado para Ventanilla Única
-    const variables_ui = {
-        hoja_ruta: document.getElementById("hoja_ruta").value.trim(),
-        objeto: document.getElementById("objeto").value.trim(),
-        fecha_corta: document.getElementById("fecha_solicitud").value,
-
-        // SOLICITANTE no selecciona unidad; el backend la auto-asigna
-        uni_solic: selectArea.value || "",
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault(); 
         
-        // --- Defaults técnicos que se llenarán después ---
-        codigo: "HR-" + Date.now(),
-        proveedor: "POR DEFINIR",
-        nit: "0",
-        desca: "Ventanilla Única",
-        cod_proy: "S/A",
-        tipo_contratacion: "PENDIENTE", // Lo definirá el técnico
-        monto_total: 0,
-        retencion_val: 0,
-        
-    };
+        if (!pdfInput || !pdfInput.files.length) {
+            toast.warning("Debe adjuntar la solicitud escaneada en formato PDF.");
+            return;
+        }
 
-    try {
-        // 1. Crear el cascarón del proceso en la BD (Enviamos arrays vacíos de ítems y gastos)
-        const payload = { variables_ui, items: [], gastos: [] };
-        const dataJSON = await window.API.procesos.crear(payload);
-        const proceso_id_final = dataJSON.data.proceso_id;
+        const rolUsuario = localStorage.getItem("user_rol");
 
-        // 2. Subir el PDF adjunto
-        const formData = new FormData();
-        formData.append("file", pdfInput.files[0]);
-        await window.API.procesos.subirSolicitud(proceso_id_final, formData);
+        if (rolUsuario !== "SOLICITANTE" && (!selectArea || !selectArea.value)) {
+            toast.warning("Debe seleccionar un área de derivación válida.");
+            return;
+        }
 
-        // 3. Redirigir a la bandeja o al detalle
-        setTimeout(() => {
-            window.location.href = `index.html`; // La secretaria vuelve a la bandeja tras derivar
-        }, 1000);
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    } catch (error) {
-        alert("Error al ingresar trámite: " + error.message);
-        btnGuardar.disabled = false;
-        btnGuardar.innerHTML = `<i data-lucide="send" class="w-5 h-5"></i> Ingresar Trámite y Derivar`;
-        if (window.lucide) lucide.createIcons();
-    }
-});
+        const variables_ui = {
+            hoja_ruta: document.getElementById("hoja_ruta").value.trim(),
+            objeto: document.getElementById("objeto").value.trim(),
+            fecha_corta: document.getElementById("fecha_solicitud").value,
+            uni_solic: selectArea ? (selectArea.value || "") : "",
+            codigo: "HR-" + Date.now(),
+            proveedor: "POR DEFINIR",
+            nit: "0",
+            desca: "Ventanilla Única",
+            cod_proy: "S/A",
+            tipo_contratacion: "PENDIENTE",
+            monto_total: 0,
+Retencion_val: 0,
+        };
+
+        try {
+            const payload = { variables_ui, items: [], gastos: [] };
+            const dataJSON = await window.API.procesos.crear(payload);
+            const proceso_id_final = dataJSON.data.proceso_id;
+
+            const formData = new FormData();
+            formData.append("file", pdfInput.files[0]);
+            await window.API.procesos.subirSolicitud(proceso_id_final, formData);
+
+            toast.success("Trámite ingresado y derivado exitosamente.");
+
+            setTimeout(() => {
+                window.location.href = `index.html`;
+            }, 1000);
+
+        } catch (error) {
+            toast.error("Error al ingresar trámite: " + error.message);
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = `<i data-lucide="send" class="w-5 h-5"></i> Ingresar Trámite y Derivar`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    });
+}

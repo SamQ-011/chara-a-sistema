@@ -45,7 +45,7 @@ async function cargarListaUsuarios() {
         usuariosGlobal = await request("/usuarios?incluir_inactivos=true");
         renderizarTablaUsuarios(usuariosGlobal);
     } catch (err) {
-        alert("Error al obtener la lista de usuarios: " + (err.message || err));
+        toast.error("Error al obtener la lista de usuarios: " + (err.message || err));
     } finally {
         ocultarCarga();
     }
@@ -213,7 +213,7 @@ async function guardarUsuario(e) {
     const unidadIdVal = document.getElementById("modal-user-unidad").value;
 
     if (!nombreCompleto || !rol) {
-        return alert("Por favor complete los campos obligatorios.");
+        return toast.warning("Por favor complete los campos obligatorios.");
     }
 
     const payload = {
@@ -233,17 +233,17 @@ async function guardarUsuario(e) {
                 method: "PUT",
                 body: JSON.stringify(payload)
             });
-            alert("Usuario actualizado correctamente.");
+            toast.success("Usuario actualizado correctamente.");
         } else {
             // Creación
             const pass = document.getElementById("modal-user-pass").value;
             if (!username || !pass) {
                 ocultarCarga();
-                return alert("Debe ingresar username y contraseña para el nuevo usuario.");
+                return toast.warning("Debe ingresar username y contraseña para el nuevo usuario.");
             }
             if (pass.length < 6) {
                 ocultarCarga();
-                return alert("La contraseña debe tener al menos 6 caracteres.");
+                return toast.warning("La contraseña debe tener al menos 6 caracteres.");
             }
 
             payload.username = username;
@@ -253,14 +253,14 @@ async function guardarUsuario(e) {
                 method: "POST",
                 body: JSON.stringify(payload)
             });
-            alert("Usuario registrado correctamente.");
+            toast.success("Usuario registrado correctamente.");
         }
 
         cerrarModalUsuario();
         await cargarListaUsuarios();
 
     } catch (err) {
-        alert("Error al guardar usuario: " + (err.message || err));
+        toast.error("Error al guardar usuario: " + (err.message || err));
     } finally {
         ocultarCarga();
     }
@@ -296,7 +296,7 @@ async function guardarResetPassword(e) {
     const nuevaPass = document.getElementById("modal-reset-new-pass").value;
     
     if (!nuevaPass || nuevaPass.length < 6) {
-        return alert("La contraseña debe tener al menos 6 caracteres.");
+        return toast.warning("La contraseña debe tener al menos 6 caracteres.");
     }
 
     mostrarCarga("Reseteando contraseña...");
@@ -305,10 +305,10 @@ async function guardarResetPassword(e) {
             method: "PUT",
             body: JSON.stringify({ nueva_password: nuevaPass })
         });
-        alert("Contraseña reseteada exitosamente.");
+        toast.success("Contraseña reseteada exitosamente.");
         cerrarModalResetPassword();
     } catch (err) {
-        alert("Error al resetear contraseña: " + (err.message || err));
+        toast.error("Error al resetear contraseña: " + (err.message || err));
     } finally {
         ocultarCarga();
     }
@@ -332,16 +332,18 @@ async function toggleEstadoUsuario(id, estadoActual) {
         if (estadoActual) {
             // Desactivación
             await request(`/usuarios/${id}`, { method: "DELETE" });
+            toast.success(`Usuario @${u.username} desactivado correctamente.`);
         } else {
             // Reactivación
             await request(`/usuarios/${id}`, {
                 method: "PUT",
                 body: JSON.stringify({ activo: true })
             });
+            toast.success(`Usuario @${u.username} reactivado correctamente.`);
         }
         await cargarListaUsuarios();
     } catch (err) {
-        alert("Error al cambiar estado del usuario: " + (err.message || err));
+        toast.error("Error al cambiar estado del usuario: " + (err.message || err));
     } finally {
         ocultarCarga();
     }

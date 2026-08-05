@@ -12,5 +12,18 @@ function cerrarSesion() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user_rol");
     localStorage.removeItem("user_nombre");
+    localStorage.removeItem("user_cargo");
     window.location.href = "login.html";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const elNombre = document.getElementById("ui-user-name");
+    const elCargo = document.getElementById("ui-user-rol");
+    
+    if (elNombre) {
+        elNombre.textContent = localStorage.getItem("user_nombre") || "Usuario";
+    }
+    if (elCargo) {
+        elCargo.textContent = localStorage.getItem("user_cargo") || localStorage.getItem("user_rol") || "Servidor Público";
+    }
+});

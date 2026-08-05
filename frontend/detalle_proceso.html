@@ -1,25 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expediente Digital - GAMCH</title>
     <link href="css/output.css?v=2.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        body { background: #f8fafc; }
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f8fafc;
+        }
     </style>
     <script src="js/auth.js"></script>
 </head>
+
 <body class="flex h-screen overflow-hidden text-slate-900">
 
     <!-- SIDEBAR INSTITUCIONAL -->
     <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-xl border-r border-slate-800 shrink-0">
         <div class="p-6 border-b border-slate-800">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
+                <div
+                    class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
                     <i data-lucide="landmark" class="w-6 h-6"></i>
                 </div>
                 <div>
@@ -30,7 +39,8 @@
         </div>
 
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="index.html" class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
+            <a href="index.html"
+                class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
                 <i data-lucide="arrow-left" class="w-4 h-4 text-blue-400"></i>
                 <span>Volver a la Bandeja</span>
             </a>
@@ -40,7 +50,8 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto flex flex-col relative bg-slate-50">
         <!-- HEADER EXPEDIENTE -->
-        <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0 sticky top-0 z-10 shadow-xs">
+        <header
+            class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0 sticky top-0 z-10 shadow-xs">
             <div>
                 <div class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
                     <span>Bandeja</span>
@@ -49,18 +60,25 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Expediente del Trámite</h1>
-                    <span id="badge-estado" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">Cargando...</span>
+                    <span id="badge-estado"
+                        class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">Cargando...</span>
                 </div>
                 <p id="txt-codigo-proceso" class="text-xs font-mono font-bold text-blue-900 mt-0.5">TEMP-000000</p>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-bold text-xs">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
+                    </div>
                     <div class="text-right">
                         <p id="ui-user-name" class="font-semibold text-xs text-slate-900">Cargando...</p>
-                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cargo</p>
+                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cargo
+                        </p>
                     </div>
-                    <button onclick="cerrarSesion()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Cerrar Sesión">
+                    <button onclick="cerrarSesion()"
+                        class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        title="Cerrar Sesión">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -71,7 +89,7 @@
 
         <!-- WORKSPACE DATOS Y DOCUMENTOS -->
         <section class="p-8 max-w-[1600px] w-full mx-auto grid lg:grid-cols-12 gap-6 items-start">
-            
+
             <!-- PANEL IZQUIERDO: DATOS GENERALES -->
             <div class="lg:col-span-4 space-y-4">
                 <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs relative">
@@ -81,11 +99,13 @@
                         </h3>
                         <div id="contenedor-acciones-principales"></div>
                     </div>
-                    
+
                     <div class="space-y-3 text-xs">
                         <div>
                             <p class="text-slate-500 font-semibold mb-1">Objeto de Contratación</p>
-                            <p id="lbl-objeto" class="font-semibold text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200 leading-relaxed">...</p>
+                            <p id="lbl-objeto"
+                                class="font-semibold text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200 leading-relaxed">
+                                ...</p>
                         </div>
                         <div>
                             <p class="text-slate-500 font-semibold mb-0.5">Área Solicitante</p>
@@ -94,10 +114,12 @@
                         <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
                             <div>
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Monto Total</p>
-                                <p id="lbl-monto" class="font-extrabold text-emerald-700 text-base tabular-nums">Bs. 0.00</p>
+                                <p id="lbl-monto" class="font-extrabold text-emerald-700 text-base tabular-nums">Bs.
+                                    0.00</p>
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Plazo Entrega</p>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Plazo Entrega
+                                </p>
                                 <p id="lbl-plazo" class="font-bold text-slate-900 text-sm">0 días</p>
                             </div>
                         </div>
@@ -106,13 +128,15 @@
 
                 <!-- ACCIONES RÁPIDAS PDF Y ZIP -->
                 <div class="space-y-2">
-                    <button onclick="abrirPDFInicial()" class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-xs transition shadow-xs">
+                    <button onclick="abrirPDFInicial()"
+                        class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-xs transition shadow-xs">
                         <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span>Ver PDF de Solicitud Inicial</span>
                     </button>
 
-                    <button onclick="window.API.procesos.descargarExpedienteZip(new URLSearchParams(window.location.search).get('id'))" 
-                            class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-lg font-bold text-xs transition shadow-xs">
+                    <button
+                        onclick="window.API.procesos.descargarExpedienteZip(new URLSearchParams(window.location.search).get('id'))"
+                        class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-lg font-bold text-xs transition shadow-xs">
                         <i data-lucide="archive" class="w-4 h-4"></i>
                         <span>Descargar Expediente Completo (ZIP)</span>
                     </button>
@@ -124,10 +148,13 @@
                 <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
                         <div>
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                                <i data-lucide="files" class="w-4 h-4 text-blue-900"></i> Etapas y Respaldo Documental (10 Pasos)
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                <i data-lucide="files" class="w-4 h-4 text-blue-900"></i> Etapas y Respaldo Documental
+                                (10 Pasos)
                             </h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Emisión, previsualización en PDF y descarga de formularios oficiales</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Emisión, previsualización en PDF y descarga de
+                                formularios oficiales</p>
                         </div>
                     </div>
                     <div class="p-6">
@@ -144,8 +171,10 @@
     </main>
 
     <!-- OVERLAY CARGA -->
-    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden flex-col items-center justify-center transition-all z-[99999]">
-        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-slate-200 max-w-xs text-center">
+    <div id="loading-overlay"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden flex-col items-center justify-center transition-all z-[99999]">
+        <div
+            class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-slate-200 max-w-xs text-center">
             <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-900 rounded-full animate-spin mb-3"></div>
             <h3 id="loading-text" class="text-sm font-bold text-slate-800">Procesando documento...</h3>
             <p class="text-xs text-slate-500 mt-1">Generando vista previa nativa</p>
@@ -153,8 +182,10 @@
     </div>
 
     <!-- MODAL VISOR DE PDF -->
-    <div id="modal-visor-pdf" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden flex-col transition-all z-[99999]">
-        <header class="px-6 py-3.5 bg-slate-900 text-white flex justify-between items-center shrink-0 border-b border-slate-800 shadow-lg">
+    <div id="modal-visor-pdf"
+        class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden flex-col transition-all z-[99999]">
+        <header
+            class="px-6 py-3.5 bg-slate-900 text-white flex justify-between items-center shrink-0 border-b border-slate-800 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="p-1.5 bg-blue-900/50 rounded-lg text-blue-400 border border-blue-700/50">
                     <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -164,12 +195,15 @@
                     <p class="text-[11px] text-slate-400">Visor Oficial de Expedientes GAMCH</p>
                 </div>
             </div>
-            <button onclick="cerrarVisorPDF()" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition">
+            <button onclick="cerrarVisorPDF()"
+                class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </header>
         <div class="flex-1 bg-slate-950 p-4 relative flex justify-center">
-            <iframe id="iframe-visor-pdf" class="w-full h-full max-w-5xl rounded-xl border border-slate-700 shadow-xl bg-white" src="about:blank"></iframe>
+            <iframe id="iframe-visor-pdf"
+                class="w-full h-full max-w-5xl rounded-xl border border-slate-700 shadow-xl bg-white"
+                src="about:blank"></iframe>
         </div>
     </div>
 
@@ -179,7 +213,7 @@
     <script>lucide.createIcons();</script>
     <script src="js/api.js"></script>
     <script src="js/detalle_proceso.js"></script>
-    
+
     <script src="js/fases_tramite/paso1_especificaciones.js"></script>
     <script src="js/fases_tramite/paso2_solicitud_cp.js"></script>
     <script src="js/fases_tramite/paso2_certificacion.js"></script>
@@ -192,4 +226,5 @@
     <script src="js/fases_tramite/paso9_acta_recepcion.js"></script>
     <script src="js/fases_tramite/paso10_informe_conformidad.js"></script>
 </body>
+
 </html>
