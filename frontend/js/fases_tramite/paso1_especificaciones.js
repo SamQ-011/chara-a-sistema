@@ -119,6 +119,17 @@ function abrirEditorEspecificaciones(proceso) {
     const inputLugar = document.getElementById("spec-lugar");
     if (inputLugar) inputLugar.value = datosGuardados.lugar_entrega || proceso.distrito_comunidad || "";
 
+    const inputPlazo = document.getElementById("spec-plazo");
+    if (inputPlazo) {
+        const defPlazo = parseInt(proceso.plazo_entrega) === 0 ? "Inmediato" : (proceso.plazo_entrega ? `${proceso.plazo_entrega} días calendario` : "Inmediato");
+        inputPlazo.value = datosGuardados.plazo_entrega !== undefined ? datosGuardados.plazo_entrega : defPlazo;
+    }
+
+    const inputFormaPago = document.getElementById("spec-forma-pago");
+    if (inputFormaPago) {
+        inputFormaPago.value = datosGuardados.forma_pago || proceso.tipo_pago || "TRANSFERENCIA BANCARIA";
+    }
+
     // Cargar Puntos Extra
     const contPuntos = document.getElementById("spec-puntos-extra") || document.getElementById("contenedor-puntos-extra");
     if (contPuntos) {
@@ -234,6 +245,8 @@ async function guardarEspecificaciones(formato) {
             datos_formulario: {
                 nuevo_objeto_contratacion: nuevoObjeto, // <-- ENVIAMOS EL NOMBRE AQUÍ
                 lugar_entrega: document.getElementById("spec-lugar") ? document.getElementById("spec-lugar").value.trim() : "",
+                plazo_entrega: document.getElementById("spec-plazo") ? document.getElementById("spec-plazo").value.trim() : "",
+                forma_pago: document.getElementById("spec-forma-pago") ? document.getElementById("spec-forma-pago").value.trim() : "",
                 puntos_extra: puntosExtra,
                 condiciones: condiciones,
                 items_tecnicos: itemsTecnicos

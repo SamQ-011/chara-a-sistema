@@ -70,12 +70,21 @@ function renderizarLotesActas() {
     lotesActasGlobal.forEach((lote, index) => {
         let filas = lote.items.map((item, iIndex) => `
             <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                <td class="py-3 px-2 text-sm text-slate-500 font-medium">${item.nro}</td>
-                <td class="py-3 px-2 text-sm font-bold text-slate-800">${item.objeto}</td>
-                <td class="py-3 px-2 text-sm text-slate-600"><span class="bg-slate-100 px-2 py-1 rounded text-xs">${item.tipuni}</span></td>
-                <td class="py-3 px-2 w-32">
+                <td class="py-3 px-2 text-sm text-slate-500 font-medium align-top pt-4">${item.nro}</td>
+                <td class="py-3 px-2 align-top">
+                    <textarea rows="2" 
+                        class="w-full border border-slate-300 focus:border-indigo-500 rounded p-2 text-xs font-bold text-slate-800 outline-none transition bg-slate-50/60 focus:bg-white resize-y" 
+                        onchange="actualizarObjetoLote(${index}, ${iIndex}, this.value)">${item.objeto}</textarea>
+                </td>
+                <td class="py-3 px-2 w-28 align-top">
+                    <input type="text" 
+                        class="w-full border border-slate-300 focus:border-indigo-500 rounded p-2 text-center text-xs font-semibold text-slate-700 outline-none uppercase bg-slate-50/60 focus:bg-white" 
+                        value="${item.tipuni}" 
+                        onchange="actualizarUnidadLote(${index}, ${iIndex}, this.value)">
+                </td>
+                <td class="py-3 px-2 w-32 align-top">
                     <input type="number" min="0" step="0.01" 
-                        class="w-full border border-slate-300 focus:border-indigo-500 rounded p-1.5 text-center font-bold text-indigo-700" 
+                        class="w-full border border-slate-300 focus:border-indigo-500 rounded p-2 text-center font-bold text-indigo-700 outline-none bg-slate-50/60 focus:bg-white" 
                         value="${item.cant}" 
                         onchange="actualizarCantLote(${index}, ${iIndex}, this.value)">
                 </td>
@@ -112,6 +121,25 @@ function renderizarLotesActas() {
 function actualizarCantLote(loteIndex, itemIndex, val) {
     lotesActasGlobal[loteIndex].items[itemIndex].cant = parseFloat(val) || 0;
 }
+
+function actualizarObjetoLote(loteIndex, itemIndex, val) {
+    const nuevoValor = val.trim();
+    lotesActasGlobal[loteIndex].items[itemIndex].objeto = nuevoValor;
+    if (itemsBaseGlobal[itemIndex]) {
+        itemsBaseGlobal[itemIndex].objeto = nuevoValor;
+    }
+}
+
+function actualizarUnidadLote(loteIndex, itemIndex, val) {
+    const nuevoValor = val.trim().toUpperCase();
+    lotesActasGlobal[loteIndex].items[itemIndex].tipuni = nuevoValor;
+    if (itemsBaseGlobal[itemIndex]) {
+        itemsBaseGlobal[itemIndex].tipuni = nuevoValor;
+    }
+}
+
+window.actualizarObjetoLote = actualizarObjetoLote;
+window.actualizarUnidadLote = actualizarUnidadLote;
 
 function agregarLoteActa() {
     const nuevosItems = itemsBaseGlobal.map((itemBase, itemIndex) => {

@@ -19,7 +19,7 @@ const MAESTRO_DOCUMENTOS = [
     { id_tipo: "cert_presupuestaria", nombre: "Certificación Presupuestaria", owner: ["PRESUPUESTO"], desc: "Asignación formal de la partida presupuestaria." },
     { id_tipo: "solicitud_inicio", nombre: "Solicitud de Inicio de Proceso", owner: ["SOLICITANTE"], desc: "Solicitud formal de inicio." },
     { id_tipo: "autorizacion_inicio", nombre: "Autorización de Inicio", owner: ["RPC"], desc: "Resolución oficial para iniciar la contratación." },
-    { id_tipo: "informe_cotizacion", nombre: "Informe de Cotización", owner: ["ADMIN"], desc: "Evaluación de proformas y selección de proveedor." },
+    { id_tipo: "informe_cotizacion", nombre: "Informe de Cotización", owner: ["SOLICITANTE", "ADMIN"], desc: "Evaluación de proformas y selección de proveedor." },
     { id_tipo: "notificacion_adjudicacion", nombre: "Notificación de Adjudicación", owner: ["RPC"], desc: "Aviso formal al proveedor ganador." },
     { id_tipo: "orden_compra", nombre: "Orden de Compra / Servicio", owner: ["RPC"], desc: "Documento oficial de solicitud de provisión." },
     { id_tipo: "almacenes", nombre: "Ingreso y Salida de Almacenes", owner: ["ADMIN", "RPC"], desc: "Registro de recepción y despacho logístico." },
@@ -40,7 +40,7 @@ async function cargarDatosProceso() {
         // UX: Arreglando el plazo "0 días"
         const plazoStr = parseInt(proceso.plazo_entrega) === 0 ? "Inmediato" : `${proceso.plazo_entrega} días`;
         document.getElementById("lbl-plazo").textContent = plazoStr;
-        document.getElementById("lbl-area").textContent = proceso.distrito_comunidad || "S/N";
+        document.getElementById("lbl-area").textContent = proceso.unidad_solicitante || "S/N";
         
         // Banner visual para procesos ANULADOS
         const bannerContainer = document.getElementById("container-banner-anulado");

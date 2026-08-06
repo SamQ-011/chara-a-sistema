@@ -15,6 +15,15 @@ from app.schemas.usuario import (
 
 ROLES_PERMITIDOS = ["ADMIN", "RPC", "PRESUPUESTO", "SOLICITANTE", "SECRETARIA"]
 
+def _obtener_user_id_seguro(usuario_actual: dict) -> int:
+    user_id_raw = usuario_actual.get("user_id") if isinstance(usuario_actual, dict) else None
+    if user_id_raw is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token no contiene ID de usuario válido.")
+    try:
+        return int(user_id_raw)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="ID de usuario inválido en token.")
+
 def verificar_rpc(usuario_actual: dict = Depends(obtener_usuario_actual)):
     rol = usuario_actual.get("rol")
     if rol != "RPC":
@@ -95,7 +104,7 @@ def actualizar_usuario(
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
         
-    current_user_id = int(usuario_actual.get("user_id"))
+    current_user_id = _obtener_user_id_seguro(usuario_actual)
 
     # Protección contra auto-desactivación o auto-cambio de rol del RPC activo
     if usuario.id == current_user_id:
@@ -164,7 +173,7 @@ def desactivar_usuario(
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
 
-    current_user_id = int(usuario_actual.get("user_id"))
+    current_user_id = _obtener_user_id_seguro(usuario_actual)
     if usuario.id == current_user_id:
         raise HTTPException(
             status_code=409,

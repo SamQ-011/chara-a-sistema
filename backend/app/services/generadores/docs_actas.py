@@ -74,6 +74,6 @@ def generar_informe_conformidad(ctx):
         ruta_plantilla=f"{RUTA_PLANTILLAS}/infoConformidad.docx",
         ruta_salida=ruta,
         variables_extra={**ctx['variables'], **vars_info_conf},
-        items=items_oficiales 
+        items=None 
     )
     return ruta

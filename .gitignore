@@ -13,3 +13,4 @@ node_modules/
 backend/Resultados/
 backend/Uploads/
 logs/
+~$*.docx

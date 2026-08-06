@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 # Esquema para PROVEEDORES
@@ -13,8 +13,7 @@ class ProveedorCreate(ProveedorBase):
 
 class ProveedorResponse(ProveedorBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Esquema para PROYECTOS ({desca})
 class ProyectoBase(BaseModel):
@@ -27,8 +26,7 @@ class ProyectoCreate(ProyectoBase):
 
 class ProyectoResponse(ProyectoBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Esquema para UNIDADES
@@ -40,8 +38,7 @@ class UnidadCreate(UnidadBase):
 
 class UnidadResponse(UnidadBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PoaProgramaCreate(BaseModel):
@@ -63,17 +60,14 @@ class PoaPartidaCreate(BaseModel):
 
 class PoaPartidaResponse(PoaPartidaCreate):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PoaProyectoResponse(PoaProyectoCreate):
     id: int
     partidas: list[PoaPartidaResponse] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PoaProgramaResponse(PoaProgramaCreate):
     id: int
     proyectos: list[PoaProyectoResponse] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

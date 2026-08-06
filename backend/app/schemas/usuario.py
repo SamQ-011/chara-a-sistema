@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 
 class UsuarioBase(BaseModel):
@@ -27,8 +27,7 @@ class UnidadSimpleResponse(BaseModel):
     id: int
     nombre: str
     sigla: Optional[str] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UsuarioResponse(BaseModel):
     id: int
@@ -41,5 +40,4 @@ class UsuarioResponse(BaseModel):
     unidad: Optional[UnidadSimpleResponse] = None
     activo: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

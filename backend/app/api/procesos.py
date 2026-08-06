@@ -438,6 +438,7 @@ def obtener_proceso_individual(proceso_id: int, db: Session = Depends(get_db)):
         "distrito_comunidad": proceso.distrito_comunidad,
         "tecnico_solicitante": proceso.tecnico_solicitante,
         "cargo_tecnico_solicitante": proceso.cargo_tecnico_solicitante,
+        "unidad_solicitante": proceso.unidad_solicitante.nombre if proceso.unidad_solicitante else None,
         "proveedor_id": proceso.proveedor_id,
         # INYECCIÓN DE DATOS RELACIONALES PARA EL EXPEDIENTE
         "items": [
@@ -576,6 +577,8 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
                 proveedor_db = Proveedor(razon_social=razon_social, nit_ci=nit or "S/N")
                 db.add(proveedor_db)
                 db.flush() 
+            elif nit and nit != "S/N" and (not proveedor_db.nit_ci or proveedor_db.nit_ci == "S/N"):
+                proveedor_db.nit_ci = nit
             
             proceso.proveedor_id = proveedor_db.id
             
@@ -677,22 +680,43 @@ def descargar_documento_individual(
             # Extraemos el nombre y le clavamos la extensión .pdf
             ruta_pdf = os.path.splitext(ruta_word)[0] + ".pdf"
             
+            # CACHÉ INTELIGENTE: Si el PDF ya existe y no es más viejo que el origen, se retorna directo (instantáneo)
+            if os.path.exists(ruta_pdf) and os.path.exists(ruta_word):
+                if os.path.getmtime(ruta_pdf) >= os.path.getmtime(ruta_word):
+                    return FileResponse(
+                        path=ruta_pdf, 
+                        filename=os.path.basename(ruta_pdf),
+                        media_type="application/pdf"
+                    )
+
+            abs_origen = os.path.abspath(ruta_word)
+            abs_destino = os.path.abspath(ruta_pdf)
+            
             pythoncom.CoInitialize()
             try:
                 # MOTOR 1: Si es Word
                 if ruta_word.lower().endswith(".docx"):
                     from docx2pdf import convert
-                    convert(ruta_word, ruta_pdf)
+                    convert(abs_origen, abs_destino)
                 
-                # MOTOR 2: Si es Excel (Soluciona el problema de la Autorización)
+                # MOTOR 2: Si es Excel (Ultra-robusto con rutas absolutas y cierre garantizado)
                 elif ruta_word.lower().endswith(".xlsx"):
                     import win32com.client
-                    excel = win32com.client.Dispatch("Excel.Application")
-                    excel.Visible = False
-                    wb = excel.Workbooks.Open(ruta_word)
-                    wb.ExportAsFixedFormat(0, ruta_pdf) # El código '0' le dice a Excel que exporte a PDF
-                    wb.Close(False)
-                    excel.Quit()
+                    excel = None
+                    wb = None
+                    try:
+                        excel = win32com.client.Dispatch("Excel.Application")
+                        excel.Visible = False
+                        excel.DisplayAlerts = False
+                        wb = excel.Workbooks.Open(abs_origen)
+                        wb.ExportAsFixedFormat(0, abs_destino)
+                    finally:
+                        if wb:
+                            try: wb.Close(False)
+                            except Exception: pass
+                        if excel:
+                            try: excel.Quit()
+                            except Exception: pass
                 
                 else:
                     raise HTTPException(status_code=500, detail=f"No hay motor PDF para este formato: {ruta_word}")

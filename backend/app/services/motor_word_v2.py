@@ -53,7 +53,20 @@ def reemplazar_texto(doc, reemplazos):
 # ==========================================================
 def inyectar_nodos_dinamicos(doc, marcador, lista_textos):
     if not lista_textos:
-        reemplazar_texto(doc, {marcador: ""})
+        def eliminar_nodo_marcador(elementos):
+            for p in elementos:
+                if marcador in p.text:
+                    padre = p._p.getparent()
+                    padre.remove(p._p)
+                    return True
+            return False
+
+        if not eliminar_nodo_marcador(doc.paragraphs):
+            for t in doc.tables:
+                for row in t.rows:
+                    for cell in row.cells:
+                        if eliminar_nodo_marcador(cell.paragraphs):
+                            break
         return
 
     # Forzar a Word a que NO aplaste los párrafos del mismo estilo

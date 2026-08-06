@@ -50,8 +50,9 @@ function abrirEditorInformeCotizacion(proceso) {
     const docInfo = proceso.documentos?.find(d => d.clave_documento === "informe_cotizacion");
     const datosGuardados = docInfo?.datos_formulario || {};
 
+    const adminDefault = localStorage.getItem("user_rol") === "ADMIN" ? (localStorage.getItem("user_nombre") || "Tec. Rosa Aduviri Vichini") : "Tec. Rosa Aduviri Vichini";
     document.getElementById("inf-rpc").value = datosGuardados.encargado_rpc || "Gerson Elvis Vargas Conde";
-    document.getElementById("inf-asistente").value = datosGuardados.asistente_adm || localStorage.getItem("user_nombre") || "";
+    document.getElementById("inf-asistente").value = datosGuardados.asistente_adm || adminDefault;
     document.getElementById("inf-fecha-informe").value = datosGuardados.fecha_informe || new Date().toISOString().split('T')[0];
     document.getElementById("inf-fecha-cot").value = datosGuardados.fecha_cotizacion || new Date().toISOString().split('T')[0];
     document.getElementById("inf-finalidad").value = datosGuardados.finalidad_contratacion || "";
@@ -88,6 +89,13 @@ async function guardarInformeCotizacion(formato) {
         const cotizaciones = [];
         let montoAdjudicado = 0;
         const provGanador = document.getElementById("inf-proveedor-ganador").value.trim();
+        let nitGanador = "S/N";
+        const optionsProv = document.querySelectorAll("#lista-proveedores option");
+        optionsProv.forEach(opt => {
+            if (opt.value.trim().toLowerCase() === provGanador.toLowerCase() && opt.dataset.nit) {
+                nitGanador = opt.dataset.nit;
+            }
+        });
 
         document.getElementById("inf-tabla-cotizaciones").querySelectorAll("tr").forEach(fila => {
             const pr = fila.querySelector(".cot-prov").value.trim();
@@ -112,8 +120,8 @@ async function guardarInformeCotizacion(formato) {
                 fecha_informe: document.getElementById("inf-fecha-informe").value,
                 fecha_cotizacion: document.getElementById("inf-fecha-cot").value,
                 finalidad_contratacion: document.getElementById("inf-finalidad").value.trim(),
-                proveedor_ganador: document.getElementById("inf-proveedor-ganador").value.trim(),
-                nit_ganador: "S/N",
+                proveedor_ganador: provGanador,
+                nit_ganador: nitGanador,
                 cotizaciones: cotizaciones,
                 monto_adjudicado: montoAdjudicado
             }

@@ -12,30 +12,13 @@ def generar_solicitud_cp(ctx):
     doc_bd = next((d for d in ctx['proceso'].documentos if d.clave_documento == "solicitud_cp"), None)
     datos = doc_bd.datos_formulario if doc_bd and doc_bd.datos_formulario else {}
     
-    # 2. Priorizar los ítems generales del Paso 2
-    items_crudos = datos.get("items_generales", ctx['items_mapeados'])
-    
-    # 3. Normalizar llaves para el motor Word y asegurar descripción vacía
-    items_normalizados = []
-    if items_crudos:
-        for i in items_crudos:
-            items_normalizados.append({
-                "nro": i.get("nro", i.get("nro_item", "")),
-                "objeto": i.get("objeto", i.get("objeto_corto", "")),
-                "descripcion": "", # Forzado a vacío, como solicitaste
-                "tipuni": i.get("tipuni", i.get("unidad", "")),
-                "cant": i.get("cant", i.get("cantidad", "")),
-                "precio_unitario": i.get("precio_unitario", 0),
-                "total_item": i.get("total_item", 0)
-            })
-            
     enc_finanzas_val = datos.get("encargado_presupuesto") or datos.get("enc_finanzas") or ctx['proceso'].responsable_presupuesto or ""
     vars_sol = {**ctx['variables'], "{ENCFINANZAS}": enc_finanzas_val}
             
     generar_documento_word(
         f"{RUTA_PLANTILLAS}/solicitudCP.docx", ruta, ctx['fecha_literal'], ctx['proceso'].codigo_proceso or "",
         ctx['proceso'].tecnico_solicitante or "", ctx['fecha_corta'], False, 0, ctx['proceso'].objeto_contratacion or "",
-        ctx['monto_total'], ctx['proceso'].plazo_entrega or 0, None, items_normalizados, ctx['gastos_mapeados'], vars_sol
+        ctx['monto_total'], ctx['proceso'].plazo_entrega or 0, None, None, ctx['gastos_mapeados'], vars_sol
     )
     return ruta
 
@@ -142,9 +125,14 @@ def generar_especificaciones_tecnicas(ctx):
     # 2. Calcular total del precio referencial
     total_monto = sum(float(i.get("total_item", 0)) for i in items_tecnicos) if items_tecnicos else ctx['monto_total']
     
+    def_plazo = f"{ctx['proceso'].plazo_entrega} días calendario" if ctx['proceso'].plazo_entrega else "Inmediato"
+    def_pago = ctx['proceso'].tipo_pago or "TRANSFERENCIA BANCARIA"
+
     vars_specs = {
         "{FECHA}": formatear_fecha_literal(datos.get("fecha_documento", ctx['fecha_corta'])),
         "{LUGARENTREGA}": datos.get("lugar_entrega", ctx['proceso'].distrito_comunidad or ""),
+        "{PLAZOENTREGA}": datos.get("plazo_entrega", def_plazo) or def_plazo,
+        "{FORMAPAGO}": datos.get("forma_pago", def_pago) or def_pago,
         "{TOTAL}": f"{total_monto:,.2f}"
     }
     

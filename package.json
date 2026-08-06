@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:css": "tailwindcss -i ./frontend/css/input.css -o ./frontend/css/output.css --watch"
+    "dev:css": "tailwindcss -i ./frontend/css/input.css -o ./frontend/css/output.css --watch",
+    "test:backend": "pytest backend/tests"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0"

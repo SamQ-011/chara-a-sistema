@@ -31,7 +31,14 @@ class NoCacheStaticMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(NoCacheStaticMiddleware)
 
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+if not FRONTEND_DIR.exists():
+    FRONTEND_DIR = Path("../frontend")
+
+app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 # Registrar las rutas
 app.include_router(catalogos.router)

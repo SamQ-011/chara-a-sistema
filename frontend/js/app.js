@@ -20,6 +20,7 @@ const estados = {
 
 // Matriz de responsabilidades: ¿Qué debe generar cada rol para considerar su trabajo "terminado"?
 const TAREAS_POR_ROL = {
+    "SOLICITANTE": ["especificaciones_tecnicas", "solicitud_cp", "solicitud_inicio", "informe_cotizacion", "acta_recepcion", "informe_conformidad"],
     "PRESUPUESTO": ["cert_presupuestaria"],
     "ADMIN": ["informe_cotizacion", "almacenes"],
     "RPC": ["autorizacion_inicio", "notificacion_adjudicacion", "orden_compra"]
@@ -114,18 +115,16 @@ function clasificarBandeja() {
             return;
         }
 
-        if (rol === "SOLICITANTE") {
-            if (p.estado === "FINALIZADO") listasClasificadas.procesados.push(p);
-            else listasClasificadas.pendientes.push(p);
+        const tareasObligatorias = TAREAS_POR_ROL[rol] || [];
+        const docsFinalizados = p.docs_finalizados || (p.documentos || []).filter(d => d.estado === "FINALIZADO").map(d => d.clave_documento);
+        
+        // Un trámite está "Terminado para mi rol" únicamente si se han generado TODOS los documentos asignados a mi rol
+        const termineMiTrabajo = tareasObligatorias.length > 0 && tareasObligatorias.every(doc => docsFinalizados.includes(doc));
+        
+        if (termineMiTrabajo || p.estado === "FINALIZADO") {
+            listasClasificadas.procesados.push(p);
         } else {
-            const tareasObligatorias = TAREAS_POR_ROL[rol] || [];
-            const termineMiTrabajo = tareasObligatorias.length > 0 && tareasObligatorias.every(doc => p.docs_finalizados && p.docs_finalizados.includes(doc));
-            
-            if (termineMiTrabajo) {
-                listasClasificadas.procesados.push(p);
-            } else {
-                listasClasificadas.pendientes.push(p);
-            }
+            listasClasificadas.pendientes.push(p);
         }
     });
 
@@ -210,8 +209,83 @@ const LISTA_DOCS_COMPLETA = [
     { id: "informe_conformidad", sigla: "INF", nombre: "Informe de Conformidad" }
 ];
 
+function calcularDiasTranscurridos(fechaStr) {
+    if (!fechaStr) return 0;
+    const fecha = new Date(fechaStr);
+    if (isNaN(fecha.getTime())) return 0;
+    const hoy = new Date();
+    const difMs = hoy - fecha;
+    return Math.max(0, Math.floor(difMs / (1000 * 60 * 60 * 24)));
+}
+
+function obtenerUbicacionYPendiente(proceso) {
+    const docsListos = proceso.docs_finalizados || (proceso.documentos || []).filter(d => d.estado === "FINALIZADO").map(d => d.clave_documento);
+    
+    const flujoResponsables = [
+        { doc: "especificaciones_tecnicas", rol: "SOLICITANTE", label: "Esp. Técnicas" },
+        { doc: "solicitud_cp", rol: "SOLICITANTE", label: "Solicitud CP" },
+        { doc: "cert_presupuestaria", rol: "PRESUPUESTO", label: "Certificación CP" },
+        { doc: "solicitud_inicio", rol: "SOLICITANTE", label: "Solicitud Inicio" },
+        { doc: "autorizacion_inicio", rol: "RPC", label: "Autorización Inicio" },
+        { doc: "informe_cotizacion", rol: "SOLICITANTE", label: "Informe Cotización" },
+        { doc: "notificacion_adjudicacion", rol: "RPC", label: "Notif. Adjudicación" },
+        { doc: "orden_compra", rol: "RPC", label: "Orden de Compra" },
+        { doc: "almacenes", rol: "ADMIN", label: "Almacenes" },
+        { doc: "acta_recepcion", rol: "SOLICITANTE", label: "Acta de Entrega" },
+        { doc: "informe_conformidad", rol: "SOLICITANTE", label: "Informe Conformidad" }
+    ];
+
+    for (const item of flujoResponsables) {
+        if (!docsListos.includes(item.doc)) {
+            return { rol: item.rol, label: item.label, listo: false };
+        }
+    }
+    return { rol: "CONCLUIDO", label: "Completado", listo: true };
+}
+
+function renderizarBannerAlarma() {
+    const bannerId = "banner-alerta-retrasos";
+    let bannerEl = document.getElementById(bannerId);
+    
+    const tramitesCriticos = (listasClasificadas.pendientes || []).filter(p => {
+        if (p.estado === "ANULADO" || p.estado === "FINALIZADO") return false;
+        const dias = calcularDiasTranscurridos(p.fecha_solicitud || p.fecha_creacion);
+        return dias > 5;
+    });
+
+    const contenedorSeccion = document.querySelector("section.p-8");
+    if (!contenedorSeccion) return;
+
+    if (tramitesCriticos.length > 0) {
+        if (!bannerEl) {
+            bannerEl = document.createElement("div");
+            bannerEl.id = bannerId;
+            bannerEl.className = "bg-gradient-to-r from-rose-600 to-rose-700 text-white px-6 py-4 rounded-2xl shadow-md border border-rose-500 mb-6 flex items-center justify-between transition-all";
+            contenedorSeccion.insertBefore(bannerEl, contenedorSeccion.firstChild);
+        }
+        bannerEl.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-bold text-white text-lg shrink-0">🚨</div>
+                <div>
+                    <h4 class="font-bold text-sm">Alerta de Atasco Documental (${tramitesCriticos.length} trámites con retraso crítico)</h4>
+                    <p class="text-xs text-rose-100 mt-0.5">Existen trámites asignados a tu bandeja con más de 5 días de antigüedad que requieren tu atención.</p>
+                </div>
+            </div>
+            <button onclick="filtrarPorKpi('PENDIENTES')" class="bg-white text-rose-700 hover:bg-rose-50 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm shrink-0">
+                Ver trámites urgentes
+            </button>
+        `;
+    } else if (bannerEl) {
+        bannerEl.remove();
+    }
+}
+
 function pintarTabla(datos) {
-    if (!datos.length) {
+    if (!tabla) return;
+    
+    renderizarBannerAlarma();
+
+    if (!datos || datos.length === 0) {
         tabla.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-400 font-medium">No se encontraron trámites en esta vista.</td></tr>`;
         return;
     }
@@ -254,6 +328,32 @@ function pintarTabla(datos) {
             checkboxHabilitado = `<input type="checkbox" disabled class="w-4 h-4 opacity-30 cursor-not-allowed">`;
         }
 
+        const ubicacionInfo = obtenerUbicacionYPendiente(p);
+        const dias = calcularDiasTranscurridos(p.fecha_solicitud || p.fecha_creacion);
+
+        let ubicacionBadgeHtml = "";
+        if (ubicacionInfo.listo || p.estado === "FINALIZADO") {
+            ubicacionBadgeHtml = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✅ Concluido</span>`;
+        } else {
+            const colorRol = ubicacionInfo.rol === rol ? "bg-amber-50 text-amber-800 border-amber-200 font-bold" : "bg-slate-100 text-slate-700 border-slate-200 font-medium";
+            ubicacionBadgeHtml = `<span class="px-2.5 py-1 rounded-lg text-xs ${colorRol} border flex items-center gap-1.5 w-fit" title="Próximo documento pendiente">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> ${ubicacionInfo.label} (${ubicacionInfo.rol})
+            </span>`;
+        }
+
+        let slaBadgeHtml = "";
+        if (p.estado !== "FINALIZADO" && p.estado !== "ANULADO") {
+            if (dias <= 2) {
+                slaBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="En tiempo normal">🟢 ${dias}d transcurridos</span>`;
+            } else if (dias <= 5) {
+                slaBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Atención requerida">🟡 ${dias}d transcurridos</span>`;
+            } else {
+                slaBadgeHtml = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse" title="Alerta de retraso crítico">🔴 🚨 ${dias}d (Atascado)</span>`;
+            }
+        } else {
+            slaBadgeHtml = `<span class="px-2 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-400 border border-slate-200">--</span>`;
+        }
+
         return `
         <tr class="hover:bg-slate-50/80 transition duration-150 border-b border-slate-100 last:border-0">
             <td class="px-4 py-4 text-center align-middle">
@@ -273,6 +373,10 @@ function pintarTabla(datos) {
                 </div>
             </td>
 
+            <td class="px-6 py-4 align-middle whitespace-nowrap">
+                ${ubicacionBadgeHtml}
+            </td>
+
             <td class="px-6 py-4 align-middle">
                 <div class="flex flex-wrap gap-1 max-w-[280px]">
                     ${semaforoHtml}
@@ -280,9 +384,7 @@ function pintarTabla(datos) {
             </td>
 
             <td class="px-6 py-4 whitespace-nowrap align-middle">
-                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${estadoObj.color} border">
-                    ${estadoObj.icono} ${p.estado}
-                </span>
+                ${slaBadgeHtml}
             </td>
 
             <td class="px-6 py-4 text-center whitespace-nowrap align-middle">
@@ -301,32 +403,25 @@ function pintarTabla(datos) {
     KPIS Y UTILIDADES
 =========================================*/
 function actualizarKPIs(rol) {
-    // Ajuste de Títulos según rol
     const lblTotal = document.getElementById("lbl-kpi-total");
     const lblEnCurso = document.getElementById("lbl-kpi-encurso");
     const lblPendientes = document.getElementById("lbl-kpi-pendientes");
     const lblFinalizados = document.getElementById("lbl-kpi-finalizados");
 
-    if (rol === "PRESUPUESTO") {
-        if(lblEnCurso) lblEnCurso.textContent = "Pendientes (Mi Bandeja)";
-        if(lblPendientes) lblPendientes.textContent = "Certificados Hoy";
-        if(lblFinalizados) lblFinalizados.textContent = "Total Emitidos";
-    } else if (rol === "SOLICITANTE") {
-        if(lblTotal) lblTotal.textContent = "Mis Trámites";
-        if(lblEnCurso) lblEnCurso.textContent = "En Curso (Activos)";
-    }
+    if (lblTotal) lblTotal.textContent = rol === "SOLICITANTE" ? "Mis Trámites" : "Total Trámites";
+    if (lblEnCurso) lblEnCurso.textContent = "En Curso (Activos)";
+    if (lblPendientes) lblPendientes.textContent = "Mis Pendientes";
+    if (lblFinalizados) lblFinalizados.textContent = "Procesados / Listos";
 
-    // Inyectamos las matemáticas puras de nuestra clasificación
     const elTotal = document.getElementById("totalProcesos");
     const elEnCurso = document.getElementById("enCurso");
     const elPendientes = document.getElementById("pendientes");
     const elFinalizados = document.getElementById("finalizados");
 
-    // Excluimos ANULADO de las métricas activas
     const totalActivos = procesosCache.filter(p => p.estado !== "ANULADO").length;
     const countEnCurso = procesosCache.filter(p => (p.estado === "EN CURSO" || p.estado === "CON PENDIENTES")).length;
     const countPendientesAccion = listasClasificadas.pendientes.length;
-    const countFinalizados = procesosCache.filter(p => p.estado === "FINALIZADO").length;
+    const countFinalizados = listasClasificadas.procesados.filter(p => p.estado !== "ANULADO").length;
 
     if(elTotal) elTotal.textContent = totalActivos;
     if(elEnCurso) elEnCurso.textContent = countEnCurso;

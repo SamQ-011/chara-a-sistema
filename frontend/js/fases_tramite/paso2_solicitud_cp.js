@@ -22,42 +22,30 @@ async function cargarCatalogoPOACP() {
 // ==========================================
 function validarCuadreCP() {
     const elTotalGastos = document.getElementById("cp-total-gastos");
-    const elTotalItems = document.getElementById("cp-total-items");
     const statusContainer = document.getElementById("cp-status-cuadre");
     const btnWord = document.getElementById("btn-guardar-cp-word");
     const btnPdf = document.getElementById("btn-guardar-cp-pdf");
     const contBotones = document.getElementById("cp-contenedor-botones");
 
-    if (!elTotalGastos || !elTotalItems || !statusContainer) return;
+    if (!elTotalGastos || !statusContainer) return;
 
     const totalGastos = parseFloat(elTotalGastos.textContent) || 0;
-    const totalItems = parseFloat(elTotalItems.textContent) || 0;
-    const diferencia = Math.abs(totalGastos - totalItems);
-
     const hayFilasGastos = document.querySelectorAll("#cp-contenedor-gastos .card-gasto-cp").length > 0;
-    const hayFilasItems = document.querySelectorAll("#cp-tbody-items tr").length > 0;
 
-    if (!hayFilasGastos || !hayFilasItems || totalGastos === 0 || totalItems === 0) {
+    if (!hayFilasGastos || totalGastos === 0) {
         statusContainer.innerHTML = `
             <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                <i data-lucide="info" class="w-4 h-4 text-slate-500"></i> Ingrese gastos e ítems para validar el cuadre
+                <i data-lucide="info" class="w-4 h-4 text-slate-500"></i> Ingrese la estructura de gastos para habilitar la emisión
             </span>
         `;
         bloquearBotones(true);
-    } else if (diferencia < 0.01) {
+    } else {
         statusContainer.innerHTML = `
             <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Montos cuadrados correctamente (Bs. ${totalGastos.toFixed(2)})
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Presupuesto Afectado: Bs. ${totalGastos.toFixed(2)}
             </span>
         `;
         bloquearBotones(false);
-    } else {
-        statusContainer.innerHTML = `
-            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-sm">
-                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i> Los montos no coinciden (Diferencia: Bs. ${diferencia.toFixed(2)})
-            </span>
-        `;
-        bloquearBotones(true);
     }
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -395,24 +383,6 @@ async function abrirEditorSolicitudCP(proceso) {
         elEncFinanzas.value = datosGuardados.encargado_presupuesto || datosGuardados.enc_finanzas || proceso.responsable_presupuesto || "Lic. Adela Dorado Garrado";
     }
 
-    // 2. Extraemos los ítems generales (el JSON)
-    let itemsParaCargar = [];
-    if (datosGuardados.items_generales && datosGuardados.items_generales.length > 0) {
-        itemsParaCargar = datosGuardados.items_generales;
-    }
-
-    // 3. Limpiamos y repoblamos la tabla visual
-    const tbodyItems = document.getElementById("cp-tbody-items");
-    if (tbodyItems) tbodyItems.innerHTML = "";
-    contadorItemsCP = 0;
-
-    if (itemsParaCargar.length > 0) {
-        itemsParaCargar.forEach(i => agregarItemCP(i));
-    } else {
-        agregarItemCP(); // Fila en blanco si es trámite nuevo
-    }
-    calcularTotalItemsCP();
-
     const vista = document.getElementById("vista-solicitud-cp");
     if (vista) {
         vista.classList.remove("hidden");
@@ -438,8 +408,6 @@ async function guardarSolicitudCP(formato) {
 
     try {
         const cardsGastos = document.querySelectorAll("#cp-contenedor-gastos .card-gasto-cp");
-        const tbodyItems = document.getElementById("cp-tbody-items");
-        const filasItems = tbodyItems ? tbodyItems.querySelectorAll("tr") : [];
 
         botones.forEach(b => {
             b.disabled = true;
@@ -463,15 +431,6 @@ async function guardarSolicitudCP(formato) {
             };
         });
 
-        const itemsPayload = Array.from(filasItems).map(fila => ({
-            nro: parseInt(fila.querySelector(".num-item-cp").value),
-            objeto: fila.querySelector(".obj-corto-cp").value.trim(),
-            tipuni: fila.querySelector(".unidad-cp").value.trim(),
-            cant: parseFloat(fila.querySelector(".cantidad-cp").value) || 0,
-            precio_unitario: parseFloat(fila.querySelector(".precio-cp").value) || 0,
-            total_item: parseFloat(fila.querySelector(".total-cp").value) || 0
-        }));
-
         const elEnc = document.getElementById("cp-encargado-presupuesto");
         const encFinanzasVal = elEnc ? elEnc.value.trim() : "";
 
@@ -485,7 +444,7 @@ async function guardarSolicitudCP(formato) {
                 encargado_presupuesto: encFinanzasVal,
                 enc_finanzas: encFinanzasVal,
                 gastos: gastosPayload,
-                items_generales: itemsPayload
+                items_generales: []
             }
         };
 
