@@ -32,7 +32,20 @@ Inicia el contenedor de la base de datos PostgreSQL:
 docker-compose up -d
 ```
 
-### 3. Backend (FastAPI)
+### 3. Creación de Tablas y Seeding (Datos Iniciales)
+Para inicializar la base de datos con tablas, catálogos POA y usuarios base:
+```bash
+# 1. Crear tablas en la base de datos
+python backend/crear_tablas.py
+
+# 2. Cargar catálogos y árbol POA inicial
+python backend/seeder_poa.py
+
+# 3. Cargar usuarios iniciales y roles
+python backend/seeder_usuarios.py
+```
+
+### 4. Backend (FastAPI)
 Instala las dependencias y ejecuta el servidor de desarrollo:
 ```bash
 cd backend
@@ -41,7 +54,7 @@ uvicorn app.main:app --reload
 ```
 Acceso a la documentación interactiva Swagger: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Frontend & Tailwind CSS
+### 5. Frontend & Tailwind CSS
 Ejecuta el compilador en tiempo real de Tailwind CSS:
 ```bash
 npm run dev:css
@@ -71,7 +84,10 @@ npm run test:backend
 │   │   ├── core/         # Configuración base, DB y seguridad JWT
 │   │   ├── models/       # Modelos SQLAlchemy
 │   │   └── schemas/      # Esquemas Pydantic v2
-│   └── tests/            # Tests automatizados (pytest)
+│   ├── tests/            # Tests automatizados (pytest)
+│   ├── crear_tablas.py   # Creación inicial de modelos DB
+│   ├── seeder_poa.py     # Carga de catálogos y programas POA
+│   └── seeder_usuarios.py# Seeder de cuentas de usuarios iniciales
 ├── frontend/
 │   ├── css/              # Archivos de estilos e input/output Tailwind CSS
 │   ├── js/               # Controladores y servicios de la interfaz

@@ -1,5 +1,5 @@
 // window.ENV.API_URL permite que al pasar a producción, solo inyectes un script de config antes de api.js
-const API_BASE_URL = window.ENV?.API_URL || "http://127.0.0.1:8000/api";
+const API_BASE_URL = window.ENV?.API_URL || (window.location.origin.startsWith("http") ? `${window.location.origin}/api` : "http://127.0.0.1:8000/api");
 
 /* =========================================
    SISTEMA DE NOTIFICACIONES TOAST (MODERNO)
@@ -323,44 +323,10 @@ const DashboardAPI = {
 };
 
 const CatalogosAPI = {
-    obtenerPoa: async () => {
-        const token = localStorage.getItem('access_token');
-        const res = await fetch(`${API_BASE_URL}/poa/arbol`, { 
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error("Error al obtener catálogo POA");
-        return await res.json();
-    },
-    crearProgramaPOA: async (datos) => {
-        const token = localStorage.getItem('access_token');
-        const res = await fetch(`${API_BASE_URL}/poa/programas`, {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(datos)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-    },
-    crearProyectoPOA: async (datos) => {
-        const token = localStorage.getItem('access_token');
-        const res = await fetch(`${API_BASE_URL}/poa/proyectos`, {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(datos)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-    },
-    crearPartidaPOA: async (datos) => {
-        const token = localStorage.getItem('access_token');
-        const res = await fetch(`${API_BASE_URL}/poa/partidas`, {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(datos)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-    }
+    obtenerPoa: async () => await request("/poa/arbol"),
+    crearProgramaPOA: async (datos) => await request("/poa/programas", { method: "POST", body: JSON.stringify(datos) }),
+    crearProyectoPOA: async (datos) => await request("/poa/proyectos", { method: "POST", body: JSON.stringify(datos) }),
+    crearPartidaPOA: async (datos) => await request("/poa/partidas", { method: "POST", body: JSON.stringify(datos) })
 };
 
 window.API = {
