@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case, extract
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 from docx2pdf import convert
@@ -93,7 +93,11 @@ def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_d
             "hoja_ruta": p.hoja_ruta,
             "objeto_contratacion": p.objeto_contratacion,
             "estado": estado_str,
-            "unidad_nombre": p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla / Sin Asignar"),
+            "unidad_solicitante": p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla / Sin Asignar"),
+            "monto_total": float(p.monto_total) if p.monto_total else 0.0,
+            "monto_adjudicado": float(p.monto_adjudicado) if p.monto_adjudicado else None,
+            "retencion_monto": float(p.retencion_monto) if p.retencion_monto else 0.0,
+            "tipo_contratacion": p.tipo_contratacion,
             "docs_finalizados": docs_fin,
             "fecha_creacion": fecha_iso,
             "fecha_solicitud": fecha_iso
@@ -152,35 +156,81 @@ def obtener_estadisticas_dashboard(db: Session = Depends(get_db), usuario_actual
         sol_val = float(presupuesto_sol_db or 0)
         ejec_val = float(presupuesto_ejecutado_db or 0)
         ahorro_val = max(0.0, sol_val - ejec_val) if ejec_val > 0 else 0.0
+
+        # C. SLA Real: Promedio de días entre creación y última actualización (solo finalizados)
+        from datetime import datetime
+        finalizados_con_fechas = db.query(Proceso.fecha_creacion, Proceso.fecha_actualizacion)\
+            .filter(
+                Proceso.activo == True,
+                Proceso.estado == EstadoProceso.FINALIZADO,
+                Proceso.fecha_creacion.isnot(None),
+                Proceso.fecha_actualizacion.isnot(None)
+            ).all()
+        
+        if finalizados_con_fechas:
+            total_dias = 0.0
+            count_valid = 0
+            for fc, fa in finalizados_con_fechas:
+                delta = (fa - fc).total_seconds() / 86400.0  # Convertir a días
+                if delta >= 0:
+                    total_dias += delta
+                    count_valid += 1
+            sla_real = round(total_dias / count_valid, 1) if count_valid > 0 else None
+        else:
+            sla_real = None
+
+        # D. Total de Retenciones Acumuladas (7% retenido a proveedores)
+        retenciones_db = db.query(func.sum(Proceso.retencion_monto))\
+            .filter(Proceso.activo == True, Proceso.retencion_monto.isnot(None),
+                    Proceso.estado != EstadoProceso.ANULADO).scalar()
+        total_retenciones = float(retenciones_db or 0)
             
-        # C. Carga por Unidad Solicitante
+        # E. Carga por Unidad Solicitante
         unidades_conteo = db.query(Unidad.nombre, func.count(Proceso.id))\
             .join(Proceso, Unidad.id == Proceso.unidad_solicitante_id)\
             .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.FINALIZADO)\
             .group_by(Unidad.nombre).all()
 
-        # D. Partidas POA más afectadas
+        # F. Partidas POA más afectadas
         top_partidas_db = db.query(GastoProceso.partida, GastoProceso.descripcion, func.sum(GastoProceso.monto))\
             .join(Proceso, Proceso.id == GastoProceso.proceso_id)\
             .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.ANULADO)\
             .group_by(GastoProceso.partida, GastoProceso.descripcion)\
             .order_by(func.sum(GastoProceso.monto).desc()).limit(5).all()
 
-        # E. Ranking Proveedores Adjudicados
+        # G. Ranking Proveedores Adjudicados
         top_prov_db = db.query(Proveedor.razon_social, func.count(Proceso.id), func.sum(Proceso.monto_adjudicado))\
             .join(Proceso, Proveedor.id == Proceso.proveedor_id)\
             .filter(Proceso.activo == True, Proceso.monto_adjudicado.isnot(None))\
             .group_by(Proveedor.razon_social)\
             .order_by(func.sum(Proceso.monto_adjudicado).desc()).limit(5).all()
+
+        # H. Índice de Efectividad: % de trámites que llegan a FINALIZADO sin ser anulados
+        total_no_borrador = db.query(func.count(Proceso.id))\
+            .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.BORRADOR).scalar() or 0
+        total_finalizados = stats.get("FINALIZADO", 0)
+        total_anulados = stats.get("ANULADO", 0)
+        indice_efectividad = round((total_finalizados / total_no_borrador) * 100, 1) if total_no_borrador > 0 else 0.0
+
+        # I. Distribución por Tipo de Contratación
+        tipos_db = db.query(Proceso.tipo_contratacion, func.count(Proceso.id))\
+            .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.ANULADO,
+                    Proceso.tipo_contratacion.isnot(None))\
+            .group_by(Proceso.tipo_contratacion).all()
             
         response_data["metricas_globales"] = {
             "presupuesto_solicitado": sol_val,
             "presupuesto_ejecutado": ejec_val,
             "ahorro_acumulado": ahorro_val,
-            "sla_promedio_dias": 3.5, # SLA institucional promedio estimado
+            "sla_promedio_dias": sla_real,
+            "total_retenciones": total_retenciones,
+            "indice_efectividad": indice_efectividad,
+            "total_finalizados": total_finalizados,
+            "total_anulados": total_anulados,
             "carga_por_unidad": [{"unidad": u[0], "cantidad": u[1]} for u in unidades_conteo],
             "top_partidas": [{"partida": p[0], "descripcion": p[1], "monto": float(p[2] or 0)} for p in top_partidas_db],
-            "ranking_proveedores": [{"proveedor": pr[0], "contratos": pr[1], "monto": float(pr[2] or 0)} for pr in top_prov_db] if top_prov_db else []
+            "ranking_proveedores": [{"proveedor": pr[0], "contratos": pr[1], "monto": float(pr[2] or 0)} for pr in top_prov_db] if top_prov_db else [],
+            "distribucion_tipo_contratacion": [{"tipo": t[0], "cantidad": t[1]} for t in tipos_db] if tipos_db else []
         }
         
     return {

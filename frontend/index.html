@@ -183,14 +183,14 @@
             <div id="panel-gerencial" class="hidden space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Resumen de Gestión Financiera & SLA (Alta Gerencia)
+                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Panel de Gestión Financiera & Operativa
                     </h3>
-                    <a href="reportes.html" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                    <a href="reportes.html" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
                         Ver Analytics Completo <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </a>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- KPI 1: Solicitado -->
                     <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
@@ -198,7 +198,7 @@
                             <h4 id="monto-solicitado" class="text-lg font-black text-indigo-900 mt-1 tabular-nums">Bs. 0.00</h4>
                             <p class="text-[10px] text-slate-400 mt-0.5">Certificaciones en curso</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
                             <i data-lucide="coins" class="w-5 h-5"></i>
                         </div>
                     </div>
@@ -210,7 +210,7 @@
                             <h4 id="monto-adjudicado" class="text-lg font-black text-emerald-600 mt-1 tabular-nums">Bs. 0.00</h4>
                             <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">Contratado en órdenes</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
                             <i data-lucide="check-circle" class="w-5 h-5"></i>
                         </div>
                     </div>
@@ -222,20 +222,44 @@
                             <h4 id="monto-ahorro" class="text-lg font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00</h4>
                             <p class="text-[10px] text-blue-600 font-medium mt-0.5">Saldo no ejecutado</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                             <i data-lucide="piggy-bank" class="w-5 h-5"></i>
                         </div>
                     </div>
 
-                    <!-- KPI 4: SLA Promedio -->
+                    <!-- KPI 4: Retenciones del 7% -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Retenciones (7%)</p>
+                            <h4 id="monto-retenciones" class="text-lg font-black text-rose-700 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[10px] text-rose-600 font-medium mt-0.5">Pendiente pago posterior</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
+                            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- KPI 5: SLA Promedio (Dinámico) -->
                     <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
                             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">SLA Atención Promedio</p>
-                            <h4 id="sla-promedio" class="text-lg font-black text-slate-800 mt-1 tabular-nums">3.5 días</h4>
-                            <p class="text-[10px] text-emerald-600 font-bold mt-0.5">⚡ Eficiencia óptima</p>
+                            <h4 id="sla-promedio" class="text-lg font-black text-slate-800 mt-1 tabular-nums">Cargando...</h4>
+                            <p id="sla-subtitulo" class="text-[10px] text-slate-400 font-medium mt-0.5">Calculando...</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-bold">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
                             <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- KPI 6: Índice de Efectividad -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Índice de Efectividad</p>
+                            <h4 id="indice-efectividad" class="text-lg font-black text-violet-700 mt-1 tabular-nums">0%</h4>
+                            <p id="efectividad-subtitulo" class="text-[10px] text-violet-600 font-medium mt-0.5">Completados vs Anulados</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
+                            <i data-lucide="target" class="w-5 h-5"></i>
                         </div>
                     </div>
                 </div>

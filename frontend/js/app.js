@@ -45,7 +45,9 @@ async function inicializarDashboard() {
 
     if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolActual)) {
         const btnCatalogos = document.getElementById("menu-catalogos");
+        const btnReportes = document.getElementById("menu-reportes");
         if (btnCatalogos) btnCatalogos.style.display = "none";
+        if (btnReportes) btnReportes.style.display = "none";
     }
 
     // NUEVO: Revelar el filtro de unidades para roles gerenciales
@@ -373,7 +375,7 @@ function pintarTabla(datos) {
                         ${p.objeto_contratacion || 'Sin objeto definido'}
                     </span>
                     <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> ${p.unidad_nombre || 'Sin Unidad Asignada'}
+                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> ${p.unidad_solicitante || 'Sin Unidad Asignada'}
                     </span>
                 </div>
             </td>
@@ -461,11 +463,40 @@ function pintarPanelGerencial(metricas) {
     const elAdj = document.getElementById("monto-adjudicado");
     const elAho = document.getElementById("monto-ahorro");
     const elSla = document.getElementById("sla-promedio");
+    const elRet = document.getElementById("monto-retenciones");
+    const elEfe = document.getElementById("indice-efectividad");
 
     if (elSol) elSol.textContent = formateador.format(metricas.presupuesto_solicitado || 0);
     if (elAdj) elAdj.textContent = formateador.format(metricas.presupuesto_ejecutado || 0);
     if (elAho) elAho.textContent = formateador.format(metricas.ahorro_acumulado || 0);
-    if (elSla) elSla.textContent = `${metricas.sla_promedio_dias || 3.5} días`;
+    if (elRet) elRet.textContent = formateador.format(metricas.total_retenciones || 0);
+
+    // SLA dinámico: si no hay finalizados, mostrar "Sin datos"
+    if (elSla) {
+        const slaSubtitle = document.getElementById("sla-subtitulo");
+        if (metricas.sla_promedio_dias !== null && metricas.sla_promedio_dias !== undefined) {
+            elSla.textContent = `${metricas.sla_promedio_dias} días`;
+            if (slaSubtitle) {
+                slaSubtitle.textContent = metricas.sla_promedio_dias <= 5 ? "⚡ Eficiencia óptima" : "⏳ Requiere revisión";
+                slaSubtitle.className = `text-[10px] font-bold mt-0.5 ${metricas.sla_promedio_dias <= 5 ? 'text-emerald-600' : 'text-amber-600'}`;
+            }
+        } else {
+            elSla.textContent = "Sin datos";
+            if (slaSubtitle) {
+                slaSubtitle.textContent = "Sin trámites finalizados";
+                slaSubtitle.className = "text-[10px] font-medium mt-0.5 text-slate-400";
+            }
+        }
+    }
+
+    // Índice de efectividad
+    if (elEfe) {
+        elEfe.textContent = `${metricas.indice_efectividad || 0}%`;
+        const efeSubtitle = document.getElementById("efectividad-subtitulo");
+        if (efeSubtitle) {
+            efeSubtitle.textContent = `${metricas.total_finalizados || 0} completados · ${metricas.total_anulados || 0} anulados`;
+        }
+    }
 
     const listaUnidades = document.getElementById("lista-unidades");
     if (listaUnidades) {
