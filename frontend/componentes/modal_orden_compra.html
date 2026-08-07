@@ -44,22 +44,29 @@
                 <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-bold text-slate-800">Detalle de Ítems Adjudicados</h3>
-                        <p class="text-xs text-slate-500 mt-1">Ajuste los precios unitarios para que coincidan con la propuesta ganadora.</p>
+                        <p class="text-xs text-slate-500 mt-1">Ajuste las características reales (marca/modelo) y precios según la propuesta ganadora.</p>
                     </div>
-                    <div id="oc-alerta-validacion" class="px-4 py-2 rounded-lg font-bold text-sm bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-2">
-                        <i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="agregarItemOrdenCompra()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm border border-indigo-200">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Agregar Ítem
+                        </button>
+                        <div id="oc-alerta-validacion" class="px-4 py-2 rounded-lg font-bold text-sm bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm whitespace-nowrap">
                         <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                             <tr>
-                                <th class="px-4 py-3 w-12 text-center">Nro</th>
-                                <th class="px-4 py-3 min-w-[200px]">Objeto Corto</th>
-                                <th class="px-4 py-3 w-28">Unidad</th>
-                                <th class="px-4 py-3 w-28">Cant.</th>
-                                <th class="px-4 py-3 w-32">Precio Unit. (Bs)</th>
-                                <th class="px-4 py-3 w-32 text-right">Subtotal (Bs)</th>
+                                <th class="px-2 py-3 w-10 text-center">Nro</th>
+                                <th class="px-3 py-3 min-w-[180px]">Objeto Corto</th>
+                                <th class="px-3 py-3 min-w-[220px]">Desc. Larga (Características/Marca)</th>
+                                <th class="px-3 py-3 w-28 text-center">Unidad</th>
+                                <th class="px-3 py-3 w-24 text-center">Cant.</th>
+                                <th class="px-3 py-3 w-28 text-right">Precio Unit. (Bs)</th>
+                                <th class="px-3 py-3 w-32 text-right">Subtotal (Bs)</th>
+                                <th class="px-2 py-3 w-10 text-center">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="oc-tabla-items" class="divide-y divide-slate-100"></tbody>

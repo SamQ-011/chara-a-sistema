@@ -70,7 +70,26 @@ def generar_orden_compra(ctx):
         "{TOTAL}": f"{monto_final:,.2f}"
     }
     
-    items_locales = datos_modal.get("items_orden", ctx['items_mapeados'])
+    items_crudos = datos_modal.get("items_orden", ctx['items_mapeados'])
+    items_locales = []
+    for i in items_crudos:
+        obj = i.get("objeto", i.get("objeto_corto", ""))
+        desc = i.get("descripcion", i.get("descripcion_larga", ""))
+        texto_unido = f"{obj}\n{desc}" if desc else obj
+        
+        cant_val = float(i.get("cant", i.get("cantidad", 0)))
+        prec_val = float(i.get("precio_unitario", 0))
+        tot_val = float(i.get("total_item", cant_val * prec_val))
+
+        items_locales.append({
+            "nro": i.get("nro", i.get("nro_item", "")),
+            "objeto": texto_unido,
+            "tipuni": i.get("tipuni", i.get("unidad", "")),
+            "cant": cant_val,
+            "precio_unitario": prec_val,
+            "total_item": tot_val
+        })
+
     generar_documento_excel(f"{RUTA_PLANTILLAS}/orden_compra.xlsx", ruta, {**ctx['variables'], **vars_oc}, items_locales, MAPEO_FINANCIERA, "financiera")
     return ruta
 

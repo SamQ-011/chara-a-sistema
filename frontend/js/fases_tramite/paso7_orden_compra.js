@@ -1,30 +1,51 @@
 // archivo: js/fases_tramite/paso7_orden_compra.js
 
-let montoAdjudicadoObjetivo = 0; // Esta variable vive solo para el modal, está bien aquí.
+let montoAdjudicadoObjetivo = 0;
+let contadorOrdenCompra = 0;
 
-function agregarItemOrdenCompra(data) {
+function agregarItemOrdenCompra(data = null) {
+    contadorOrdenCompra++;
     const tr = document.createElement("tr");
+    tr.id = `oc-item-${contadorOrdenCompra}`;
+
+    const v_obj = data ? (data.objeto || data.objeto_corto || "") : "";
+    const v_desc = data ? (data.descripcion || data.descripcion_larga || "") : "";
+    const v_uni = data ? (data.tipuni || data.unidad || "") : "";
+    const v_cant = data ? (data.cant || data.cantidad || "0") : "0";
+    const v_prec = data ? (data.precio_unitario || "0") : "0";
+    const v_tot = data ? (data.total_item || "0.00") : "0.00";
+
     tr.innerHTML = `
-        <td class="p-4 align-middle text-center font-medium text-slate-500">${data.nro}</td>
-        <td class="p-4 align-middle">
-            <p class="font-bold text-slate-800">${data.objeto}</p>
-            <input type="hidden" class="oc-desc" value="${data.descripcion || ''}">
+        <td class="p-2 align-top"><input type="number" class="w-full bg-transparent text-center oc-nro outline-none text-xs font-medium text-slate-500 mt-2" value="${contadorOrdenCompra}" readonly></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${v_obj}</textarea></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Marca, modelo, especificaciones finales...">${v_desc}</textarea></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${v_uni}"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-cant outline-none text-xs focus:border-indigo-500 mt-1" value="${v_cant}" oninput="calcularTotalOrdenCompra()"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-right oc-prec outline-none text-xs focus:border-indigo-500 font-bold text-slate-700 mt-1" value="${v_prec}" oninput="calcularTotalOrdenCompra()"></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-transparent text-right font-bold text-emerald-600 oc-tot outline-none text-xs mt-1" value="${v_tot}" readonly></td>
+        <td class="p-2 text-center align-top pt-3">
+            <button type="button" onclick="eliminarItemOrdenCompra(${contadorOrdenCompra})" class="text-rose-400 hover:text-rose-600 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </td>
-        <td class="p-4 align-middle font-medium text-slate-600">${data.tipuni}</td>
-        <td class="p-2 align-middle">
-            <input type="number" step="0.01" min="0" class="w-full p-2 bg-white border border-slate-300 rounded text-center oc-cant outline-none focus:border-indigo-500" value="${data.cant}" oninput="calcularTotalOrdenCompra()">
-        </td>
-        <td class="p-2 align-middle">
-            <input type="number" step="0.01" min="0" class="w-full p-2 bg-white border border-slate-300 rounded text-right oc-prec outline-none focus:border-indigo-500 font-bold text-slate-700" value="${data.precio_unitario}" oninput="calcularTotalOrdenCompra()">
-        </td>
-        <td class="p-4 align-middle text-right font-bold text-emerald-600 oc-tot">
-            ${parseFloat(data.total_item).toFixed(2)}
-        </td>
-        <input type="hidden" class="oc-nro" value="${data.nro}">
-        <input type="hidden" class="oc-obj" value="${data.objeto}">
-        <input type="hidden" class="oc-uni" value="${data.tipuni}">
     `;
     document.getElementById("oc-tabla-items").appendChild(tr);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    reindexarOrdenCompra();
+    calcularTotalOrdenCompra();
+}
+
+function eliminarItemOrdenCompra(id) {
+    const el = document.getElementById(`oc-item-${id}`);
+    if (el) el.remove();
+    reindexarOrdenCompra();
+    calcularTotalOrdenCompra();
+}
+
+function reindexarOrdenCompra() {
+    const filas = document.getElementById("oc-tabla-items").querySelectorAll("tr");
+    filas.forEach((fila, index) => {
+        const numInput = fila.querySelector(".oc-nro");
+        if (numInput) numInput.value = index + 1;
+    });
 }
 
 function calcularTotalOrdenCompra() {
@@ -32,14 +53,21 @@ function calcularTotalOrdenCompra() {
     const filas = document.getElementById("oc-tabla-items").querySelectorAll("tr");
     
     filas.forEach(fila => {
-        const cant = parseFloat(fila.querySelector(".oc-cant").value) || 0;
-        const prec = parseFloat(fila.querySelector(".oc-prec").value) || 0;
-        const total = cant * prec;
-        fila.querySelector(".oc-tot").textContent = total.toFixed(2);
-        granTotal += total;
+        const cantInput = fila.querySelector(".oc-cant");
+        const precInput = fila.querySelector(".oc-prec");
+        const totInput = fila.querySelector(".oc-tot");
+
+        if (cantInput && precInput && totInput) {
+            const cant = parseFloat(cantInput.value) || 0;
+            const prec = parseFloat(precInput.value) || 0;
+            const total = cant * prec;
+            totInput.value = total.toFixed(2);
+            granTotal += total;
+        }
     });
 
-    document.getElementById("oc-monto-actual").textContent = granTotal.toFixed(2);
+    const elemMontoActual = document.getElementById("oc-monto-actual");
+    if (elemMontoActual) elemMontoActual.textContent = granTotal.toFixed(2);
     
     // Validación para habilitar los dos botones
     const botonesGuardar = document.querySelectorAll(".btn-guardar-oc");
@@ -47,16 +75,20 @@ function calcularTotalOrdenCompra() {
     
     if (Math.abs(granTotal - montoAdjudicadoObjetivo) < 0.02) {
         botonesGuardar.forEach(b => b.disabled = false);
-        alerta.classList.remove("bg-amber-100", "text-amber-800", "border-amber-200");
-        alerta.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-200");
-        alerta.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Cuadre perfecto`;
+        if (alerta) {
+            alerta.classList.remove("bg-amber-100", "text-amber-800", "border-amber-200");
+            alerta.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-200");
+            alerta.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Cuadre perfecto`;
+        }
     } else {
         botonesGuardar.forEach(b => b.disabled = true);
-        alerta.classList.add("bg-amber-100", "text-amber-800", "border-amber-200");
-        alerta.classList.remove("bg-emerald-100", "text-emerald-800", "border-emerald-200");
-        alerta.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden`;
+        if (alerta) {
+            alerta.classList.add("bg-amber-100", "text-amber-800", "border-amber-200");
+            alerta.classList.remove("bg-emerald-100", "text-emerald-800", "border-emerald-200");
+            alerta.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Los montos no coinciden`;
+        }
     }
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 async function abrirEditorOrdenCompra(proceso) {
@@ -103,7 +135,8 @@ async function abrirEditorOrdenCompra(proceso) {
     }
 
     document.getElementById("oc-tabla-items").innerHTML = "";
-    
+    contadorOrdenCompra = 0;
+
     let itemsCarga = [];
     if (datosGuardados.items_orden && datosGuardados.items_orden.length > 0) {
         itemsCarga = datosGuardados.items_orden;
@@ -153,14 +186,26 @@ async function guardarOrdenCompra(formato) {
 
         const itemsFinales = [];
         document.getElementById("oc-tabla-items").querySelectorAll("tr").forEach(fila => {
+            const numVal = parseInt(fila.querySelector(".oc-nro")?.value) || itemsFinales.length + 1;
+            const objVal = fila.querySelector(".oc-obj")?.value.trim() || "";
+            const descVal = fila.querySelector(".oc-desc")?.value.trim() || "";
+            const uniVal = fila.querySelector(".oc-uni")?.value.trim() || "";
+            const cantVal = parseFloat(fila.querySelector(".oc-cant")?.value) || 0;
+            const precVal = parseFloat(fila.querySelector(".oc-prec")?.value) || 0;
+            const totVal = parseFloat(fila.querySelector(".oc-tot")?.value) || (cantVal * precVal);
+
             itemsFinales.push({
-                nro: parseInt(fila.querySelector(".oc-nro").value),
-                objeto: fila.querySelector(".oc-obj").value,
-                descripcion: fila.querySelector(".oc-desc").value,
-                tipuni: fila.querySelector(".oc-uni").value,
-                cant: parseFloat(fila.querySelector(".oc-cant").value) || 0,
-                precio_unitario: parseFloat(fila.querySelector(".oc-prec").value) || 0,
-                total_item: parseFloat(fila.querySelector(".oc-tot").textContent) || 0
+                nro: numVal,
+                objeto: objVal,
+                objeto_corto: objVal,
+                descripcion: descVal,
+                descripcion_larga: descVal,
+                tipuni: uniVal,
+                unidad: uniVal,
+                cant: cantVal,
+                cantidad: cantVal,
+                precio_unitario: precVal,
+                total_item: totVal
             });
         });
 
@@ -189,6 +234,6 @@ async function guardarOrdenCompra(formato) {
             b.disabled = false;
             b.innerHTML = index === 0 ? `<i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Emitir Excel` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
         });
-        if(typeof lucide !== 'undefined') lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

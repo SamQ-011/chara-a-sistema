@@ -1,27 +1,53 @@
 // archivo: js/fases_tramite/paso8_almacenes.js
 
+let contadorAlmacenes = 0;
+
+function agregarItemAlmacen(data = null) {
+    contadorAlmacenes++;
+    const tbody = document.getElementById("alm-tabla-items");
+    const tr = document.createElement("tr");
+    tr.id = `alm-item-${contadorAlmacenes}`;
+    tr.className = "hover:bg-slate-50 transition";
+
+    const v_obj = data ? (data.objeto || data.objeto_corto || "") : "";
+    const v_desc = data ? (data.descripcion || data.descripcion_larga || "") : "";
+    const v_uni = data ? (data.tipuni || data.unidad || "") : "";
+    const v_cant = data ? (data.cant || data.cantidad || "0") : "0";
+
+    tr.innerHTML = `
+        <td class="p-2 align-top"><input type="number" class="w-full bg-transparent text-center alm-nro outline-none text-xs font-medium text-slate-500 mt-2" value="${contadorAlmacenes}" readonly></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${v_obj}</textarea></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Especificación técnica de almacén, marca, modelo...">${v_desc}</textarea></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${v_uni}"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-cant outline-none text-xs focus:border-indigo-500 font-bold text-indigo-700 mt-1" value="${v_cant}"></td>
+        <td class="p-2 text-center align-top pt-3">
+            <button type="button" onclick="eliminarItemAlmacen(${contadorAlmacenes})" class="text-rose-400 hover:text-rose-600 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    reindexarAlmacenes();
+}
+
+function eliminarItemAlmacen(id) {
+    const el = document.getElementById(`alm-item-${id}`);
+    if (el) el.remove();
+    reindexarAlmacenes();
+}
+
+function reindexarAlmacenes() {
+    const filas = document.getElementById("alm-tabla-items").querySelectorAll("tr");
+    filas.forEach((fila, index) => {
+        const numInput = fila.querySelector(".alm-nro");
+        if (numInput) numInput.value = index + 1;
+    });
+}
+
 function renderizarItemsAlmacen(items) {
     const tbody = document.getElementById("alm-tabla-items");
     tbody.innerHTML = "";
-
-    items.forEach(data => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-            <td class="px-6 py-4 align-middle text-center font-medium text-slate-500">${data.nro}</td>
-            <td class="px-6 py-4 align-middle">
-                <p class="font-bold text-slate-800">${data.objeto}</p>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-1">${data.descripcion || ''}</p>
-            </td>
-            <td class="px-6 py-4 align-middle font-medium text-slate-600">
-                <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs">${data.tipuni}</span>
-            </td>
-            <td class="px-6 py-4 align-middle text-center font-bold text-indigo-700 text-lg">
-                ${data.cant}
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+    contadorAlmacenes = 0;
+    items.forEach(data => agregarItemAlmacen(data));
 }
 
 async function abrirEditorAlmacenes(proceso) {
@@ -62,7 +88,6 @@ async function abrirEditorAlmacenes(proceso) {
         }));
     }
 
-    window.itemsAlmacenTemp = itemsCarga;
     renderizarItemsAlmacen(itemsCarga);
 
     const vista = document.getElementById("vista-almacenes");
@@ -87,6 +112,27 @@ async function guardarAlmacenes(formato) {
             b.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
         });
 
+        const itemsFinales = [];
+        document.getElementById("alm-tabla-items").querySelectorAll("tr").forEach(fila => {
+            const numVal = parseInt(fila.querySelector(".alm-nro")?.value) || itemsFinales.length + 1;
+            const objVal = fila.querySelector(".alm-obj")?.value.trim() || "";
+            const descVal = fila.querySelector(".alm-desc")?.value.trim() || "";
+            const uniVal = fila.querySelector(".alm-uni")?.value.trim() || "";
+            const cantVal = parseFloat(fila.querySelector(".alm-cant")?.value) || 0;
+
+            itemsFinales.push({
+                nro: numVal,
+                objeto: objVal,
+                objeto_corto: objVal,
+                descripcion: descVal,
+                descripcion_larga: descVal,
+                tipuni: uniVal,
+                unidad: uniVal,
+                cant: cantVal,
+                cantidad: cantVal
+            });
+        });
+
         const payload = {
             clave_documento: "almacenes",
             estado: "FINALIZADO",
@@ -94,7 +140,7 @@ async function guardarAlmacenes(formato) {
                 fecha_ingreso: document.getElementById("alm-fecha-ingreso").value,
                 fecha_salida: document.getElementById("alm-fecha-salida").value,
                 proyecto_corto: document.getElementById("alm-proyecto-corto").value.trim(),
-                items_almacen: window.itemsAlmacenTemp || []
+                items_almacen: itemsFinales
             }
         };
 
@@ -115,6 +161,6 @@ async function guardarAlmacenes(formato) {
             b.disabled = false;
             b.innerHTML = index === 0 ? `<i data-lucide="file-spreadsheet" class="w-5 h-5"></i> Emitir Word` : `<i data-lucide="printer" class="w-5 h-5"></i> Imprimir PDF`;
         });
-        if(typeof lucide !== 'undefined') lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
