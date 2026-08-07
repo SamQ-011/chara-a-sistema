@@ -100,6 +100,9 @@ def generar_notificacion_adjudicacion(ctx):
     documentos_vineta = [f"- {doc}" for doc in docs_crudos]
 
     variables_notif = {
+        "{NOMBRE}": nombre_proveedor,
+        "{PROVEEDOR}": nombre_proveedor,
+        "{PROV}": nombre_proveedor,
         "{FECHA}": formatear_fecha_literal(fecha_notif),
         "{FECHAINF}": formatear_fecha_literal(fecha_informe_cot)
     }
