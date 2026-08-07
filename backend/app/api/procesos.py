@@ -86,6 +86,7 @@ def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_d
             if (d.estado.value if hasattr(d.estado, 'value') else d.estado) == "FINALIZADO"
         ]
         
+        fecha_iso = p.fecha_creacion.isoformat() if p.fecha_creacion else None
         resultado.append({
             "id": p.id,
             "codigo_proceso": p.codigo_proceso,
@@ -93,7 +94,9 @@ def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_d
             "objeto_contratacion": p.objeto_contratacion,
             "estado": estado_str,
             "unidad_nombre": p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla / Sin Asignar"),
-            "docs_finalizados": docs_fin
+            "docs_finalizados": docs_fin,
+            "fecha_creacion": fecha_iso,
+            "fecha_solicitud": fecha_iso
         })
         
     return resultado
@@ -440,6 +443,8 @@ def obtener_proceso_individual(proceso_id: int, db: Session = Depends(get_db)):
         "cargo_tecnico_solicitante": proceso.cargo_tecnico_solicitante,
         "unidad_solicitante": proceso.unidad_solicitante.nombre if proceso.unidad_solicitante else None,
         "proveedor_id": proceso.proveedor_id,
+        "fecha_creacion": proceso.fecha_creacion.isoformat() if proceso.fecha_creacion else None,
+        "fecha_solicitud": proceso.fecha_creacion.isoformat() if proceso.fecha_creacion else None,
         # INYECCIÓN DE DATOS RELACIONALES PARA EL EXPEDIENTE
         "items": [
             {

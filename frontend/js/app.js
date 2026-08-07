@@ -213,8 +213,13 @@ function calcularDiasTranscurridos(fechaStr) {
     if (!fechaStr) return 0;
     const fecha = new Date(fechaStr);
     if (isNaN(fecha.getTime())) return 0;
-    const hoy = new Date();
-    const difMs = hoy - fecha;
+    
+    // Normalizar a medianoche (00:00:00) para días calendario exactos
+    const fInicio = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    const fHoy = new Date();
+    const fActual = new Date(fHoy.getFullYear(), fHoy.getMonth(), fHoy.getDate());
+    
+    const difMs = fActual - fInicio;
     return Math.max(0, Math.floor(difMs / (1000 * 60 * 60 * 24)));
 }
 
