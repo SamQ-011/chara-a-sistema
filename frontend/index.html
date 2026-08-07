@@ -59,6 +59,12 @@
                 <span>Catálogos & Usuarios</span>
             </a>
 
+            <a id="menu-reportes" href="reportes.html"
+                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-400"></i>
+                <span>Métricas & Reportes</span>
+            </a>
+
             <a href="seguimiento.html"
                 class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
@@ -173,44 +179,79 @@
 
             </div>
 
-            <!-- PANEL GERENCIAL (RESUMEN FINANCIERO Y CUELLOS DE BOTELLA) -->
+            <!-- PANEL GERENCIAL (EXECUTIVE KPI GRID & OPERACIONES) -->
             <div id="panel-gerencial" class="hidden space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600">Resumen Financiero y Operativo
-                </h3>
-                <div class="grid lg:grid-cols-2 gap-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Resumen de Gestión Financiera & SLA (Alta Gerencia)
+                    </h3>
+                    <a href="reportes.html" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                        Ver Analytics Completo <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
 
-                    <!-- Tarjeta: Ejecución Presupuestaria -->
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
-                        <div class="flex items-center gap-2.5 mb-4 pb-2 border-b border-slate-100">
-                            <i data-lucide="coins" class="w-5 h-5 text-emerald-600"></i>
-                            <h4 class="text-sm font-bold text-slate-800">Ejecución Presupuestaria Municipal</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- KPI 1: Solicitado -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto Solicitado</p>
+                            <h4 id="monto-solicitado" class="text-lg font-black text-indigo-900 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Certificaciones en curso</p>
                         </div>
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-medium text-slate-500">Presupuesto Solicitado (En
-                                    Curso)</span>
-                                <span id="monto-solicitado" class="font-bold text-slate-900 tabular-nums">Bs.
-                                    0.00</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-                                <span class="text-xs font-medium text-slate-500">Presupuesto Adjudicado
-                                    (Finalizado)</span>
-                                <span id="monto-adjudicado" class="font-bold text-emerald-700 tabular-nums">Bs.
-                                    0.00</span>
-                            </div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold">
+                            <i data-lucide="coins" class="w-5 h-5"></i>
                         </div>
                     </div>
 
-                    <!-- Tarjeta: Cuellos de Botella -->
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
-                        <div class="flex items-center gap-2.5 mb-4 pb-2 border-b border-slate-100">
-                            <i data-lucide="building-2" class="w-5 h-5 text-amber-600"></i>
-                            <h4 class="text-sm font-bold text-slate-800">Carga por Unidad (Trámites Activos)</h4>
+                    <!-- KPI 2: Adjudicado Real -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto Adjudicado</p>
+                            <h4 id="monto-adjudicado" class="text-lg font-black text-emerald-600 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">Contratado en órdenes</p>
                         </div>
-                        <ul id="lista-unidades" class="space-y-2 text-xs max-h-32 overflow-y-auto pr-2">
-                            <li class="text-slate-400 italic">Cargando datos...</li>
-                        </ul>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </div>
                     </div>
+
+                    <!-- KPI 3: Ahorro Municipal -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ahorro Municipal</p>
+                            <h4 id="monto-ahorro" class="text-lg font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[10px] text-blue-600 font-medium mt-0.5">Saldo no ejecutado</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold">
+                            <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: SLA Promedio -->
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">SLA Atención Promedio</p>
+                            <h4 id="sla-promedio" class="text-lg font-black text-slate-800 mt-1 tabular-nums">3.5 días</h4>
+                            <p class="text-[10px] text-emerald-600 font-bold mt-0.5">⚡ Eficiencia óptima</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-bold">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARGA POR UNIDAD -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-xs">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="building-2" class="w-4 h-4 text-slate-700"></i>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Carga Operativa por Unidad Solicitante</h4>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Trámites Activos</span>
+                    </div>
+                    <ul id="lista-unidades" class="grid md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                        <li class="text-slate-400 italic">Cargando datos...</li>
+                    </ul>
                 </div>
             </div>
 

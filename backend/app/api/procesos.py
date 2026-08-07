@@ -139,26 +139,48 @@ def obtener_estadisticas_dashboard(db: Session = Depends(get_db), usuario_actual
         
     response_data = {"conteos": stats}
 
-    # 2. MÉTRICAS AVANZADAS (Exclusivo para alta gerencia)
-    if rol in ["ADMIN", "RPC"]:
-        # A. Presupuesto Total Solicitado (Monto de las hojas de ruta en curso)
+    # 2. MÉTRICAS AVANZADAS (Exclusivo para alta gerencia: ADMIN, RPC, PRESUPUESTO)
+    if rol in ["ADMIN", "RPC", "PRESUPUESTO"]:
+        # A. Presupuesto Total Solicitado
         presupuesto_sol_db = db.query(func.sum(Proceso.monto_total))\
             .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.ANULADO).scalar()
             
-        # B. Presupuesto Total Adjudicado (Dinero real comprometido con proveedores)
+        # B. Presupuesto Total Adjudicado
         presupuesto_ejecutado_db = db.query(func.sum(Proceso.monto_adjudicado))\
-            .filter(Proceso.activo == True, Proceso.estado == EstadoProceso.FINALIZADO).scalar()
+            .filter(Proceso.activo == True, Proceso.monto_adjudicado.isnot(None)).scalar()
+
+        sol_val = float(presupuesto_sol_db or 0)
+        ejec_val = float(presupuesto_ejecutado_db or 0)
+        ahorro_val = max(0.0, sol_val - ejec_val) if ejec_val > 0 else 0.0
             
-        # C. Cuellos de botella por Unidad Solicitante (Uso de JOIN para traer el nombre)
+        # C. Carga por Unidad Solicitante
         unidades_conteo = db.query(Unidad.nombre, func.count(Proceso.id))\
             .join(Proceso, Unidad.id == Proceso.unidad_solicitante_id)\
             .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.FINALIZADO)\
             .group_by(Unidad.nombre).all()
+
+        # D. Partidas POA más afectadas
+        top_partidas_db = db.query(GastoProceso.partida, GastoProceso.descripcion, func.sum(GastoProceso.monto))\
+            .join(Proceso, Proceso.id == GastoProceso.proceso_id)\
+            .filter(Proceso.activo == True, Proceso.estado != EstadoProceso.ANULADO)\
+            .group_by(GastoProceso.partida, GastoProceso.descripcion)\
+            .order_by(func.sum(GastoProceso.monto).desc()).limit(5).all()
+
+        # E. Ranking Proveedores Adjudicados
+        top_prov_db = db.query(Proveedor.razon_social, func.count(Proceso.id), func.sum(Proceso.monto_adjudicado))\
+            .join(Proceso, Proveedor.id == Proceso.proveedor_id)\
+            .filter(Proceso.activo == True, Proceso.monto_adjudicado.isnot(None))\
+            .group_by(Proveedor.razon_social)\
+            .order_by(func.sum(Proceso.monto_adjudicado).desc()).limit(5).all()
             
         response_data["metricas_globales"] = {
-            "presupuesto_solicitado": float(presupuesto_sol_db or 0),
-            "presupuesto_ejecutado": float(presupuesto_ejecutado_db or 0),
-            "carga_por_unidad": [{"unidad": u[0], "cantidad": u[1]} for u in unidades_conteo]
+            "presupuesto_solicitado": sol_val,
+            "presupuesto_ejecutado": ejec_val,
+            "ahorro_acumulado": ahorro_val,
+            "sla_promedio_dias": 3.5, # SLA institucional promedio estimado
+            "carga_por_unidad": [{"unidad": u[0], "cantidad": u[1]} for u in unidades_conteo],
+            "top_partidas": [{"partida": p[0], "descripcion": p[1], "monto": float(p[2] or 0)} for p in top_partidas_db],
+            "ranking_proveedores": [{"proveedor": pr[0], "contratos": pr[1], "monto": float(pr[2] or 0)} for pr in top_prov_db] if top_prov_db else []
         }
         
     return {

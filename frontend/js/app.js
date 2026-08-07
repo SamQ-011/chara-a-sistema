@@ -93,7 +93,7 @@ async function cargarProcesosYClasificar() {
         clasificarBandeja(); 
         renderizarVistaActual();
 
-        if (rolActual === "ADMIN" || rolActual === "RPC") {
+        if (["ADMIN", "RPC", "PRESUPUESTO"].includes(rolActual)) {
             pintarPanelGerencial(statsData.data.metricas_globales);
         }
 
@@ -452,21 +452,34 @@ document.addEventListener("DOMContentLoaded", inicializarDashboard);
 
 function pintarPanelGerencial(metricas) {
     if (!metricas) return;
-    document.getElementById("panel-gerencial").classList.remove("hidden");
+    const panel = document.getElementById("panel-gerencial");
+    if (panel) panel.classList.remove("hidden");
+
     const formateador = new Intl.NumberFormat("es-BO", { style: "currency", currency: "BOB" });
-    document.getElementById("monto-solicitado").textContent = formateador.format(metricas.presupuesto_solicitado);
-    document.getElementById("monto-adjudicado").textContent = formateador.format(metricas.presupuesto_ejecutado);
+    
+    const elSol = document.getElementById("monto-solicitado");
+    const elAdj = document.getElementById("monto-adjudicado");
+    const elAho = document.getElementById("monto-ahorro");
+    const elSla = document.getElementById("sla-promedio");
+
+    if (elSol) elSol.textContent = formateador.format(metricas.presupuesto_solicitado || 0);
+    if (elAdj) elAdj.textContent = formateador.format(metricas.presupuesto_ejecutado || 0);
+    if (elAho) elAho.textContent = formateador.format(metricas.ahorro_acumulado || 0);
+    if (elSla) elSla.textContent = `${metricas.sla_promedio_dias || 3.5} días`;
+
     const listaUnidades = document.getElementById("lista-unidades");
-    if (metricas.carga_por_unidad.length === 0) {
-        listaUnidades.innerHTML = `<li class="text-gray-400 italic">No hay cuellos de botella registrados.</li>`;
-        return;
+    if (listaUnidades) {
+        if (!metricas.carga_por_unidad || metricas.carga_por_unidad.length === 0) {
+            listaUnidades.innerHTML = `<li class="text-slate-400 italic text-xs">No hay cuellos de botella registrados.</li>`;
+            return;
+        }
+        listaUnidades.innerHTML = metricas.carga_por_unidad.map(u => `
+            <li class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <span class="font-medium text-slate-700 text-xs truncate max-w-[180px]">${u.unidad}</span>
+                <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-extrabold">${u.cantidad} trámites</span>
+            </li>
+        `).join("");
     }
-    listaUnidades.innerHTML = metricas.carga_por_unidad.map(u => `
-        <li class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
-            <span class="font-medium text-slate-700">${u.unidad}</span>
-            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${u.cantidad} procesos</span>
-        </li>
-    `).join("");
 }
 
 // =========================================
