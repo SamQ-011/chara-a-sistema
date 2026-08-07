@@ -2,6 +2,41 @@
 const API_BASE_URL = window.ENV?.API_URL || (window.location.origin.startsWith("http") ? `${window.location.origin}/api` : "http://127.0.0.1:8000/api");
 
 /* =========================================
+   HELPER GLOBAL DE NORMALIZACIÓN DE ÍTEMS (DRY)
+========================================= */
+window.normalizarItem = function(i) {
+    if (!i || typeof i !== "object") return { nro: 1, nro_item: 1, objeto: "", objeto_corto: "", descripcion: "", descripcion_larga: "", tipuni: "", unidad: "", cant: 0, cantidad: 0, precio_unitario: 0, total_item: 0 };
+
+    const limpiarTexto = (val) => {
+        if (!val || val === "undefined" || val === "null") return "";
+        return String(val).trim();
+    };
+
+    const obj = limpiarTexto(i.objeto) || limpiarTexto(i.objeto_corto);
+    const desc = limpiarTexto(i.descripcion) || limpiarTexto(i.descripcion_larga);
+    const uni = limpiarTexto(i.tipuni) || limpiarTexto(i.unidad);
+    const cantVal = parseFloat(i.cant ?? i.cantidad ?? 0);
+    const precVal = parseFloat(i.precio_unitario ?? 0);
+    const totVal = parseFloat(i.total_item ?? (cantVal * precVal));
+    const nroVal = parseInt(i.nro ?? i.nro_item ?? 1);
+
+    return {
+        nro: nroVal,
+        nro_item: nroVal,
+        objeto: obj,
+        objeto_corto: obj,
+        descripcion: desc,
+        descripcion_larga: desc,
+        tipuni: uni,
+        unidad: uni,
+        cant: cantVal,
+        cantidad: cantVal,
+        precio_unitario: precVal,
+        total_item: totVal
+    };
+};
+
+/* =========================================
    SISTEMA DE NOTIFICACIONES TOAST (MODERNO)
 ========================================= */
 

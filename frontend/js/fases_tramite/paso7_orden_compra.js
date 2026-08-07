@@ -3,26 +3,20 @@
 let montoAdjudicadoObjetivo = 0;
 let contadorOrdenCompra = 0;
 
-function agregarItemOrdenCompra(data = null) {
+function agregarItemOrdenCompra(raw = null) {
+    const data = window.normalizarItem(raw);
     contadorOrdenCompra++;
     const tr = document.createElement("tr");
     tr.id = `oc-item-${contadorOrdenCompra}`;
 
-    const v_obj = data ? (data.objeto || data.objeto_corto || "") : "";
-    const v_desc = data ? (data.descripcion || data.descripcion_larga || "") : "";
-    const v_uni = data ? (data.tipuni || data.unidad || "") : "";
-    const v_cant = data ? (data.cant || data.cantidad || "0") : "0";
-    const v_prec = data ? (data.precio_unitario || "0") : "0";
-    const v_tot = data ? (data.total_item || "0.00") : "0.00";
-
     tr.innerHTML = `
         <td class="p-2 align-top"><input type="number" class="w-full bg-transparent text-center oc-nro outline-none text-xs font-medium text-slate-500 mt-2" value="${contadorOrdenCompra}" readonly></td>
-        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${v_obj}</textarea></td>
-        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Marca, modelo, especificaciones finales...">${v_desc}</textarea></td>
-        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${v_uni}"></td>
-        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-cant outline-none text-xs focus:border-indigo-500 mt-1" value="${v_cant}" oninput="calcularTotalOrdenCompra()"></td>
-        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-right oc-prec outline-none text-xs focus:border-indigo-500 font-bold text-slate-700 mt-1" value="${v_prec}" oninput="calcularTotalOrdenCompra()"></td>
-        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-transparent text-right font-bold text-emerald-600 oc-tot outline-none text-xs mt-1" value="${v_tot}" readonly></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${data.objeto}</textarea></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded oc-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Marca, modelo, especificaciones finales...">${data.descripcion}</textarea></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${data.tipuni}"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center oc-cant outline-none text-xs focus:border-indigo-500 mt-1" value="${data.cant}" oninput="calcularTotalOrdenCompra()"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-right oc-prec outline-none text-xs focus:border-indigo-500 font-bold text-slate-700 mt-1" value="${data.precio_unitario}" oninput="calcularTotalOrdenCompra()"></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-transparent text-right font-bold text-emerald-600 oc-tot outline-none text-xs mt-1" value="${data.total_item.toFixed(2)}" readonly></td>
         <td class="p-2 text-center align-top pt-3">
             <button type="button" onclick="eliminarItemOrdenCompra(${contadorOrdenCompra})" class="text-rose-400 hover:text-rose-600 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </td>
@@ -138,18 +132,14 @@ async function abrirEditorOrdenCompra(proceso) {
     contadorOrdenCompra = 0;
 
     let itemsCarga = [];
+    const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
+
     if (datosGuardados.items_orden && datosGuardados.items_orden.length > 0) {
         itemsCarga = datosGuardados.items_orden;
-    } else {
-        const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
-        if (docAuth?.datos_formulario?.items_tecnicos) {
-            itemsCarga = docAuth.datos_formulario.items_tecnicos;
-        } else {
-            itemsCarga = proceso.items.map(i => ({
-                nro: i.nro_item, objeto: i.objeto_corto, descripcion: i.descripcion_larga,
-                tipuni: i.unidad, cant: i.cantidad, precio_unitario: i.precio_unitario, total_item: i.total_item
-            }));
-        }
+    } else if (docAuth?.datos_formulario?.items_tecnicos && docAuth.datos_formulario.items_tecnicos.length > 0) {
+        itemsCarga = docAuth.datos_formulario.items_tecnicos;
+    } else if (proceso.items && proceso.items.length > 0) {
+        itemsCarga = proceso.items;
     }
 
     itemsCarga.forEach(item => agregarItemOrdenCompra(item));

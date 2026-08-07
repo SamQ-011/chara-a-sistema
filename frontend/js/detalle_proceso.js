@@ -35,7 +35,24 @@ async function cargarDatosProceso() {
         document.getElementById("txt-codigo-proceso").textContent = proceso.codigo_proceso;
         document.getElementById("badge-estado").textContent = proceso.estado;
         document.getElementById("lbl-objeto").textContent = proceso.objeto_contratacion || "No definido";
-        document.getElementById("lbl-monto").textContent = `Bs. ${parseFloat(proceso.monto_total).toFixed(2)}`;
+        
+        // Gasto Solicitado vs Gasto Adjudicado
+        const montoSol = parseFloat(proceso.monto_total) || 0;
+        const montoAdj = (proceso.monto_adjudicado !== null && proceso.monto_adjudicado !== undefined) ? parseFloat(proceso.monto_adjudicado) : null;
+        
+        const elSol = document.getElementById("lbl-monto-solicitado");
+        if (elSol) elSol.textContent = `Bs. ${montoSol.toFixed(2)}`;
+        
+        const containerAdj = document.getElementById("container-monto-adjudicado");
+        if (containerAdj) {
+            if (montoAdj !== null && montoAdj > 0) {
+                const ahorro = montoSol - montoAdj;
+                const badgeAhorro = ahorro > 0 ? `<span class="ml-2 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Ahorro: Bs. ${ahorro.toFixed(2)}</span>` : '';
+                containerAdj.innerHTML = `<span class="font-black text-emerald-600 text-base tabular-nums">Bs. ${montoAdj.toFixed(2)}</span> ${badgeAhorro}`;
+            } else {
+                containerAdj.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Pendiente de Adjudicación</span>`;
+            }
+        }
         
         // UX: Arreglando el plazo "0 días"
         const plazoStr = parseInt(proceso.plazo_entrega) === 0 ? "Inmediato" : `${proceso.plazo_entrega} días`;
@@ -66,7 +83,6 @@ async function cargarDatosProceso() {
             bannerContainer.classList.add("hidden");
         }
 
-        // Todo ahora recibe "proceso" por parámetro (Inyección de dependencias)
         renderizarControlesEdicion(rolActual, proceso);
         renderizarDocumentos(rolActual, proceso);
         renderizarTablasDetalle(proceso);
@@ -86,7 +102,6 @@ function renderizarControlesEdicion(rolActual, proceso) {
         return;
     }
 
-    // Regla de Negocio: El botón de edición solo sale si no hay otros documentos generados
     const tieneDocumentosAvanzados = proceso.documentos && proceso.documentos.some(d => d.clave_documento !== 'solicitud_cp');
 
     if (["SOLICITANTE", "ADMIN"].includes(rolActual) && !tieneDocumentosAvanzados) {
@@ -95,7 +110,7 @@ function renderizarControlesEdicion(rolActual, proceso) {
                 <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Corregir Trámite
             </button>
         `;
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -108,8 +123,6 @@ function renderizarDocumentos(rolActual, proceso) {
     let html = `<div class="relative border-l-2 border-slate-200 ml-4 space-y-4">`;
 
     const esAnulado = proceso.estado === "ANULADO";
-
-    // Lista de documentos que ya están finalizados en el backend
     const docsFinalizados = (proceso.documentos || []).filter(d => d.estado === "FINALIZADO").map(d => d.clave_documento);
 
     MAESTRO_DOCUMENTOS.forEach((doc, index) => {
@@ -117,7 +130,6 @@ function renderizarDocumentos(rolActual, proceso) {
         const estaListo = docsFinalizados.includes(doc.id_tipo);
         const textoRoles = doc.owner.join(' / ');
         
-        // UX Checklist: Verde si está listo, gris/rojo si es anulado o pendiente
         const indicador = estaListo 
             ? `<i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-500 bg-white rounded-full absolute -left-[15px] top-3 z-10 shadow-sm"></i>`
             : `<span class="absolute -left-[17px] top-3 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 bg-white z-10 ${tienePermiso ? 'text-indigo-600 border-indigo-600 shadow-md shadow-indigo-200' : 'text-slate-400 border-slate-200'}">${index + 1}</span>`;
@@ -126,7 +138,6 @@ function renderizarDocumentos(rolActual, proceso) {
         
         let uiAccion = "";
         if (esAnulado) {
-            // Si está anulado, solo se permite descargar si ya existía antes
             if (estaListo) {
                 const btnWord = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'word')`;
                 const btnPDF = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'pdf')`;
@@ -148,59 +159,58 @@ function renderizarDocumentos(rolActual, proceso) {
                 uiAccion = `
                     <div class="flex justify-end w-full">
                         <span class="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg flex items-center gap-2 text-sm border border-slate-200 font-medium">
-                            <i data-lucide="slash" class="w-4 h-4"></i> No disponible (Trámite Anulado)
+                            <i data-lucide="slash" class="w-4 h-4"></i> Anulado
                         </span>
                     </div>`;
             }
-        } else if (tienePermiso) {
+        } else if (estaListo) {
             const btnWord = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'word')`;
             const btnPDF = `window.API.procesos.descargarDocumento(PROCESO_ID, '${doc.id_tipo}', 'pdf')`;
-
-            // Botón inteligente
-            const textoBoton = estaListo ? "Modificar y Re-imprimir" : "Generar Documento";
-            const iconoBoton = estaListo ? "refresh-cw" : "edit-3";
+            const btnEdit = `abrirEditorFormulario('${doc.id_tipo}')`;
 
             uiAccion = `
-                <div class="flex items-center gap-2 w-full">
-                    <!-- PASAMOS EL OBJETO PROCESO COMO TEXTO JSON PARA EL ONCLICK -->
-                    <button onclick='generarDocumento("${doc.id_tipo}", ${JSON.stringify(proceso)})' class="px-5 py-2 ${estaListo ? 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50' : 'bg-indigo-600 text-white hover:bg-indigo-700'} font-semibold rounded-xl transition shadow-sm flex items-center gap-2 text-sm z-20 relative mr-auto">
-                        <i data-lucide="${iconoBoton}" class="w-4 h-4"></i> ${textoBoton}
+                <div class="flex items-center justify-between w-full">
+                    <button onclick="${btnEdit}" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 hover:underline">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Editar / Re-emitir
                     </button>
-                    
-                    <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200 ${!estaListo ? 'opacity-50 pointer-events-none' : ''}">
-                        <button onclick="${btnWord}" class="px-4 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-semibold" title="Descargar Word">
-                            <i data-lucide="file-text" class="w-4 h-4"></i> Word
+                    <div class="flex items-center bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
+                        <button onclick="${btnWord}" class="px-4 py-1.5 text-slate-700 hover:text-blue-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-bold" title="Descargar Word">
+                            <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i> Word
                         </button>
-                        <button onclick="${btnPDF}" class="px-4 py-1.5 text-slate-600 hover:text-red-600 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-semibold" title="Imprimir PDF">
-                            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
+                        <button onclick="${btnPDF}" class="px-4 py-1.5 text-slate-700 hover:text-red-700 hover:bg-white hover:shadow-sm rounded-lg transition-all flex items-center gap-2 text-sm font-bold" title="Imprimir PDF">
+                            <i data-lucide="printer" class="w-4 h-4 text-red-600"></i> Imprimir PDF
                         </button>
                     </div>
+                </div>`;
+        } else if (tienePermiso) {
+            uiAccion = `
+                <div class="flex justify-end w-full">
+                    <button onclick="abrirEditorFormulario('${doc.id_tipo}')" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-200 hover:shadow-indigo-300 transition-all flex items-center gap-2 text-sm">
+                        <i data-lucide="file-plus" class="w-4 h-4"></i> Generar Documento
+                    </button>
                 </div>`;
         } else {
             uiAccion = `
                 <div class="flex justify-end w-full">
-                    <span class="px-4 py-2 bg-slate-100 text-slate-500 rounded-lg flex items-center gap-2 text-sm border border-slate-200">
-                        <i data-lucide="lock" class="w-4 h-4"></i> Requiere: ${textoRoles}
+                    <span class="px-4 py-2 bg-slate-100 text-slate-400 rounded-lg flex items-center gap-2 text-xs border border-slate-200 font-medium">
+                        <i data-lucide="lock" class="w-3.5 h-3.5"></i> Requiere rol: ${textoRoles}
                     </span>
                 </div>`;
         }
 
         html += `
-            <div class="relative pl-8 group">
+            <div class="relative pl-8 pb-4">
                 ${indicador}
-                <div class="rounded-2xl border ${estaListo ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-200 bg-white'} overflow-hidden transition-all ${tienePermiso ? 'hover:border-indigo-300 shadow-sm' : 'opacity-80'}">
-                    <button onclick="togglePaso(${index})" class="w-full text-left p-4 flex items-center justify-between hover:bg-slate-50 transition-colors pointer-events-auto">
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="font-bold ${colorTitulo} text-base flex items-center gap-2">${doc.nombre} ${estaListo ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded-md font-bold">COMPLETADO</span>' : ''}</h4>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">RESP: ${textoRoles}</p>
+                            <h4 class="font-bold text-base ${colorTitulo}">${doc.nombre}</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">${doc.desc}</p>
                         </div>
-                        <div class="p-2 bg-slate-50 rounded-lg">
-                            <i data-lucide="chevron-down" id="icon-paso-${index}" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
-                        </div>
-                    </button>
-                    <div id="body-paso-${index}" class="hidden px-5 pb-5 pt-2 border-t border-slate-100 bg-slate-50/50">
-                        <p class="text-sm text-slate-600 mb-4">${doc.desc}</p>
-                        <div class="flex">${uiAccion}</div>
+                        <span class="text-[10px] font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md uppercase tracking-wider border border-slate-200">${textoRoles}</span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        ${uiAccion}
                     </div>
                 </div>
             </div>
@@ -212,20 +222,12 @@ function renderizarDocumentos(rolActual, proceso) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// COMPONENTIZACIÓN: Cargar Modal Dinámico
-window.generarDocumento = async function(tipoDoc, proceso) {
-    if (proceso && proceso.estado === "ANULADO") {
-        alert("⛔ Este trámite ha sido ANULADO / FUSIONADO y no admite generación o modificación de documentos.");
-        return;
-    }
-
-    // Se guardan los nombres de función como texto para evitar el ReferenceError
+window.abrirEditorFormulario = async function(tipoDoc) {
+    const proceso = await window.API.procesos.obtener(PROCESO_ID);
+    
     const mapaModales = {
-        "especificaciones_tecnicas": { idVista: "vista-especificaciones", funcionName: "abrirEditorEspecificaciones" },
         "solicitud_cp": { idVista: "vista-solicitud-cp", funcionName: "abrirEditorSolicitudCP" },
-        "cert_presupuestaria": { idVista: "vista-certificacion", funcionName: "abrirEditorCertificacion" },
-        "solicitud_inicio": { idVista: "vista-solicitud-inicio", funcionName: "abrirEditorSolicitudInicio" },
-        "autorizacion_inicio": { idVista: "vista-autorizacion", funcionName: "abrirEditorAutorizacion" },
+        "autorizacion_inicio": { idVista: "vista-autorizacion-inicio", funcionName: "abrirEditorAutorizacionInicio" },
         "informe_cotizacion": { idVista: "vista-informe-cotizacion", funcionName: "abrirEditorInformeCotizacion" },
         "notificacion_adjudicacion": { idVista: "vista-notificacion", funcionName: "abrirEditorNotificacion" },
         "orden_compra": { idVista: "vista-orden-compra", funcionName: "abrirEditorOrdenCompra" },
@@ -243,47 +245,59 @@ window.generarDocumento = async function(tipoDoc, proceso) {
 
     const contenedor = document.getElementById("contenedor-modales");
 
-    // 1. Cargar el HTML del Modal SOLAMENTE si no existe en el DOM
     if (!document.getElementById(config.idVista)) {
         try {
             const res = await fetch(`componentes/modal_${tipoDoc}.html?v=${new Date().getTime()}`);
-            
-            if (!res.ok) throw new Error(`El archivo componentes/modal_${tipoDoc}.html no fue encontrado (Error 404)`);
+            if (!res.ok) throw new Error(`El archivo componentes/modal_${tipoDoc}.html no fue encontrado`);
             
             const htmlText = await res.text();
             contenedor.innerHTML += htmlText;
-            
             if (typeof lucide !== 'undefined') lucide.createIcons();
             
         } catch (e) {
-            alert("⚠️ Error de Arquitectura:\n" + e.message + "\n\nAsegúrate de que la carpeta 'componentes' esté junto a 'detalle_proceso.html'.");
+            alert("Error cargando componentes del modal: " + e.message);
             return;
         }
     }
 
-    // 2. Buscar y ejecutar la función de forma segura en la ventana global
     const funcionTarget = window[config.funcionName];
-
     if (typeof funcionTarget === 'function') {
         funcionTarget(proceso);
     } else {
-        alert(`Error: La función '${config.funcionName}' no está definida en los scripts cargados.`);
+        alert(`Error: La función '${config.funcionName}' no está definida.`);
     }
 };
 
 window.togglePaso = function(index) {
     const body = document.getElementById(`body-paso-${index}`);
     const icon = document.getElementById(`icon-paso-${index}`);
-    body.classList.toggle('hidden');
-    icon.classList.toggle('rotate-180');
+    if (body) body.classList.toggle('hidden');
+    if (icon) icon.classList.toggle('rotate-180');
 };
 
 function renderizarTablasDetalle(proceso) {
     const contenedor = document.getElementById("contenedor-tablas-detalle");
-    const items = proceso.items || [];
     const gastos = proceso.gastos || [];
 
-    // Agrupación de Gastos (Igual que en el Word y en el Modal)
+    // Herencia de ítems (Almacenes > Orden de Compra > Autorización > BD) con DRY Normalizer
+    let itemsBase = [];
+    const docAlm = proceso.documentos?.find(d => d.clave_documento === "almacenes");
+    const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
+    const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
+
+    if (docAlm?.datos_formulario?.items_almacen?.length > 0) {
+        itemsBase = docAlm.datos_formulario.items_almacen;
+    } else if (docOC?.datos_formulario?.items_orden?.length > 0) {
+        itemsBase = docOC.datos_formulario.items_orden;
+    } else if (docAuth?.datos_formulario?.items_tecnicos?.length > 0) {
+        itemsBase = docAuth.datos_formulario.items_tecnicos;
+    } else {
+        itemsBase = proceso.items || [];
+    }
+
+    const items = itemsBase.map(item => window.normalizarItem(item));
+
+    // Agrupación de Gastos
     const grupos = {};
     gastos.forEach(g => {
         const p_proy = String(g.proy).padStart(3, '0');
@@ -298,7 +312,7 @@ function renderizarTablasDetalle(proceso) {
             <div class="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="wallet" class="text-indigo-600"></i> Afectación Presupuestaria</h3>
-                    <p class="text-sm text-slate-500 mt-1">Estructura programática agrupada</p>
+                    <p class="text-sm text-slate-500 mt-1">Estructura programática agrupada (Partidas de Gasto)</p>
                 </div>
             </div>
             <div class="p-6 space-y-6">
@@ -337,7 +351,7 @@ function renderizarTablasDetalle(proceso) {
     }
     htmlGastos += `</div></div>`;
 
-    // Tabla de Ítems Rediseñada (Tipografía Escaneable)
+    // Tabla de Ítems
     let htmlItems = `
         <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden mt-6">
             <div class="p-6 border-b border-slate-100 bg-slate-50">
@@ -347,29 +361,34 @@ function renderizarTablasDetalle(proceso) {
                 <table class="w-full text-left text-sm">
                     <thead class="bg-white text-slate-500 font-semibold border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-4 w-16">Nro.</th>
+                            <th class="px-6 py-4 w-16 text-center">Nro.</th>
                             <th class="px-6 py-4">Descripción del Ítem</th>
-                            <th class="px-6 py-4 text-center w-24">Unidad</th>
+                            <th class="px-6 py-4 text-center w-28">Unidad</th>
                             <th class="px-6 py-4 text-right w-24">Cant.</th>
-                            <th class="px-6 py-4 text-right w-32">P. Unitario</th>
-                            <th class="px-6 py-4 text-right w-32">Total (Bs.)</th>
+                            <th class="px-6 py-4 text-right w-32">P. Unitario (Bs)</th>
+                            <th class="px-6 py-4 text-right w-32">Total (Bs)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
     `;
 
-    items.forEach(i => {
+    items.forEach((i, idx) => {
+        const nroDisp = i.nro || i.nro_item || (idx + 1);
+        const objDisp = (i.objeto || i.objeto_corto || "").toUpperCase();
+        const descDisp = i.descripcion || i.descripcion_larga || "";
+        const uniDisp = i.tipuni || i.unidad || "UNIDAD";
+
         htmlItems += `
                         <tr class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4 font-bold text-slate-400 align-top pt-5">${i.nro_item}</td>
+                            <td class="px-6 py-4 font-bold text-slate-500 align-top text-center pt-5">${nroDisp}</td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col gap-1">
-                                    <span class="font-black text-slate-800">${i.objeto_corto.toUpperCase()}</span>
-                                    ${i.descripcion_larga ? `<span class="text-xs text-slate-500 font-medium whitespace-pre-wrap">${i.descripcion_larga}</span>` : ''}
+                                    <span class="font-black text-slate-800">${objDisp}</span>
+                                    ${descDisp ? `<span class="text-xs text-slate-500 font-medium whitespace-pre-wrap">${descDisp}</span>` : ''}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-center align-top pt-5"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-bold text-xs">${i.unidad}</span></td>
-                            <td class="px-6 py-4 text-right text-slate-700 font-bold align-top pt-5">${parseFloat(i.cantidad).toFixed(2)}</td>
+                            <td class="px-6 py-4 text-center align-top pt-5"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-bold text-xs">${uniDisp}</span></td>
+                            <td class="px-6 py-4 text-right text-slate-700 font-bold align-top pt-5">${parseFloat(i.cant).toFixed(2)}</td>
                             <td class="px-6 py-4 text-right text-slate-500 font-medium align-top pt-5">${parseFloat(i.precio_unitario).toFixed(2)}</td>
                             <td class="px-6 py-4 text-right font-black text-slate-800 align-top pt-5">${parseFloat(i.total_item).toFixed(2)}</td>
                         </tr>
@@ -378,14 +397,12 @@ function renderizarTablasDetalle(proceso) {
 
     htmlItems += `</tbody></table></div></div>`;
     contenedor.innerHTML = htmlGastos + htmlItems;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 window.abrirPDFInicial = async function() {
     try {
-        // El event.target no es necesario porque el botón siempre estará visible, 
-        // pero puedes agregar un toast o un loader aquí a futuro si quieres.
-        await window.API.procesos.verSolicitudInicial(PROCESO_ID);
+        await window.API.procesos.descargarSolicitudInicial(PROCESO_ID);
     } catch (error) {
         alert("No se pudo cargar el documento inicial: " + (error.message || "Archivo no encontrado."));
     }

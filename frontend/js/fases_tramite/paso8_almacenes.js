@@ -2,24 +2,20 @@
 
 let contadorAlmacenes = 0;
 
-function agregarItemAlmacen(data = null) {
+function agregarItemAlmacen(raw = null) {
+    const data = window.normalizarItem(raw);
     contadorAlmacenes++;
     const tbody = document.getElementById("alm-tabla-items");
     const tr = document.createElement("tr");
     tr.id = `alm-item-${contadorAlmacenes}`;
     tr.className = "hover:bg-slate-50 transition";
 
-    const v_obj = data ? (data.objeto || data.objeto_corto || "") : "";
-    const v_desc = data ? (data.descripcion || data.descripcion_larga || "") : "";
-    const v_uni = data ? (data.tipuni || data.unidad || "") : "";
-    const v_cant = data ? (data.cant || data.cantidad || "0") : "0";
-
     tr.innerHTML = `
         <td class="p-2 align-top"><input type="number" class="w-full bg-transparent text-center alm-nro outline-none text-xs font-medium text-slate-500 mt-2" value="${contadorAlmacenes}" readonly></td>
-        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${v_obj}</textarea></td>
-        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Especificación técnica de almacén, marca, modelo...">${v_desc}</textarea></td>
-        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${v_uni}"></td>
-        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-cant outline-none text-xs focus:border-indigo-500 font-bold text-indigo-700 mt-1" value="${v_cant}"></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-obj outline-none text-xs focus:border-indigo-500 font-semibold text-slate-800">${data.objeto}</textarea></td>
+        <td class="p-2 align-top"><textarea rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded alm-desc outline-none text-xs focus:border-indigo-500 text-slate-600" placeholder="Especificación técnica de almacén, marca, modelo...">${data.descripcion}</textarea></td>
+        <td class="p-2 align-top"><input type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-uni outline-none text-xs focus:border-indigo-500 mt-1" value="${data.tipuni}"></td>
+        <td class="p-2 align-top"><input type="number" step="0.01" min="0" class="w-full p-2 bg-slate-50 border border-slate-200 rounded text-center alm-cant outline-none text-xs focus:border-indigo-500 font-bold text-indigo-700 mt-1" value="${data.cant}"></td>
         <td class="p-2 text-center align-top pt-3">
             <button type="button" onclick="eliminarItemAlmacen(${contadorAlmacenes})" class="text-rose-400 hover:text-rose-600 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
         </td>
@@ -76,16 +72,16 @@ async function abrirEditorAlmacenes(proceso) {
 
     let itemsCarga = [];
     const docOC = proceso.documentos?.find(d => d.clave_documento === "orden_compra");
+    const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
     
     if (datosGuardados.items_almacen && datosGuardados.items_almacen.length > 0) {
         itemsCarga = datosGuardados.items_almacen;
     } else if (docOC?.datos_formulario?.items_orden && docOC.datos_formulario.items_orden.length > 0) {
         itemsCarga = docOC.datos_formulario.items_orden;
-    } else {
-        itemsCarga = proceso.items.map(i => ({
-            nro: i.nro_item, objeto: i.objeto_corto, descripcion: i.descripcion_larga,
-            tipuni: i.unidad, cant: i.cantidad
-        }));
+    } else if (docAuth?.datos_formulario?.items_tecnicos && docAuth.datos_formulario.items_tecnicos.length > 0) {
+        itemsCarga = docAuth.datos_formulario.items_tecnicos;
+    } else if (proceso.items && proceso.items.length > 0) {
+        itemsCarga = proceso.items;
     }
 
     renderizarItemsAlmacen(itemsCarga);
