@@ -238,6 +238,213 @@ def obtener_estadisticas_dashboard(db: Session = Depends(get_db), usuario_actual
         "data": response_data
     }
 
+@router.get("/reportes/excel")
+def descargar_reporte_excel(db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    from datetime import datetime
+
+    wb = openpyxl.Workbook()
+
+    # --- PESTAÑA 1: RESUMEN EJECUTIVO & KPIs ---
+    ws1 = wb.active
+    ws1.title = "Resumen Ejecutivo"
+    ws1.views.sheetView[0].showGridLines = True
+
+    # Estilos
+    blue_header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # Azul Marino GAMCH
+    sub_header_fill = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid")  # Azul 500
+    white_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    title_font = Font(name="Calibri", size=14, bold=True, color="1E3A8A")
+    subtitle_font = Font(name="Calibri", size=10, italic=True, color="64748B")
+    bold_font = Font(name="Calibri", size=11, bold=True, color="0F172A")
+    regular_font = Font(name="Calibri", size=11, color="334155")
+
+    thin_border = Border(
+        left=Side(style='thin', color='CBD5E1'),
+        right=Side(style='thin', color='CBD5E1'),
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='thin', color='CBD5E1')
+    )
+    double_bottom_border = Border(
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='double', color='0F172A')
+    )
+    currency_fmt = 'Bs #,##0.00'
+
+    # Membrete
+    ws1.merge_cells('A1:E1')
+    ws1['A1'] = "GOBIERNO AUTÓNOMO MUNICIPAL DE CHARAÑA (GAMCH)"
+    ws1['A1'].font = title_font
+
+    ws1.merge_cells('A2:E2')
+    ws1['A2'] = "INFORME EJECUTIVO DE GESTIÓN PRESUPUESTARIA Y CONTRATACIONES"
+    ws1['A2'].font = Font(name="Calibri", size=12, bold=True, color="334155")
+
+    fecha_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+    ws1['A3'] = f"Generado el: {fecha_str} | Generado por: {usuario_actual.get('username', 'Sistema')}"
+    ws1['A3'].font = subtitle_font
+
+    # Obtener métricas reales
+    stats_data = obtener_estadisticas_dashboard(db, usuario_actual)
+    glob = stats_data.get("data", {}).get("metricas_globales", {})
+
+    # 1. Tabla de KPIs
+    ws1['A5'] = "1. INDICADORES CLAVE DE GESTIÓN (KPIs)"
+    ws1['A5'].font = bold_font
+
+    kpi_headers = ["Indicador / Métrica", "Valor / Monto (Bs)", "Estado / Descripción"]
+    for c_idx, h_text in enumerate(kpi_headers, start=1):
+        cell = ws1.cell(row=6, column=c_idx, value=h_text)
+        cell.fill = blue_header_fill
+        cell.font = white_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    kpis = [
+        ("Presupuesto Solicitado (Certificado)", glob.get("presupuesto_solicitado", 0.0), "Total de Certificaciones Presupuestarias"),
+        ("Presupuesto Adjudicado Real", glob.get("presupuesto_ejecutado", 0.0), "Total Contratado en Órdenes de Compra/Servicio"),
+        ("Ahorro Municipal Acumulado", glob.get("ahorro_acumulado", 0.0), "Saldo devuelto al Presupuesto POA"),
+        ("Retenciones Acumuladas (7%)", glob.get("total_retenciones", 0.0), "Garantías en Custodia"),
+        ("SLA Promedio de Atención", f"{glob.get('sla_promedio_dias') or 'Sin datos'} días", "Días promedio de atención institucional"),
+        ("Índice de Efectividad", f"{glob.get('indice_efectividad', 0)}%", f"{glob.get('total_finalizados', 0)} completados / {glob.get('total_anulados', 0)} anulados")
+    ]
+
+    for r_idx, (name, val, desc) in enumerate(kpis, start=7):
+        ws1.cell(row=r_idx, column=1, value=name).font = bold_font
+        c_val = ws1.cell(row=r_idx, column=2, value=val)
+        if isinstance(val, (int, float)):
+            c_val.number_format = currency_fmt
+            c_val.font = bold_font
+        else:
+            c_val.font = bold_font
+            c_val.alignment = Alignment(horizontal="right")
+        ws1.cell(row=r_idx, column=3, value=desc).font = regular_font
+        for c in range(1, 4):
+            ws1.cell(row=r_idx, column=c).border = thin_border
+
+    # 2. Top Partidas
+    start_row = 15
+    ws1.cell(row=start_row, column=1, value="2. TOP PARTIDAS POA MÁS AFECTADAS").font = bold_font
+    part_headers = ["Partida", "Descripción de la Partida", "Monto Solicitado (Bs)"]
+    for c_idx, h_text in enumerate(part_headers, start=1):
+        cell = ws1.cell(row=start_row+1, column=c_idx, value=h_text)
+        cell.fill = sub_header_fill
+        cell.font = white_font
+        cell.alignment = Alignment(horizontal="center")
+
+    top_partidas = glob.get("top_partidas", [])
+    for idx, p in enumerate(top_partidas, start=start_row+2):
+        ws1.cell(row=idx, column=1, value=p.get("partida")).font = bold_font
+        ws1.cell(row=idx, column=2, value=p.get("descripcion")).font = regular_font
+        c_m = ws1.cell(row=idx, column=3, value=p.get("monto", 0.0))
+        c_m.number_format = currency_fmt
+        c_m.font = bold_font
+        for c in range(1, 4):
+            ws1.cell(row=idx, column=c).border = thin_border
+
+    # Autoajuste de anchos para WS1
+    for col in ws1.columns:
+        max_l = max(len(str(cell.value or '')) for cell in col)
+        c_letter = get_column_letter(col[0].column)
+        ws1.column_dimensions[c_letter].width = max(max_l + 4, 18)
+
+    # --- PESTAÑA 2: MATRIZ CONSOLIDADA DE EXPEDIENTES ---
+    ws2 = wb.create_sheet(title="Matriz Consolidada")
+    ws2.views.sheetView[0].showGridLines = True
+
+    ws2.merge_cells('A1:K1')
+    ws2['A1'] = "GOBIERNO AUTÓNOMO MUNICIPAL DE CHARAÑA - MATRIZ CONSOLIDADA DE EXPEDIENTES"
+    ws2['A1'].font = title_font
+    ws2['A2'] = f"Listado Oficial al {fecha_str}"
+    ws2['A2'].font = subtitle_font
+
+    headers_matriz = [
+        "N°", "Código Proceso", "Hoja Ruta", "Unidad Solicitante",
+        "Objeto de Contratación", "Tipo Contratación", "Estado",
+        "Solicitado (Bs)", "Adjudicado (Bs)", "Retención 7% (Bs)", "Ahorro Municipal (Bs)"
+    ]
+
+    for c_idx, h_text in enumerate(headers_matriz, start=1):
+        cell = ws2.cell(row=4, column=c_idx, value=h_text)
+        cell.fill = blue_header_fill
+        cell.font = white_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    procesos_db = db.query(Proceso).filter(Proceso.activo == True).order_by(Proceso.id.desc()).all()
+
+    for r_idx, p in enumerate(procesos_db, start=5):
+        sol = float(p.monto_total) if p.monto_total else 0.0
+        adj = float(p.monto_adjudicado) if p.monto_adjudicado is not None else None
+        ret = float(p.retencion_monto) if p.retencion_monto else 0.0
+        ahorro = (sol - adj) if (adj is not None and sol > adj) else 0.0
+
+        uni_nombre = p.unidad_solicitante.nombre if p.unidad_solicitante else (p.distrito_comunidad or "Ventanilla")
+        estado_str = p.estado.value if hasattr(p.estado, 'value') else str(p.estado)
+
+        ws2.cell(row=r_idx, column=1, value=r_idx-4).font = regular_font
+        ws2.cell(row=r_idx, column=2, value=p.codigo_proceso or "").font = bold_font
+        ws2.cell(row=r_idx, column=3, value=p.hoja_ruta or "").font = regular_font
+        ws2.cell(row=r_idx, column=4, value=uni_nombre).font = regular_font
+        ws2.cell(row=r_idx, column=5, value=p.objeto_contratacion or "").font = regular_font
+        ws2.cell(row=r_idx, column=6, value=p.tipo_contratacion or "N/A").font = regular_font
+        ws2.cell(row=r_idx, column=7, value=estado_str).font = bold_font
+
+        c_sol = ws2.cell(row=r_idx, column=8, value=sol)
+        c_sol.number_format = currency_fmt
+
+        c_adj = ws2.cell(row=r_idx, column=9, value=adj if adj is not None else 0.0)
+        c_adj.number_format = currency_fmt
+
+        c_ret = ws2.cell(row=r_idx, column=10, value=ret)
+        c_ret.number_format = currency_fmt
+
+        c_aho = ws2.cell(row=r_idx, column=11, value=ahorro)
+        c_aho.number_format = currency_fmt
+
+        for c in range(1, 12):
+            ws2.cell(row=r_idx, column=c).border = thin_border
+
+    last_row = len(procesos_db) + 4
+    tot_row = last_row + 1
+    ws2.cell(row=tot_row, column=1, value="TOTALES").font = bold_font
+
+    if len(procesos_db) > 0:
+        c_tot_sol = ws2.cell(row=tot_row, column=8, value=f"=SUM(H5:H{last_row})")
+        c_tot_sol.number_format = currency_fmt
+        c_tot_sol.font = bold_font
+
+        c_tot_adj = ws2.cell(row=tot_row, column=9, value=f"=SUM(I5:I{last_row})")
+        c_tot_adj.number_format = currency_fmt
+        c_tot_adj.font = bold_font
+
+        c_tot_ret = ws2.cell(row=tot_row, column=10, value=f"=SUM(J5:J{last_row})")
+        c_tot_ret.number_format = currency_fmt
+        c_tot_ret.font = bold_font
+
+        c_tot_aho = ws2.cell(row=tot_row, column=11, value=f"=SUM(K5:K{last_row})")
+        c_tot_aho.number_format = currency_fmt
+        c_tot_aho.font = bold_font
+
+    for c in range(1, 12):
+        ws2.cell(row=tot_row, column=c).border = double_bottom_border
+
+    for col in ws2.columns:
+        max_l = max(len(str(cell.value or '')) for cell in col)
+        c_letter = get_column_letter(col[0].column)
+        ws2.column_dimensions[c_letter].width = max(max_l + 3, 12)
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    filename = f"Reporte_Consolidado_GAMCH_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 @router.post("/")
 def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:

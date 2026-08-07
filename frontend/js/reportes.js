@@ -3,6 +3,11 @@
 document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("ui-user-name").textContent = localStorage.getItem("user_nombre") || "Usuario";
     document.getElementById("ui-user-rol").textContent = localStorage.getItem("user_cargo") || "Funcionario";
+    
+    const elPrintFecha = document.getElementById("print-fecha-emision");
+    if (elPrintFecha) {
+        elPrintFecha.textContent = new Date().toLocaleDateString("es-BO") + " " + new Date().toLocaleTimeString("es-BO", { hour: '2-digit', minute: '2-digit' });
+    }
 
     const rolActual = localStorage.getItem("user_rol");
     if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolActual)) {
@@ -178,36 +183,17 @@ function renderizarMatrizConsolidada(fmt) {
     }
 }
 
-function exportarExcelConsolidado() {
-    if (!procesosReporteCache || procesosReporteCache.length === 0) {
-        alert("No hay procesos disponibles para exportar.");
-        return;
+async function exportarExcelConsolidado() {
+    try {
+        if (typeof window.mostrarToast === 'function') {
+            window.mostrarToast("Generando reporte Excel (.xlsx) institucional...", "info");
+        }
+        await window.API.procesos.descargarReporteExcel();
+        if (typeof window.mostrarToast === 'function') {
+            window.mostrarToast("Reporte Excel descargado exitosamente.", "success");
+        }
+    } catch (e) {
+        console.error("Error al descargar Excel:", e);
+        alert("Falló la generación del reporte Excel: " + (e.message || e));
     }
-
-    let csvContent = "\uFEFF"; // UTF-8 BOM
-    csvContent += "Código Proceso;Hoja de Ruta;Objeto de Contratación;Unidad Solicitante;Estado;Tipo Contratación;Presupuesto Solicitado (Bs);Presupuesto Adjudicado (Bs);Retención 7% (Bs);Ahorro Municipal (Bs)\n";
-
-    procesosReporteCache.forEach(p => {
-        const sol = (parseFloat(p.monto_total) || 0).toFixed(2);
-        const adj = p.monto_adjudicado !== null && p.monto_adjudicado !== undefined ? (parseFloat(p.monto_adjudicado) || 0).toFixed(2) : "0.00";
-        const ret = (parseFloat(p.retencion_monto) || 0).toFixed(2);
-        const ahorro = (p.monto_adjudicado !== null && parseFloat(p.monto_total) > parseFloat(p.monto_adjudicado))
-            ? (parseFloat(p.monto_total) - parseFloat(p.monto_adjudicado)).toFixed(2)
-            : "0.00";
-
-        const objLimpio = String(p.objeto_contratacion || "").replace(/;/g, ",").replace(/\n/g, " ");
-        const uniLimpia = String(p.unidad_solicitante || "").replace(/;/g, ",");
-        const tipoLimpio = String(p.tipo_contratacion || "Sin clasificar").replace(/;/g, ",");
-
-        csvContent += `"${p.codigo_proceso}";"${p.hoja_ruta || ''}";"${objLimpio}";"${uniLimpia}";"${p.estado}";"${tipoLimpio}";${sol};${adj};${ret};${ahorro}\n`;
-    });
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Reporte_Consolidado_GAMCH_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }

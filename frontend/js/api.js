@@ -314,6 +314,7 @@ const ProcesosAPI = {
     subirSolicitud: async (procesoId, formData) => await request(`/procesos/${procesoId}/subir-solicitud`, { method: "POST", body: formData }),
     guardarDocumento: async (procesoId, payload) => await request(`/procesos/${procesoId}/documentos`, { method: "POST", body: JSON.stringify(payload) }),
     dashboard: async () => await request(`/procesos/dashboard`),
+    descargarReporteExcel: async () => await downloadFile("/procesos/reportes/excel", "Reporte_Consolidado_GAMCH", "xlsx"),
     descargarDocumento: async (procesoId, tipoDoc, formato = 'word') => 
         await downloadFile(`/procesos/${procesoId}/documentos/${tipoDoc}?formato=${formato}`, tipoDoc, formato),
     fusionar: async (payload) => await request("/procesos/fusionar", {method: "POST",body: JSON.stringify(payload)}),

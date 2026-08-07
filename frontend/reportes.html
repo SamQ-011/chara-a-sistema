@@ -11,6 +11,42 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background: #f8fafc; }
+
+        @media print {
+            aside, header, button, .no-print {
+                display: none !important;
+            }
+            body, main {
+                background: white !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+            .p-8 {
+                padding: 0 !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .shadow-sm, .shadow-xs, .shadow-xl {
+                box-shadow: none !important;
+            }
+            .border {
+                border-color: #cbd5e1 !important;
+            }
+            .rounded-2xl, .rounded-3xl {
+                border-radius: 8px !important;
+            }
+            table {
+                font-size: 10px !important;
+            }
+            .page-break-avoid {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
     </style>
     <script src="js/auth.js"></script>
 </head>
@@ -100,6 +136,22 @@
 
         <!-- WORKSPACE DE REPORTES -->
         <div class="p-8 max-w-[1600px] w-full mx-auto space-y-6">
+
+            <!-- ENCABEZADO INSTITUCIONAL DE IMPRESIÓN (SOLO EN PRINT) -->
+            <div class="print-only mb-6 pb-4 border-b-2 border-slate-900">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">GOBIERNO AUTÓNOMO MUNICIPAL DE CHARAÑA</h1>
+                        <p class="text-xs font-bold text-slate-700 mt-0.5">SISTEMA INTEGRADO DE SEGUIMIENTO Y CONTRATACIONES (GAMCH)</p>
+                        <p class="text-sm font-black text-indigo-900 mt-2">INFORME EJECUTIVO DE GESTIÓN PRESUPUESTARIA Y CONTRATACIONES</p>
+                    </div>
+                    <div class="text-right text-xs text-slate-600">
+                        <p class="font-bold">FECHA EMISIÓN: <span id="print-fecha-emision">--/--/----</span></p>
+                        <p>GESTIÓN: 2026</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Documento Oficial de Control Interno</p>
+                    </div>
+                </div>
+            </div>
 
             <!-- 1. RESUMEN DE KPIs EJECUTIVOS DE GESTIÓN (6 tarjetas) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -270,6 +322,30 @@
                             <tr><td colspan="8" class="px-6 py-6 text-center text-slate-400 italic">Cargando matriz de expediente...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- FIRMAS INSTITUCIONALES (SOLO EN PRINT) -->
+            <div class="print-only mt-16 pt-8 page-break-avoid">
+                <div class="grid grid-cols-3 gap-8 text-center text-xs">
+                    <div>
+                        <div class="border-t border-slate-900 pt-2 font-bold text-slate-900">
+                            Responsable de Presupuesto
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Certificación y Control POA</p>
+                    </div>
+                    <div>
+                        <div class="border-t border-slate-900 pt-2 font-bold text-slate-900">
+                            Responsable Proceso Contratación (RPC)
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Adjudicación y Transparencia</p>
+                    </div>
+                    <div>
+                        <div class="border-t border-slate-900 pt-2 font-bold text-slate-900">
+                            Máxima Autoridad Ejecutiva (MAE)
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Aprobación Institucional GAMCH</p>
+                    </div>
                 </div>
             </div>
 
