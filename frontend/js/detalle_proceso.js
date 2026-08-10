@@ -226,8 +226,11 @@ window.abrirEditorFormulario = async function(tipoDoc) {
     const proceso = await window.API.procesos.obtener(PROCESO_ID);
     
     const mapaModales = {
+        "especificaciones_tecnicas": { idVista: "vista-especificaciones", funcionName: "abrirEditorEspecificaciones" },
         "solicitud_cp": { idVista: "vista-solicitud-cp", funcionName: "abrirEditorSolicitudCP" },
-        "autorizacion_inicio": { idVista: "vista-autorizacion-inicio", funcionName: "abrirEditorAutorizacionInicio" },
+        "cert_presupuestaria": { idVista: "vista-certificacion", funcionName: "abrirEditorCertificacion" },
+        "solicitud_inicio": { idVista: "vista-solicitud-inicio", funcionName: "abrirEditorSolicitudInicio" },
+        "autorizacion_inicio": { idVista: "vista-autorizacion", funcionName: "abrirEditorAutorizacion" },
         "informe_cotizacion": { idVista: "vista-informe-cotizacion", funcionName: "abrirEditorInformeCotizacion" },
         "notificacion_adjudicacion": { idVista: "vista-notificacion", funcionName: "abrirEditorNotificacion" },
         "orden_compra": { idVista: "vista-orden-compra", funcionName: "abrirEditorOrdenCompra" },
@@ -406,4 +409,125 @@ window.abrirPDFInicial = async function() {
     } catch (error) {
         alert("No se pudo cargar el documento inicial: " + (error.message || "Archivo no encontrado."));
     }
+};
+
+window.imprimirFichaControl = async function() {
+    try {
+        const proceso = await window.API.procesos.obtener(PROCESO_ID);
+        if (!proceso) return;
+
+        const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
+        const docSpecs = proceso.documentos?.find(d => d.clave_documento === "especificaciones_tecnicas");
+        
+        const codProy = docAuth?.datos_formulario?.codigo_proyecto || docSpecs?.datos_formulario?.codigo_proyecto || (proceso.proyecto ? proceso.proyecto.codigo_proyecto : "N/A");
+        const codTramite = proceso.codigo_proceso || "PRO-2026";
+        const unidadSol = proceso.unidad_solicitante || "ÁREA SOLICITANTE";
+        const objeto = proceso.objeto_contratacion || "SIN ESPECIFICAR";
+        const fechaCreacion = proceso.fecha_solicitud || (proceso.fecha_creacion ? proceso.fecha_creacion.substring(0, 10) : new Date().toISOString().substring(0, 10));
+
+        const docsProcesoMap = {};
+        (proceso.documentos || []).forEach(d => {
+            if (d.estado === "FINALIZADO") {
+                let fecha = d.datos_formulario?.fecha_documento;
+                if (!fecha && d.fecha_creacion) {
+                    fecha = d.fecha_creacion.substring(0, 10);
+                }
+                docsProcesoMap[d.clave_documento] = fecha || "SI";
+            }
+        });
+
+        let qrText = `GAMCH - FICHA DE TRÁMITE\n`;
+        qrText += `TRÁMITE: ${codTramite}\n`;
+        qrText += `CÓDIGO: ${codProy}\n`;
+        qrText += `UNIDAD: ${unidadSol}\n`;
+        qrText += `OBJETO: ${objeto.substring(0, 60)}\n`;
+        qrText += `--------------------\n`;
+
+        let filasTabla = "";
+        MAESTRO_DOCUMENTOS.forEach((doc, idx) => {
+            const fechaEmit = docsProcesoMap[doc.id_tipo] || "";
+            if (fechaEmit) {
+                qrText += `${idx + 1}. ${doc.nombre}: ${fechaEmit}\n`;
+            } else {
+                qrText += `${idx + 1}. ${doc.nombre}: (Pendiente)\n`;
+            }
+
+            filasTabla += `
+                <tr class="border-b border-slate-200">
+                    <td class="px-1.5 py-1 text-center font-bold text-slate-700 w-6">${idx + 1}</td>
+                    <td class="px-1.5 py-1 text-slate-800 font-semibold text-[9.5px] leading-tight">${doc.nombre}</td>
+                    <td class="px-1.5 py-1 text-center font-mono text-[9px] font-bold ${fechaEmit ? 'text-indigo-900' : 'text-slate-300'}">${fechaEmit}</td>
+                </tr>
+            `;
+        });
+
+        let qrSvg = "";
+        if (typeof generarQRCodeSVG === 'function') {
+            qrSvg = generarQRCodeSVG(qrText, { size: 90, color: "#0f172a" });
+        }
+
+        const htmlFicha = `
+            <div class="flex flex-col h-full justify-between select-none">
+                <div>
+                    <div class="flex justify-between items-start border-b-2 border-slate-800 pb-2 mb-2">
+                        <div class="space-y-0.5">
+                            <span class="text-[9px] font-black tracking-widest text-slate-500 uppercase block">GAMCH - ALCALDÍA DE CHARAÑA</span>
+                            <h4 class="text-xs font-black text-slate-900 uppercase tracking-tight">FICHA DE CONTROL Y SEGUIMIENTO</h4>
+                            <div class="flex items-center gap-2 pt-0.5">
+                                <span class="bg-slate-900 text-white font-mono text-[9.5px] font-bold px-1.5 py-0.5 rounded-xs">${codTramite}</span>
+                                <span class="bg-indigo-100 text-indigo-900 font-mono text-[9.5px] font-black px-1.5 py-0.5 rounded-xs border border-indigo-200">${codProy}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0 ml-1 bg-white p-0.5 border border-slate-300 rounded-xs">
+                            ${qrSvg}
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-2 rounded-xs border border-slate-200 mb-2 space-y-1 text-[9px]">
+                        <div class="flex justify-between">
+                            <span class="font-bold text-slate-600">UNIDAD: <strong class="text-slate-900 font-black">${unidadSol}</strong></span>
+                            <span class="font-bold text-slate-500">FECHA: ${fechaCreacion}</span>
+                        </div>
+                        <div class="truncate">
+                            <span class="font-bold text-slate-600">OBJETO: </span>
+                            <span class="text-slate-800 font-medium">${objeto}</span>
+                        </div>
+                    </div>
+
+                    <table class="w-full text-left border-collapse border border-slate-300">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-[9px] uppercase font-bold">
+                                <th class="px-1.5 py-1 text-center w-6">N°</th>
+                                <th class="px-1.5 py-1">DOCUMENTO DEL FLUJO</th>
+                                <th class="px-1.5 py-1 text-center w-24">FECHA EMISIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasTabla}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pt-2 border-t border-slate-300 flex justify-between items-center text-[8px] text-slate-400 font-medium">
+                    <span>DOCUMENTO OFICIAL DE AUDITORÍA FÍSICA</span>
+                    <span>1/4 HOJA CARTA</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById("ficha-print-container").innerHTML = htmlFicha;
+        document.getElementById("modal-ficha-control").classList.remove("hidden");
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    } catch (e) {
+        alert("Error generando Ficha de Control: " + e.message);
+    }
+};
+
+window.cerrarFichaControl = function() {
+    document.getElementById("modal-ficha-control").classList.add("hidden");
+};
+
+window.ejecutarImpresionFicha = function() {
+    window.print();
 };

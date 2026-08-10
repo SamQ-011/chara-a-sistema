@@ -57,8 +57,58 @@ function calcularTotalAutorizacion() {
     document.getElementById("aut-total-items").textContent = granTotal.toFixed(2);
 }
 
+let procesoActualAutorizacion = null;
+
+function actualizarCodigoProyectoAutorizacion() {
+    const inputNum = document.getElementById("aut-codigo-num");
+    const elPrefijo = document.getElementById("aut-codigo-prefijo");
+    const elAnio = document.getElementById("aut-codigo-anio");
+    const elPreview = document.getElementById("aut-codigo-preview");
+    const inputHidden = document.getElementById("aut-codigo");
+
+    if (!inputNum || !elPrefijo || !elAnio || !inputHidden) return;
+
+    const tipo = (procesoActualAutorizacion && procesoActualAutorizacion.tipo_contratacion) || "BIENES";
+    const esServicio = tipo.toUpperCase().includes("SERVICIO");
+    const letraTipo = esServicio ? "S" : "B";
+    const prefijo = `GAMCH/CM-${letraTipo}-`;
+    elPrefijo.textContent = prefijo;
+
+    const fechaVal = document.getElementById("aut-fecha").value;
+    let anio = new Date().getFullYear();
+    if (fechaVal) {
+        const partes = fechaVal.split("-");
+        if (partes.length === 3 && partes[0].length === 4) {
+            anio = partes[0];
+        }
+    }
+    const sufijo = `/${anio}`;
+    elAnio.textContent = sufijo;
+
+    let numRaw = inputNum.value.trim();
+    let numFormatted = (numRaw && !isNaN(numRaw)) ? numRaw.padStart(3, '0') : numRaw;
+    let codigoCompleto = numFormatted ? `${prefijo}${numFormatted}${sufijo}` : `${prefijo}___${sufijo}`;
+
+    inputHidden.value = numFormatted ? `${prefijo}${numFormatted}${sufijo}` : "";
+    if (elPreview) {
+        elPreview.textContent = codigoCompleto;
+    }
+}
+
+function formatearNumeroAutorizacion() {
+    const inputNum = document.getElementById("aut-codigo-num");
+    if (!inputNum) return;
+    let val = inputNum.value.trim();
+    if (val && !isNaN(val)) {
+        inputNum.value = val.padStart(3, '0');
+    }
+    actualizarCodigoProyectoAutorizacion();
+}
+
 // NUEVA ARQUITECTURA: Recibe "proceso" inyectado
 function abrirEditorAutorizacion(proceso) {
+    procesoActualAutorizacion = proceso;
+
     const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
     const datosGuardadosAuth = docAuth?.datos_formulario || {};
 
@@ -67,9 +117,24 @@ function abrirEditorAutorizacion(proceso) {
 
     const cargoSol = proceso.cargo_tecnico_solicitante || "Área solicitante";
     document.getElementById("aut-solicitante").value = datosGuardadosAuth.unidad_solicitante || cargoSol;
-    document.getElementById("aut-codigo").value = datosGuardadosAuth.codigo_proyecto || "S/N";
     document.getElementById("aut-objeto").value = proceso.objeto_contratacion;
     document.getElementById("aut-fecha").value = datosGuardadosAuth.fecha_documento || new Date().toISOString().split('T')[0];
+
+    // Parsear código guardado si existe (ej: GAMCH/CM-B-064/2026)
+    const codigoGuardado = datosGuardadosAuth.codigo_proyecto || "";
+    let numExtraido = "";
+    if (codigoGuardado) {
+        const match = codigoGuardado.match(/GAMCH\/CM-[BS]-([^\/]+)\/\d{4}/);
+        if (match) {
+            numExtraido = match[1];
+        } else {
+            numExtraido = codigoGuardado;
+        }
+    }
+    const inputNum = document.getElementById("aut-codigo-num");
+    if (inputNum) inputNum.value = numExtraido;
+
+    actualizarCodigoProyectoAutorizacion();
 
     document.getElementById("aut-tabla-items-edit").innerHTML = "";
     contadorAutorizacion = 0;
@@ -113,6 +178,7 @@ function cerrarEditorAutorizacion() {
 }
 
 async function guardarAutorizacion(formato) {
+    formatearNumeroAutorizacion();
     // NUEVA ARQUITECTURA: Extrae ID de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const PROCESO_ID = urlParams.get('id');
@@ -167,3 +233,10 @@ async function guardarAutorizacion(formato) {
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
+
+window.abrirEditorAutorizacion = abrirEditorAutorizacion;
+window.abrirEditorAutorizacionInicio = abrirEditorAutorizacion;
+window.cerrarEditorAutorizacion = cerrarEditorAutorizacion;
+window.guardarAutorizacion = guardarAutorizacion;
+window.actualizarCodigoProyectoAutorizacion = actualizarCodigoProyectoAutorizacion;
+window.formatearNumeroAutorizacion = formatearNumeroAutorizacion;

@@ -136,7 +136,7 @@
                     </div>
                 </div>
 
-                <!-- ACCIONES RÁPIDAS PDF Y ZIP -->
+                <!-- ACCIONES RÁPIDAS PDF, ZIP Y FICHA -->
                 <div class="space-y-2">
                     <button onclick="abrirPDFInicial()"
                         class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-xs transition shadow-xs">
@@ -149,6 +149,12 @@
                         class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-lg font-bold text-xs transition shadow-xs">
                         <i data-lucide="archive" class="w-4 h-4"></i>
                         <span>Descargar Expediente Completo (ZIP)</span>
+                    </button>
+
+                    <button onclick="imprimirFichaControl()"
+                        class="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-lg font-bold text-xs transition shadow-xs">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        <span>Imprimir Ficha de Control (QR)</span>
                     </button>
                 </div>
             </div>
@@ -220,8 +226,80 @@
     <!-- CONTENEDOR MODALES DINÁMICOS -->
     <div id="contenedor-modales"></div>
 
+    <!-- MODAL VISTA PREVIA E IMPRESIÓN DE FICHA DE CONTROL (1/4 DE CARTA / A6) -->
+    <div id="modal-ficha-control" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden flex flex-col max-h-[95vh]">
+            <header class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="qr-code" class="w-5 h-5 text-indigo-400"></i>
+                    <h3 class="font-bold text-sm">Ficha de Control y Seguimiento (1/4 Carta)</h3>
+                </div>
+                <button onclick="cerrarFichaControl()" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </header>
+
+            <div class="p-4 overflow-y-auto bg-slate-100 flex flex-col items-center justify-center">
+                <!-- CONTENEDOR DE LA FICHA A IMPRIMIR (10.5cm x 14cm) -->
+                <div id="ficha-print-container" class="bg-white border border-dashed border-slate-400 p-3 shadow-md rounded-xs w-[105mm] min-h-[140mm] text-slate-900 box-border text-[10px] font-sans flex flex-col justify-between">
+                    <!-- Contenido dinámico renderizado por JS -->
+                </div>
+            </div>
+
+            <footer class="px-6 py-3.5 bg-white border-t border-slate-200 flex justify-between items-center shrink-0">
+                <span class="text-[11px] text-slate-500 font-medium">Formato: 10.5 x 14 cm (A6)</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="cerrarFichaControl()" class="px-3.5 py-1.5 text-slate-600 hover:bg-slate-100 font-bold text-xs rounded-lg transition">Cancelar</button>
+                    <button onclick="ejecutarImpresionFicha()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Ficha
+                    </button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <style>
+    @media print {
+        body > *:not(#modal-ficha-control) {
+            display: none !important;
+        }
+        #modal-ficha-control {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            background: white !important;
+            display: block !important;
+            padding: 0 !important;
+        }
+        #modal-ficha-control header, #modal-ficha-control footer {
+            display: none !important;
+        }
+        #modal-ficha-control > div {
+            border: none !important;
+            box-shadow: none !important;
+            max-width: 100% !important;
+            background: transparent !important;
+        }
+        #modal-ficha-control .p-4 {
+            padding: 0 !important;
+            background: transparent !important;
+        }
+        #ficha-print-container {
+            border: 1px dashed #64748b !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            width: 105mm !important;
+            height: 140mm !important;
+            page-break-inside: avoid !important;
+        }
+    }
+    </style>
+
     <script>lucide.createIcons();</script>
     <script src="js/api.js"></script>
+    <script src="js/qr_generator.js"></script>
     <script src="js/detalle_proceso.js"></script>
 
     <script src="js/fases_tramite/paso1_especificaciones.js"></script>
