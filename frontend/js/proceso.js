@@ -10,7 +10,7 @@ const fileSizePreview = document.getElementById("file-size-preview");
 const btnRemovePdf = document.getElementById("btn-remove-pdf");
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const rolUsuario = localStorage.getItem("user_rol"); 
+    const rolUsuario = getEffectiveRole(); 
     
     const contenedorDerivacion = document.getElementById("contenedor_derivacion");
     const selectArea = document.getElementById("area_solicitante");
@@ -123,7 +123,7 @@ if (form) {
             return;
         }
 
-        const rolUsuario = localStorage.getItem("user_rol");
+        const rolUsuario = getEffectiveRole();
 
         if (rolUsuario !== "SOLICITANTE" && (!selectArea || !selectArea.value)) {
             toast.warning("Debe seleccionar un área de derivación válida.");

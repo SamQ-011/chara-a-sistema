@@ -15,7 +15,12 @@ def sembrar_poa():
     db.query(PoaPrograma).delete()
     db.commit()
 
-    with open("../programas-proyectos.txt", "r", encoding="utf-8") as f:
+    from pathlib import Path
+    txt_path = Path(__file__).resolve().parent.parent / "programas-proyectos.txt"
+    if not txt_path.exists():
+        txt_path = Path("programas-proyectos.txt")
+
+    with open(txt_path, "r", encoding="utf-8") as f:
         lineas = f.readlines()
 
     prog_actual = None
@@ -66,7 +71,7 @@ def sembrar_poa():
 
     db.commit()
     db.close()
-    print("✅ Migración del POA completada con éxito.")
+    print("Migracion del POA completada con exito.")
 
 if __name__ == "__main__":
     sembrar_poa()

@@ -9,9 +9,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         elPrintFecha.textContent = new Date().toLocaleDateString("es-BO") + " " + new Date().toLocaleTimeString("es-BO", { hour: '2-digit', minute: '2-digit' });
     }
 
-    const rolActual = localStorage.getItem("user_rol");
+    const rolActual = getEffectiveRole();
     if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolActual)) {
-        alert("Acceso denegado. Este módulo está reservado para RPC, PRESUPUESTO y ADMIN.");
+        if (typeof toast !== 'undefined') toast.warning("Acceso denegado. Este módulo está reservado para RPC, PRESUPUESTO y ADMIN.");
         window.location.href = "index.html";
         return;
     }

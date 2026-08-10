@@ -13,7 +13,7 @@ from app.schemas.usuario import (
     UsuarioResponse
 )
 
-ROLES_PERMITIDOS = ["ADMIN", "RPC", "PRESUPUESTO", "SOLICITANTE", "SECRETARIA"]
+ROLES_PERMITIDOS = ["ADMIN", "RPC", "PRESUPUESTO", "SOLICITANTE", "SECRETARIA", "AUXILIAR", "PASANTE"]
 
 def _obtener_user_id_seguro(usuario_actual: dict) -> int:
     user_id_raw = usuario_actual.get("user_id") if isinstance(usuario_actual, dict) else None

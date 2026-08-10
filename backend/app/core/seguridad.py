@@ -39,7 +39,7 @@ def obtener_usuario_actual(token: str = Depends(oauth2_scheme)):
         if user_id is None:
             raise excepcion_credenciales
             
-        return {"user_id": user_id, "rol": rol}
+        return {"user_id": user_id, "rol": rol, "rol_efectivo": payload.get("rol_efectivo", rol)}
         
     except jwt.ExpiredSignatureError:
         raise HTTPException(

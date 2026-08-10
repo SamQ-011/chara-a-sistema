@@ -445,6 +445,36 @@ def descargar_reporte_excel(db: Session = Depends(get_db), usuario_actual: dict 
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+def resolver_firmante_solicitante(db: Session, unidad_id: Optional[int], usuario_actual_db: Optional[Usuario]) -> tuple[str, str]:
+    """
+    Resuelve el nombre y cargo de la autoridad firmante para la unidad solicitante.
+    Si la unidad tiene un responsable asignado (Titular), devuelve sus datos para que un
+    pasante o auxiliar genere el documento legal a nombre del Titular.
+    """
+    if unidad_id:
+        unidad_db = db.query(Unidad).filter(Unidad.id == unidad_id, Unidad.activo == True).first()
+        if unidad_db and unidad_db.responsable_id:
+            titular = db.query(Usuario).filter(Usuario.id == unidad_db.responsable_id, Usuario.activo == True).first()
+            if titular:
+                titulo = f"{titular.titulo.strip()} " if titular.titulo and titular.titulo.strip() else ""
+                return f"{titulo}{titular.nombre_completo}", titular.cargo or ""
+        
+        # Buscar usuario titular de esa unidad (rol SOLICITANTE)
+        titular = db.query(Usuario).filter(
+            Usuario.unidad_id == unidad_id,
+            Usuario.activo == True,
+            Usuario.rol == "SOLICITANTE"
+        ).first()
+        if titular:
+            titulo = f"{titular.titulo.strip()} " if titular.titulo and titular.titulo.strip() else ""
+            return f"{titulo}{titular.nombre_completo}", titular.cargo or ""
+
+    if usuario_actual_db:
+        titulo = f"{usuario_actual_db.titulo.strip()} " if usuario_actual_db.titulo and usuario_actual_db.titulo.strip() else ""
+        return f"{titulo}{usuario_actual_db.nombre_completo}", usuario_actual_db.cargo or ""
+
+    return "", ""
+
 @router.post("/")
 def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
@@ -457,14 +487,19 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_a
         
         # --- NUEVA LÓGICA DE ASIGNACIÓN DE UNIDAD POR ROL ---
         uni_id = None
+        usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
         
-        if rol_usuario == "SOLICITANTE":
-            # 1. Si es técnico, ignoramos el frontend y le asignamos SU propia unidad
-            usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
+        rol_efectivo = usuario_actual.get("rol_efectivo") or rol_usuario
+        
+        if rol_efectivo not in ["SOLICITANTE", "SECRETARIA"]:
+            raise HTTPException(status_code=403, detail="Solamente las áreas solicitantes o Secretaría General pueden iniciar nuevos trámites.")
+
+        if rol_efectivo == "SOLICITANTE":
+            # 1. Si es técnico solicitante (o pasante/auxiliar de área solicitante), le asignamos la unidad de su perfil
             if usuario_db:
                 uni_id = usuario_db.unidad_id
         else:
-            # 2. Si es SECRETARIA o ADMIN, respetamos a quién derivó en el select
+            # 2. Si es SECRETARIA, respetamos a quién derivó en el select
             uni_solic_val = str(getattr(ui, "uni_solic", "")).strip()
             unidad_db = None
             if uni_solic_val.isdigit():
@@ -473,6 +508,13 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_a
                 unidad_db = db.query(Unidad).filter(Unidad.nombre == uni_solic_val, Unidad.activo == True).first()
             
             uni_id = unidad_db.id if unidad_db else None
+
+        nom_tecnico_val = ui.nom_tecnico
+        cargo_tecnico_val = ui.cargo_tecnico
+
+        # Si el frontend no mandó técnico o viene vacío, autocompletar con el Titular oficial de la Unidad
+        if not nom_tecnico_val or nom_tecnico_val.strip() == "":
+            nom_tecnico_val, cargo_tecnico_val = resolver_firmante_solicitante(db, uni_id, usuario_db)
 
         nuevo_proceso = Proceso(
             codigo_proceso=ui.hoja_ruta or ui.codigo,
@@ -488,12 +530,12 @@ def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_a
             responsable_presupuesto=ui.enc_finanzas,
             distrito_comunidad = ui.distrito_comunidad,
             fecha_solicitud = ui.fecha_corta,
-            tecnico_solicitante=ui.nom_tecnico,
-            cargo_tecnico_solicitante=ui.cargo_tecnico,
+            tecnico_solicitante=nom_tecnico_val,
+            cargo_tecnico_solicitante=cargo_tecnico_val,
             proyecto_id=proy_id,           
             unidad_solicitante_id=uni_id,  
             proveedor_id=None,
-            usuario_id=int(user_id), # <--- SE GUARDA AQUÍ
+            usuario_id=int(user_id), # <--- SE GUARDA AQUÍ EL USUARIO QUE REGISTRÓ
             estado=EstadoProceso.EN_CURSO 
         )
         
@@ -755,7 +797,8 @@ def obtener_proceso_individual(proceso_id: int, db: Session = Depends(get_db)):
                 "clave_documento": doc.clave_documento,
                 "estado": doc.estado.value if hasattr(doc.estado, 'value') else doc.estado,
                 "datos_formulario": doc.datos_formulario,
-                "ruta_archivo": doc.ruta_archivo
+                "ruta_archivo": doc.ruta_archivo,
+                "fecha_creacion": doc.fecha_creacion.isoformat() if hasattr(doc, 'fecha_creacion') and doc.fecha_creacion else None
             } for doc in proceso.documentos
         ]
 
@@ -912,9 +955,9 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
         if user_id:
             usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
             if usuario_db:
-                titulo = f"{usuario_db.titulo.strip()} " if usuario_db.titulo else ""
-                proceso.tecnico_solicitante = f"{titulo}{usuario_db.nombre_completo}"
-                proceso.cargo_tecnico_solicitante = usuario_db.cargo
+                nom_titular, cargo_titular = resolver_firmante_solicitante(db, proceso.unidad_solicitante_id, usuario_db)
+                proceso.tecnico_solicitante = nom_titular
+                proceso.cargo_tecnico_solicitante = cargo_titular
     
     db.flush() # Obliga a BD a registrar el documento temporalmente en la sesión
     evaluar_estado_proceso(proceso)

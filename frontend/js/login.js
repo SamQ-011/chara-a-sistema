@@ -55,6 +55,7 @@ formLogin.addEventListener("submit", async (e) => {
 
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user_rol", data.rol);
+        localStorage.setItem("user_rol_efectivo", data.rol_efectivo || data.rol);
         localStorage.setItem("user_nombre", data.nombre);
         localStorage.setItem("user_cargo", data.cargo);
 

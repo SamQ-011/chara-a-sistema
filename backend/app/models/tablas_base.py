@@ -46,6 +46,9 @@ class Unidad(Base, AuditoriaMixin):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(150), unique=True, index=True)
     sigla = Column(String(20), nullable=True)
+    responsable_id = Column(Integer, ForeignKey("usuarios.id", use_alter=True, name="fk_unidades_responsable_id"), nullable=True)
+
+    responsable = relationship("Usuario", foreign_keys=[responsable_id], lazy="select")
 
 class Usuario(Base, AuditoriaMixin):
     __tablename__ = "usuarios"
@@ -60,7 +63,7 @@ class Usuario(Base, AuditoriaMixin):
     rol = Column(String(50)) # ej: ADMIN, SECRETARIA
     unidad_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
 
-    unidad = relationship("Unidad", lazy="joined")
+    unidad = relationship("Unidad", foreign_keys=[unidad_id], lazy="joined")
 
 class UnidadMedida(Base, AuditoriaMixin):
     __tablename__ = "unidades_medida"

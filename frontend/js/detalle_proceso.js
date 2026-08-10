@@ -30,7 +30,7 @@ const MAESTRO_DOCUMENTOS = [
 async function cargarDatosProceso() {
     try {
         const proceso = await window.API.procesos.obtener(PROCESO_ID);
-        const rolActual = localStorage.getItem("user_rol");
+        const rolActual = getEffectiveRole();
         
         document.getElementById("txt-codigo-proceso").textContent = proceso.codigo_proceso;
         document.getElementById("badge-estado").textContent = proceso.estado;
@@ -419,20 +419,40 @@ window.imprimirFichaControl = async function() {
         const docAuth = proceso.documentos?.find(d => d.clave_documento === "autorizacion_inicio");
         const docSpecs = proceso.documentos?.find(d => d.clave_documento === "especificaciones_tecnicas");
         
+        function formatearFechaLimpia(str) {
+            if (!str || str === "SI") return "";
+            let base = String(str);
+            if (base.includes("T")) base = base.split("T")[0];
+            if (base.includes(" ")) base = base.split(" ")[0];
+            const partes = base.split("-");
+            if (partes.length === 3 && partes[0].length === 4) {
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+            return base;
+        }
+
         const codProy = docAuth?.datos_formulario?.codigo_proyecto || docSpecs?.datos_formulario?.codigo_proyecto || (proceso.proyecto ? proceso.proyecto.codigo_proyecto : "N/A");
         const codTramite = proceso.codigo_proceso || "PRO-2026";
         const unidadSol = proceso.unidad_solicitante || "ÁREA SOLICITANTE";
         const objeto = proceso.objeto_contratacion || "SIN ESPECIFICAR";
-        const fechaCreacion = proceso.fecha_solicitud || (proceso.fecha_creacion ? proceso.fecha_creacion.substring(0, 10) : new Date().toISOString().substring(0, 10));
+        const fechaCreacion = formatearFechaLimpia(proceso.fecha_solicitud || proceso.fecha_creacion || new Date().toISOString());
 
         const docsProcesoMap = {};
         (proceso.documentos || []).forEach(d => {
             if (d.estado === "FINALIZADO") {
-                let fecha = d.datos_formulario?.fecha_documento;
-                if (!fecha && d.fecha_creacion) {
-                    fecha = d.fecha_creacion.substring(0, 10);
-                }
-                docsProcesoMap[d.clave_documento] = fecha || "SI";
+                let fecha = d.datos_formulario?.fecha_documento ||
+                            d.datos_formulario?.fecha ||
+                            d.datos_formulario?.fecha_solicitud ||
+                            d.datos_formulario?.fecha_certificacion ||
+                            d.datos_formulario?.fecha_autorizacion ||
+                            d.datos_formulario?.fecha_informe ||
+                            d.datos_formulario?.fecha_notificacion ||
+                            d.datos_formulario?.fecha_orden ||
+                            d.datos_formulario?.fecha_almacen ||
+                            d.datos_formulario?.fecha_entrega ||
+                            d.fecha_creacion;
+
+                docsProcesoMap[d.clave_documento] = formatearFechaLimpia(fecha);
             }
         });
 
@@ -467,7 +487,7 @@ window.imprimirFichaControl = async function() {
         }
 
         const htmlFicha = `
-            <div class="flex flex-col h-full justify-between select-none">
+            <div class="flex flex-col w-full space-y-2 select-none">
                 <div>
                     <div class="flex justify-between items-start border-b-2 border-slate-800 pb-2 mb-2">
                         <div class="space-y-0.5">
@@ -516,7 +536,10 @@ window.imprimirFichaControl = async function() {
         `;
 
         document.getElementById("ficha-print-container").innerHTML = htmlFicha;
-        document.getElementById("modal-ficha-control").classList.remove("hidden");
+        const modalEl = document.getElementById("modal-ficha-control");
+        modalEl.classList.remove("hidden");
+        const scrollBox = modalEl.querySelector(".overflow-auto");
+        if (scrollBox) { scrollBox.scrollTop = 0; scrollBox.scrollLeft = 0; }
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
     } catch (e) {

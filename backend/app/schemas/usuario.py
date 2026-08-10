@@ -6,7 +6,7 @@ class UsuarioBase(BaseModel):
     nombre_completo: str = Field(..., min_length=3, max_length=150)
     titulo: Optional[str] = None
     cargo: Optional[str] = None
-    rol: str = Field(..., description="ADMIN, RPC, PRESUPUESTO, SOLICITANTE, SECRETARIA")
+    rol: str = Field(..., description="ADMIN, RPC, PRESUPUESTO, SOLICITANTE, SECRETARIA, AUXILIAR, PASANTE")
     unidad_id: Optional[int] = None
 
 class UsuarioCreate(UsuarioBase):

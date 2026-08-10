@@ -233,6 +233,8 @@
                         <option value="ADMIN">ADMIN</option>
                         <option value="PRESUPUESTO">PRESUPUESTO</option>
                         <option value="SOLICITANTE">SOLICITANTE</option>
+                        <option value="PASANTE">PASANTE</option>
+                        <option value="AUXILIAR">AUXILIAR</option>
                         <option value="SECRETARIA">SECRETARIA</option>
                     </select>
                 </div>
@@ -327,6 +329,8 @@
                             class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:border-indigo-500 outline-none font-semibold text-slate-800"
                             required>
                             <option value="SOLICITANTE">SOLICITANTE</option>
+                            <option value="PASANTE">PASANTE</option>
+                            <option value="AUXILIAR">AUXILIAR</option>
                             <option value="RPC">RPC</option>
                             <option value="ADMIN">ADMIN</option>
                             <option value="PRESUPUESTO">PRESUPUESTO</option>
@@ -400,7 +404,7 @@
     <script src="js/gestion_poa.js"></script>
     <script src="js/gestion_usuarios.js"></script>
     <script>
-        const userRolCat = localStorage.getItem("user_rol");
+        const userRolCat = getEffectiveRole();
 
         if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(userRolCat)) {
             window.location.replace("index.html");
@@ -411,8 +415,8 @@
             if (btnSidebar) btnSidebar.style.display = "none";
         }
 
-        // SI ES RPC, HABILITAMOS PESTAÑA DE USUARIOS
-        if (userRolCat === "RPC") {
+        // SI ES RPC O ADMIN, HABILITAMOS PESTAÑA DE USUARIOS
+        if (["RPC", "ADMIN"].includes(userRolCat)) {
             const btnTabUsuarios = document.getElementById("tab-btn-usuarios");
             if (btnTabUsuarios) btnTabUsuarios.classList.remove("hidden");
         }

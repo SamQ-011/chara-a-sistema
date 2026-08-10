@@ -9,10 +9,10 @@ let usuarioEditandoId = null;
 let usuarioResetId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const rolActual = localStorage.getItem("user_rol");
+    const rolActual = getEffectiveRole();
     
-    // Si es RPC, inicializamos la pestaña de usuarios
-    if (rolActual === "RPC") {
+    // Si es RPC o ADMIN, inicializamos la pestaña de usuarios
+    if (["RPC", "ADMIN"].includes(rolActual)) {
         inicializarModuloUsuarios();
     }
 });
@@ -80,6 +80,8 @@ function renderizarTablaUsuarios(usuarios) {
         else if (u.rol === "ADMIN") badgeRolClass = "bg-rose-100 text-rose-800 border-rose-300";
         else if (u.rol === "PRESUPUESTO") badgeRolClass = "bg-blue-100 text-blue-800 border-blue-300";
         else if (u.rol === "SOLICITANTE") badgeRolClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
+        else if (u.rol === "PASANTE") badgeRolClass = "bg-sky-100 text-sky-800 border-sky-300 font-medium";
+        else if (u.rol === "AUXILIAR") badgeRolClass = "bg-teal-100 text-teal-800 border-teal-300 font-medium";
         else if (u.rol === "SECRETARIA") badgeRolClass = "bg-amber-100 text-amber-800 border-amber-300";
 
         const estadoBadge = u.activo

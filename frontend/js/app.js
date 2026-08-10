@@ -21,6 +21,8 @@ const estados = {
 // Matriz de responsabilidades: ¿Qué debe generar cada rol para considerar su trabajo "terminado"?
 const TAREAS_POR_ROL = {
     "SOLICITANTE": ["especificaciones_tecnicas", "solicitud_cp", "solicitud_inicio", "informe_cotizacion", "acta_recepcion", "informe_conformidad"],
+    "PASANTE": ["especificaciones_tecnicas", "solicitud_cp", "solicitud_inicio", "informe_cotizacion", "acta_recepcion", "informe_conformidad"],
+    "AUXILIAR": ["especificaciones_tecnicas", "solicitud_cp", "solicitud_inicio", "informe_cotizacion", "acta_recepcion", "informe_conformidad"],
     "PRESUPUESTO": ["cert_presupuestaria"],
     "ADMIN": ["informe_cotizacion", "almacenes"],
     "RPC": ["autorizacion_inicio", "notificacion_adjudicacion", "orden_compra"]
@@ -30,12 +32,12 @@ const TAREAS_POR_ROL = {
     INICIALIZACIÓN
 =========================================*/
 async function inicializarDashboard() {
-    const rolActual = localStorage.getItem("user_rol");
+    const rolActual = getEffectiveRole();
     
     document.getElementById("ui-user-name").textContent = localStorage.getItem("user_nombre") || "Usuario";
     document.getElementById("ui-user-rol").textContent = localStorage.getItem("user_cargo") || "Funcionario"; 
     
-    if (!["SOLICITANTE", "SECRETARIA"].includes(rolActual)) {
+    if (!["SOLICITANTE", "SECRETARIA", "PASANTE", "AUXILIAR"].includes(rolActual)) {
         const btnSidebar = document.getElementById("btn-nuevo-proceso-sidebar");
         const btnMain = document.getElementById("btn-nuevo-proceso-main");
         
@@ -108,7 +110,7 @@ async function cargarProcesosYClasificar() {
     MOTOR DE CLASIFICACIÓN (EL CEREBRO)
 =========================================*/
 function clasificarBandeja() {
-    const rol = localStorage.getItem("user_rol") || "SOLICITANTE";
+    const rol = getEffectiveRole();
     listasClasificadas = { pendientes: [], procesados: [] };
 
     procesosCache.forEach(p => {
@@ -319,14 +321,33 @@ function pintarTabla(datos) {
             }
         }
 
+        const completadosCount = LISTA_DOCS_COMPLETA.filter(doc => docsListos.includes(doc.id)).length;
+        const porcentajeAvance = Math.round((completadosCount / LISTA_DOCS_COMPLETA.length) * 100);
+        const colorBarraAvance = porcentajeAvance === 100 ? "bg-emerald-500" : porcentajeAvance > 30 ? "bg-indigo-600" : "bg-amber-500";
+
         const semaforoHtml = LISTA_DOCS_COMPLETA.map(doc => {
             const estaCompletado = docsListos.includes(doc.id);
             if (estaCompletado) {
-                return `<span class="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded shadow-xs" title="${doc.nombre}: COMPLETADO">${doc.sigla}</span>`;
+                return `<span class="px-1 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xs" title="${doc.nombre}: COMPLETADO">${doc.sigla}</span>`;
             } else {
-                return `<span class="px-1.5 py-0.5 text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 rounded opacity-60" title="${doc.nombre}: PENDIENTE">${doc.sigla}</span>`;
+                return `<span class="px-1 py-0.5 text-[9px] font-semibold bg-slate-100 text-slate-400 border border-slate-200 rounded-xs opacity-60" title="${doc.nombre}: PENDIENTE">${doc.sigla}</span>`;
             }
         }).join("");
+
+        const avanceHtml = `
+            <div class="flex flex-col gap-1 w-44 shrink-0">
+                <div class="flex items-center justify-between text-[11px] font-bold">
+                    <span class="text-slate-700 font-semibold">${completadosCount}/${LISTA_DOCS_COMPLETA.length} Docs</span>
+                    <span class="text-indigo-900 font-mono text-[10px] font-black">${porcentajeAvance}%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div class="${colorBarraAvance} h-1.5 rounded-full transition-all duration-300" style="width: ${porcentajeAvance}%;"></div>
+                </div>
+                <div class="flex flex-wrap gap-0.5 items-center pt-0.5">
+                    ${semaforoHtml}
+                </div>
+            </div>
+        `;
 
         let checkboxHabilitado = "";
         if (tabActual !== "PROCESADOS" && (p.estado === "EN CURSO" || p.estado === "BORRADOR")) {
@@ -384,10 +405,8 @@ function pintarTabla(datos) {
                 ${ubicacionBadgeHtml}
             </td>
 
-            <td class="px-6 py-4 align-middle">
-                <div class="flex flex-wrap gap-1 max-w-[280px]">
-                    ${semaforoHtml}
-                </div>
+            <td class="px-6 py-4 align-middle whitespace-nowrap">
+                ${avanceHtml}
             </td>
 
             <td class="px-6 py-4 whitespace-nowrap align-middle">

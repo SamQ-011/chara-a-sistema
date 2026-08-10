@@ -1,12 +1,14 @@
-# backend/crear_tablas.py
 from app.core.base_datos import engine, Base
+from sqlalchemy import text
 
 from app.models.tablas_base import Configuracion, TipoDocumento, Proveedor, Proyecto, Unidad, Usuario, UnidadMedida
 from app.models.tablas_transaccionales import Proceso, ItemProceso, GastoProceso, DocumentoProceso, LogAuditoria
 
 print("Borrando estructura antigua...")
-Base.metadata.drop_all(bind=engine) # <--- ESTO ELIMINA LAS TABLAS EXISTENTES
+with engine.connect() as conn:
+    conn.execute(text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+    conn.commit()
 
 print("Conectando a PostgreSQL y creando tablas...")
-Base.metadata.create_all(bind=engine) # <--- ESTO LAS CREA DE NUEVO CON LA COLUMNA AÑADIDA
+Base.metadata.create_all(bind=engine)
 print("¡Estructura de la base de datos creada con éxito!")

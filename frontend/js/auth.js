@@ -7,10 +7,16 @@ if (!token && !window.location.pathname.includes("login.html")) {
     window.location.href = "login.html";
 }
 
+// Función global para obtener el rol efectivo (Heredado de la Unidad para Pasantes y Auxiliares)
+function getEffectiveRole() {
+    return localStorage.getItem("user_rol_efectivo") || localStorage.getItem("user_rol") || "SOLICITANTE";
+}
+
 // Función global para cerrar sesión
 function cerrarSesion() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user_rol");
+    localStorage.removeItem("user_rol_efectivo");
     localStorage.removeItem("user_nombre");
     localStorage.removeItem("user_cargo");
     window.location.href = "login.html";
