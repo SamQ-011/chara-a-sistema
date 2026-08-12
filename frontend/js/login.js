@@ -58,6 +58,7 @@ formLogin.addEventListener("submit", async (e) => {
         localStorage.setItem("user_rol_efectivo", data.rol_efectivo || data.rol);
         localStorage.setItem("user_nombre", data.nombre);
         localStorage.setItem("user_cargo", data.cargo);
+        localStorage.setItem("user_unidad_id", data.unidad_id || "");
 
         console.log("Login exitoso. Redirigiendo...");
         window.location.href = "index.html";

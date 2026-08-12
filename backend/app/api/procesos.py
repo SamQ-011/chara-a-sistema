@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from fastapi.responses import FileResponse, StreamingResponse
+from datetime import datetime
 from sqlalchemy import func, or_, case, extract
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional
@@ -473,7 +474,74 @@ def resolver_firmante_solicitante(db: Session, unidad_id: Optional[int], usuario
         titulo = f"{usuario_actual_db.titulo.strip()} " if usuario_actual_db.titulo and usuario_actual_db.titulo.strip() else ""
         return f"{titulo}{usuario_actual_db.nombre_completo}", usuario_actual_db.cargo or ""
 
-    return "", ""
+def generar_codigo_proceso(db: Session) -> str:
+    ult = db.query(Proceso).order_by(Proceso.id.desc()).first()
+    num = (ult.id + 1) if ult else 1
+    return f"PROC-2026-{num:04d}"
+
+@router.post("/crear-solicitud-form", status_code=201)
+async def crear_solicitud_proceso_form(
+    unidad_solicitante_id: int = Form(...),
+    objeto: str = Form(...),
+    fecha_solicitud: Optional[str] = Form(None),
+    pdf_solicitud: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
+    user_id = usuario_actual.get("user_id") or usuario_actual.get("sub")
+    usuario_db = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
+    if not usuario_db:
+        raise HTTPException(status_code=401, detail="Usuario inválido")
+
+    rol_efectivo = usuario_actual.get("rol_efectivo") or usuario_actual.get("rol")
+    uni_id = unidad_solicitante_id
+    if rol_efectivo == "SOLICITANTE" and usuario_db.unidad_id:
+        uni_id = usuario_db.unidad_id
+
+    cod_proc = generar_codigo_proceso(db)
+    nom_tecnico, cargo_tecnico = resolver_firmante_solicitante(db, uni_id, usuario_db)
+
+    fecha_val = fecha_solicitud or datetime.now().strftime("%Y-%m-%d")
+
+    nuevo_proceso = Proceso(
+        codigo_proceso=cod_proc,
+        hoja_ruta=cod_proc,
+        objeto_contratacion=objeto.strip(),
+        desca_contextual=objeto[:100] if objeto else "",
+        fecha_solicitud=fecha_val,
+        tecnico_solicitante=nom_tecnico,
+        cargo_tecnico_solicitante=cargo_tecnico,
+        unidad_solicitante_id=uni_id,
+        usuario_id=int(user_id),
+        estado=EstadoProceso.EN_CURSO
+    )
+    db.add(nuevo_proceso)
+    db.flush()
+
+    if pdf_solicitud and pdf_solicitud.filename:
+        folder = os.path.join("uploads", "procesos", str(nuevo_proceso.id))
+        os.makedirs(folder, exist_ok=True)
+        filepath = os.path.join(folder, f"solicitud_inicial_{pdf_solicitud.filename}")
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(pdf_solicitud.file, buffer)
+
+        doc_inicial = DocumentoProceso(
+            proceso_id=nuevo_proceso.id,
+            clave_documento="solicitud_unidad",
+            ruta_archivo=filepath,
+            estado=EstadoDocumento.FINALIZADO
+        )
+        db.add(doc_inicial)
+
+    db.commit()
+    db.refresh(nuevo_proceso)
+
+    return {
+        "success": True,
+        "message": f"Proceso {nuevo_proceso.codigo_proceso} registrado exitosamente",
+        "proceso_id": nuevo_proceso.id,
+        "codigo_proceso": nuevo_proceso.codigo_proceso
+    }
 
 @router.post("/")
 def crear_proceso(datos: ProcesoCreate, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):

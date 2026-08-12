@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción de Trámites (Ventanilla Única) - GAMCH</title>
+    <title>Nueva Solicitud de Contratación - GAMCH</title>
     <link href="css/output.css?v=2.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -17,269 +16,120 @@
         body {
             background: #f8fafc;
         }
-
-        .dropzone-active {
-            @apply border-indigo-500 bg-indigo-50/80 scale-[1.01];
-        }
     </style>
     <script src="js/auth.js"></script>
+    <script>
+        window.LAYOUT_CONFIG = {
+            titulo: "Nueva Solicitud de Contratación",
+            subtitulo: "Ingreso de solicitud interna de compra o servicio con respaldo PDF",
+            badge: "UNIDAD SOLICITANTE"
+        };
+    </script>
 </head>
 
 <body class="flex h-screen overflow-hidden text-slate-900 bg-slate-50">
 
-    <!-- SIDEBAR INSTITUCIONAL -->
-    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-xl border-r border-slate-800 shrink-0">
-        <!-- Logo y Municipio -->
-        <div class="p-6 border-b border-slate-800">
-            <div class="flex items-center gap-3">
-                <div
-                    class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
-                    <i data-lucide="landmark" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg leading-none text-white tracking-tight">GAMCH</h1>
-                    <p class="text-blue-300 text-xs font-semibold mt-1">Gobierno Municipal</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navegación Principal -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="index.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
-                <span>Bandeja de Procesos</span>
-            </a>
-
-            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar"
-                class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
-                <i data-lucide="file-input" class="w-4 h-4 text-blue-400"></i>
-                <span>Recepción (Ventanilla)</span>
-            </a>
-
-            <a id="menu-catalogos" href="catalogos.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
-                <span>Catálogos & Usuarios</span>
-            </a>
-
-            <a href="seguimiento.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                <span>Seguimiento Público</span>
-            </a>
-        </nav>
-
-        <!-- Footer Sidebar -->
-        <div class="p-4 border-t border-slate-800 text-center text-xs text-slate-500">
-            Charaña &bull; Bolivia &copy; 2026
-        </div>
-    </aside>
+    <!-- SIDEBAR DINÁMICO -->
+    <aside id="app-sidebar"></aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto flex flex-col bg-slate-50">
-        <!-- HEADER INSTITUCIONAL -->
-        <header
-            class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0 sticky top-0 z-20 shadow-xs">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100">
-                    <i data-lucide="file-plus" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Recepción de Trámites</h1>
-                        <span
-                            class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 uppercase tracking-wider">Ventanilla
-                            Única</span>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-0.5">Ingreso de correspondencia, registro de Hojas de Ruta y
-                        derivación formal a unidades técnicas.</p>
-                </div>
-            </div>
+        <!-- HEADER SUPERIOR DINÁMICO -->
+        <header id="app-header"></header>
 
-            <div class="flex items-center gap-4">
-                <a href="index.html"
-                    class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a Bandeja
-                </a>
-                <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
-                    <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-bold text-xs">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
-                    </div>
-                    <div class="text-right">
-                        <p id="ui-user-name" class="font-semibold text-xs text-slate-900">Cargando...</p>
-                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol
-                        </p>
-                    </div>
-                    <button onclick="cerrarSesion()"
-                        class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                        title="Cerrar Sesión">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- FORMULARIO DE RECEPCIÓN -->
-        <section class="p-8 max-w-4xl w-full mx-auto space-y-6">
+        <!-- FORMULARIO DE SOLICITUD DE TRÁMITE -->
+        <section class="p-8 max-w-3xl w-full mx-auto space-y-6">
             <form id="form-proceso" class="space-y-6">
-
-                <!-- SECCIÓN 1: DATOS PRINCIPALES -->
-                <div class="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm space-y-6">
+                <div class="bg-white rounded-2xl p-7 border border-slate-200 shadow-xs space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                                1</div>
+                            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold shadow-xs">
+                                <i data-lucide="file-plus" class="w-5 h-5"></i>
+                            </div>
                             <div>
-                                <h3 class="text-base font-bold text-slate-800">Datos Principales del Ingreso</h3>
-                                <p class="text-xs text-slate-500">Identificación formal del trámite para su seguimiento.
-                                </p>
+                                <h3 class="text-base font-bold text-slate-800">Nueva Solicitud de Trámite</h3>
+                                <p class="text-xs text-slate-500">Ingrese los 4 datos de la solicitud inicial para registrar el trámite.</p>
                             </div>
                         </div>
                         <span class="text-xs font-medium text-slate-400">* Campos obligatorios</span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Fecha de Ingreso -->
-                        <div>
-                            <label for="fecha_solicitud"
-                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Fecha de
-                                Ingreso <span class="text-rose-600">*</span></label>
+                    <div class="space-y-5">
+                        <!-- 1. Área Solicitante -->
+                        <div id="contenedor_derivacion">
+                            <label for="area_solicitante" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Área Solicitante <span class="text-rose-600">*</span></label>
                             <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                </div>
-                                <input type="date" id="fecha_solicitud" required
-                                    class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition">
-                            </div>
-                        </div>
-
-                        <!-- Número de Hoja de Ruta -->
-                        <div>
-                            <label for="hoja_ruta"
-                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Número de
-                                Hoja de Ruta <span class="text-rose-600">*</span></label>
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-indigo-500 font-bold text-xs">
-                                    HR #
-                                </div>
-                                <input type="text" id="hoja_ruta" required placeholder="Ej. HR-2026-045"
-                                    class="w-full pl-12 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold text-indigo-900 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition uppercase">
-                            </div>
-                        </div>
-
-                        <!-- Objeto o Resumen -->
-                        <div class="md:col-span-2">
-                            <label for="objeto"
-                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Objeto o
-                                Resumen de la Solicitud <span class="text-rose-600">*</span></label>
-                            <textarea id="objeto" required rows="3"
-                                placeholder="Ej. Solicitud de adquisición de insumos de papelería y escritorio para la gestión 2026..."
-                                class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition resize-none"></textarea>
-                        </div>
-
-                        <!-- Unidad de Derivación -->
-                        <div class="md:col-span-2" id="contenedor_derivacion">
-                            <label for="area_solicitante"
-                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Unidad /
-                                Área de Derivación <span class="text-rose-600">*</span></label>
-                            <div class="relative">
-                                <div
-                                    class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="building-2" class="w-4 h-4"></i>
                                 </div>
-                                <select id="area_solicitante" required
-                                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition appearance-none cursor-pointer">
-                                    <option value="">Seleccione el Área a derivar...</option>
+                                <select id="area_solicitante" required class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition appearance-none cursor-pointer">
+                                    <option value="">Seleccione el Área Solicitante...</option>
                                 </select>
-                                <div
-                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                                <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- SECCIÓN 2: ADJUNTO DIGITAL -->
-                <div class="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm space-y-6">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                                2</div>
-                            <div>
-                                <h3 class="text-base font-bold text-slate-800">Documento Escaneado Oficial</h3>
-                                <p class="text-xs text-slate-500">Adjunte la nota o solicitud escaneada en formato PDF.
-                                </p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold text-rose-600 uppercase">Obligatorio PDF</span>
-                    </div>
-
-                    <!-- DROPZONE INTERACTIVO -->
-                    <div id="pdf-dropzone"
-                        class="border-2 border-dashed border-indigo-200 rounded-2xl p-8 bg-indigo-50/40 hover:bg-indigo-50 hover:border-indigo-400 transition cursor-pointer text-center group relative">
-                        <input type="file" id="pdf_solicitud" accept=".pdf" required
-                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-
-                        <!-- ESTADO VACÍO -->
-                        <div id="dropzone-prompt" class="space-y-3">
-                            <div
-                                class="w-14 h-14 bg-white rounded-2xl text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm group-hover:scale-105 transition-transform">
-                                <i data-lucide="file-up" class="w-7 h-7"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-slate-800">Haga clic o arrastre aquí la Solicitud
-                                    Escaneada</p>
-                                <p class="text-xs text-slate-500 mt-1">Formato soportado: <span
-                                        class="font-bold text-indigo-700">PDF (.pdf)</span> hasta 50MB</p>
-                            </div>
+                        <!-- 2. Objeto / Nombre de la Solicitud -->
+                        <div>
+                            <label for="objeto" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Objeto (Nombre de la Solicitud) <span class="text-rose-600">*</span></label>
+                            <textarea id="objeto" required rows="3" placeholder="Ej: Solicitud de adquisición de materiales e insumos de escritorio..." class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition resize-none"></textarea>
                         </div>
 
-                        <!-- ESTADO ARCHIVO SELECCIONADO -->
-                        <div id="dropzone-selected"
-                            class="hidden flex items-center justify-between bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
-                            <div class="flex items-center gap-3 text-left">
-                                <div
-                                    class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0">
-                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                        <!-- 3. Fecha de Solicitud -->
+                        <div>
+                            <label for="fecha_solicitud" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Fecha de Solicitud <span class="text-rose-600">*</span></label>
+                            <input type="date" id="fecha_solicitud" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition">
+                        </div>
+
+                        <!-- 4. Subir PDF Dropzone -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Documento Escaneado (PDF) <span class="text-rose-600">*</span></label>
+                            <div id="pdf-dropzone" class="border-2 border-dashed border-indigo-200 rounded-2xl p-6 bg-indigo-50/40 hover:bg-indigo-50 hover:border-indigo-400 transition cursor-pointer text-center group relative">
+                                <input type="file" id="pdf_solicitud" accept=".pdf" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                
+                                <div id="dropzone-prompt" class="space-y-2">
+                                    <div class="w-12 h-12 bg-white rounded-xl text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto shadow-xs group-hover:scale-105 transition-transform">
+                                        <i data-lucide="file-up" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Haga clic o arrastre aquí el documento PDF</p>
+                                        <p class="text-xs text-slate-500 mt-0.5">Formato soportado: <span class="font-bold text-indigo-700">PDF (.pdf)</span></p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p id="file-name-preview"
-                                        class="text-sm font-bold text-slate-800 truncate max-w-md"></p>
-                                    <p id="file-size-preview" class="text-xs text-slate-500 font-medium"></p>
+
+                                <div id="dropzone-selected" class="hidden flex items-center justify-between bg-white p-3.5 rounded-xl border border-indigo-100 shadow-xs">
+                                    <div class="flex items-center gap-3 text-left">
+                                        <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0">
+                                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <p id="file-name-preview" class="text-sm font-bold text-slate-800 truncate max-w-md"></p>
+                                            <p id="file-size-preview" class="text-xs text-slate-500 font-medium"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 z-20">
+                                        <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Listo
+                                        </span>
+                                        <button type="button" id="btn-remove-pdf" class="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition" title="Cambiar archivo">
+                                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 z-20">
-                                <span
-                                    class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Listo
-                                </span>
-                                <button type="button" id="btn-remove-pdf"
-                                    class="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition"
-                                    title="Cambiar archivo">
-                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- BOTONES DE ACCIÓN -->
-                <div class="flex justify-end items-center gap-4 pt-2">
-                    <a href="index.html"
-                        class="px-6 py-3 rounded-xl border border-slate-300 font-bold text-sm text-slate-700 hover:bg-slate-100 transition">
-                        Cancelar
-                    </a>
-                    <button type="submit" id="btn-guardar"
-                        class="px-7 py-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                        <span>Ingresar Trámite y Derivar</span>
-                    </button>
+                    <!-- BOTONES DE ACCIÓN -->
+                    <div class="flex justify-end items-center gap-4 pt-4 border-t border-slate-100">
+                        <a href="index.html" class="px-6 py-3 rounded-xl border border-slate-300 font-bold text-sm text-slate-700 hover:bg-slate-100 transition">Cancelar</a>
+                        <button type="submit" id="btn-guardar" class="px-7 py-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>Crear Solicitud de Trámite</span>
+                        </button>
+                    </div>
                 </div>
             </form>
         </section>
@@ -287,6 +137,7 @@
 
     <script>lucide.createIcons();</script>
     <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
     <script src="js/proceso.js"></script>
 </body>
 

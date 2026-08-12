@@ -19,97 +19,23 @@
         }
     </style>
     <script src="js/auth.js"></script>
+    <script>
+        window.LAYOUT_CONFIG = {
+            titulo: "Bandeja de Contrataciones",
+            subtitulo: "Gestión y seguimiento continuo de Hojas de Ruta de Contratación (11 Pasos)"
+        };
+    </script>
 </head>
 
-<body class="flex h-screen overflow-hidden text-slate-900">
+<body class="flex h-screen overflow-hidden text-slate-900 bg-slate-50">
 
-    <!-- SIDEBAR INSTITUCIONAL -->
-    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-xl border-r border-slate-800 shrink-0">
-        <!-- Logo y Municipio -->
-        <div class="p-6 border-b border-slate-800">
-            <div class="flex items-center gap-3">
-                <div
-                    class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
-                    <i data-lucide="landmark" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg leading-none text-white tracking-tight">GAMCH</h1>
-                    <p class="text-blue-300 text-xs font-semibold mt-1">Gobierno Municipal</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navegación Principal -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="index.html"
-                class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-blue-400"></i>
-                <span>Bandeja de Procesos</span>
-            </a>
-
-            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-slate-400"></i>
-                <span>Nuevo Proceso</span>
-            </a>
-
-            <a id="menu-catalogos" href="catalogos.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
-                <span>Catálogos & Usuarios</span>
-            </a>
-
-            <a id="menu-reportes" href="reportes.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-400"></i>
-                <span>Métricas & Reportes</span>
-            </a>
-
-            <a href="seguimiento.html"
-                class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                <span>Seguimiento Público</span>
-            </a>
-        </nav>
-
-        <!-- Pie de Sidebar -->
-        <div class="p-4 border-t border-slate-800">
-            <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
-                <p class="text-xs font-semibold text-slate-200">Sistema de Seguimiento</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">Gestión Documental GAMCH</p>
-            </div>
-        </div>
-    </aside>
+    <!-- SIDEBAR DINÁMICO -->
+    <aside id="app-sidebar"></aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto flex flex-col bg-slate-50">
-        <!-- HEADER INSTITUCIONAL -->
-        <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Bandeja de Procesos</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Gestión y seguimiento continuo de Hojas de Ruta de Contratación
-                </p>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
-                    <div
-                        class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-bold text-xs">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
-                    </div>
-                    <div class="text-right">
-                        <p id="ui-user-name" class="font-semibold text-xs text-slate-900">Cargando...</p>
-                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rol
-                        </p>
-                    </div>
-                    <button onclick="cerrarSesion()"
-                        class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                        title="Cerrar Sesión">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
+        <!-- HEADER SUPERIOR DINÁMICO -->
+        <header id="app-header"></header>
 
         <!-- SECCIÓN DE TRABAJO -->
         <section class="p-8 max-w-[1600px] w-full mx-auto space-y-6">
@@ -183,82 +109,110 @@
             <div id="panel-gerencial" class="hidden space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Panel de Gestión Financiera & Operativa
+                        <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i> Panel de Gestión Financiera &
+                        Operativa
                     </h3>
-                    <a href="reportes.html" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
+                    <a href="reportes.html"
+                        class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
                         Ver Analytics Completo <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                     </a>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- KPI 1: Solicitado -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto Solicitado</p>
-                            <h4 id="monto-solicitado" class="text-lg font-black text-indigo-900 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto
+                                Solicitado</p>
+                            <h4 id="monto-solicitado" class="text-lg font-black text-indigo-900 mt-1 tabular-nums">Bs.
+                                0.00</h4>
                             <p class="text-[10px] text-slate-400 mt-0.5">Certificaciones en curso</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
                             <i data-lucide="coins" class="w-5 h-5"></i>
                         </div>
                     </div>
 
                     <!-- KPI 2: Adjudicado Real -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto Adjudicado</p>
-                            <h4 id="monto-adjudicado" class="text-lg font-black text-emerald-600 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Presupuesto
+                                Adjudicado</p>
+                            <h4 id="monto-adjudicado" class="text-lg font-black text-emerald-600 mt-1 tabular-nums">Bs.
+                                0.00</h4>
                             <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">Contratado en órdenes</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
                             <i data-lucide="check-circle" class="w-5 h-5"></i>
                         </div>
                     </div>
 
                     <!-- KPI 3: Ahorro Municipal -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ahorro Municipal</p>
-                            <h4 id="monto-ahorro" class="text-lg font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ahorro Municipal
+                            </p>
+                            <h4 id="monto-ahorro" class="text-lg font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00
+                            </h4>
                             <p class="text-[10px] text-blue-600 font-medium mt-0.5">Saldo no ejecutado</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                             <i data-lucide="piggy-bank" class="w-5 h-5"></i>
                         </div>
                     </div>
 
                     <!-- KPI 4: Retenciones del 7% -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Retenciones (7%)</p>
-                            <h4 id="monto-retenciones" class="text-lg font-black text-rose-700 mt-1 tabular-nums">Bs. 0.00</h4>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Retenciones (7%)
+                            </p>
+                            <h4 id="monto-retenciones" class="text-lg font-black text-rose-700 mt-1 tabular-nums">Bs.
+                                0.00</h4>
                             <p class="text-[10px] text-rose-600 font-medium mt-0.5">Pendiente pago posterior</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
                             <i data-lucide="shield-alert" class="w-5 h-5"></i>
                         </div>
                     </div>
 
                     <!-- KPI 5: SLA Promedio (Dinámico) -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">SLA Atención Promedio</p>
-                            <h4 id="sla-promedio" class="text-lg font-black text-slate-800 mt-1 tabular-nums">Cargando...</h4>
-                            <p id="sla-subtitulo" class="text-[10px] text-slate-400 font-medium mt-0.5">Calculando...</p>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">SLA Atención
+                                Promedio</p>
+                            <h4 id="sla-promedio" class="text-lg font-black text-slate-800 mt-1 tabular-nums">
+                                Cargando...</h4>
+                            <p id="sla-subtitulo" class="text-[10px] text-slate-400 font-medium mt-0.5">Calculando...
+                            </p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
                             <i data-lucide="zap" class="w-5 h-5"></i>
                         </div>
                     </div>
 
                     <!-- KPI 6: Índice de Efectividad -->
-                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex items-center justify-between">
                         <div>
-                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Índice de Efectividad</p>
-                            <h4 id="indice-efectividad" class="text-lg font-black text-violet-700 mt-1 tabular-nums">0%</h4>
-                            <p id="efectividad-subtitulo" class="text-[10px] text-violet-600 font-medium mt-0.5">Completados vs Anulados</p>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Índice de
+                                Efectividad</p>
+                            <h4 id="indice-efectividad" class="text-lg font-black text-violet-700 mt-1 tabular-nums">0%
+                            </h4>
+                            <p id="efectividad-subtitulo" class="text-[10px] text-violet-600 font-medium mt-0.5">
+                                Completados vs Anulados</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
                             <i data-lucide="target" class="w-5 h-5"></i>
                         </div>
                     </div>
@@ -269,7 +223,8 @@
                     <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                         <div class="flex items-center gap-2">
                             <i data-lucide="building-2" class="w-4 h-4 text-slate-700"></i>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Carga Operativa por Unidad Solicitante</h4>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Carga Operativa por
+                                Unidad Solicitante</h4>
                         </div>
                         <span class="text-[10px] font-bold text-slate-400 uppercase">Trámites Activos</span>
                     </div>
@@ -474,10 +429,128 @@
         </div>
     </div>
 
-    <script>lucide.createIcons();</script>
+    <!-- MODAL INGRESO DE CORRESPONDENCIA (VENTANILLA ÚNICA) -->
+    <div id="modal-ingreso-correspondencia"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div
+            class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
+            <header class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i>
+                    <h3 class="font-bold text-sm">Registrar Ingreso de Correspondencia</h3>
+                </div>
+                <button onclick="cerrarModalNuevaCorrespondencia()"
+                    class="p-1.5 text-slate-400 hover:text-white rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </header>
+
+            <form id="form-nueva-correspondencia" onsubmit="guardarNuevaCorrespondencia(event)"
+                class="p-6 space-y-4 overflow-y-auto flex-1">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tipo Remitente *</label>
+                        <select id="tipo_remitente"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                            <option value="INSTITUCIONAL">OTB / Comunidad / Entidad Pública</option>
+                            <option value="PARTICULAR">Persona Particular</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Remitente / Firmante
+                            *</label>
+                        <input type="text" id="nombre_remitente" required placeholder="Ej: Pedro Quispe Aduviri"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Cargo del Remitente</label>
+                        <input type="text" id="cargo_remitente" placeholder="Ej: Presidente de OTB Charaña"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Teléfono / Celular Contacto</label>
+                        <input type="text" id="telefono_remitente" placeholder="Ej: 71543210"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">CITE del Documento</label>
+                        <input type="text" id="cite_origen" placeholder="Ej: CITE N° 045/2026"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Fecha Doc. Origen</label>
+                        <input type="date" id="fecha_doc_origen"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tipo Documento *</label>
+                        <select id="tipo_documento"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                            <option value="CARTA">Carta / Oficio</option>
+                            <option value="SOLICITUD">Solicitud Directa</option>
+                            <option value="MEMORIAL">Memorial</option>
+                            <option value="INFORME">Informe Técnico Ext.</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Asunto / Referencia del Trámite *</label>
+                    <textarea id="asunto_corr" required rows="2"
+                        placeholder="Ej: Solicitud de adquisición de material escolar para 18 U.E. del Municipio de Charaña"
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">N° Fojas (Páginas)</label>
+                        <input type="number" id="nro_fojas" min="1" value="1"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Unidad Destino (Derivar a) *</label>
+                        <select id="unidad_destino_id" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+                            <!-- Cargar dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Instrucción / Proveído Inicial</label>
+                    <input type="text" id="instruccion_proveido" value="Para su atención y trámite correspondiente"
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+                </div>
+
+                <div class="pt-4 border-t border-slate-200 flex justify-end gap-3">
+                    <button type="button" onclick="cerrarModalNuevaCorrespondencia()"
+                        class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4"></i> Registrar e Imprimir HR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/correspondencia.js"></script>
     <script src="js/app.js"></script>
     <script src="js/gestion_poa.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 
 </html>

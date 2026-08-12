@@ -52,5 +52,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "rol": usuario.rol,
         "rol_efectivo": rol_efectivo,
         "nombre": nombre_final,  
-        "cargo": usuario.cargo
+        "cargo": usuario.cargo,
+        "unidad_id": usuario.unidad_id
     }

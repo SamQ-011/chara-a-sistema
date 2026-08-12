@@ -4,7 +4,7 @@ const API_BASE_URL = window.ENV?.API_URL || (window.location.origin.startsWith("
 /* =========================================
    HELPER GLOBAL DE NORMALIZACIÓN DE ÍTEMS (DRY)
 ========================================= */
-window.normalizarItem = function(i) {
+window.normalizarItem = function (i) {
     if (!i || typeof i !== "object") return { nro: 1, nro_item: 1, objeto: "", objeto_corto: "", descripcion: "", descripcion_larga: "", tipuni: "", unidad: "", cant: 0, cantidad: 0, precio_unitario: 0, total_item: 0 };
 
     const limpiarTexto = (val) => {
@@ -40,7 +40,7 @@ window.normalizarItem = function(i) {
    SISTEMA DE NOTIFICACIONES TOAST (MODERNO)
 ========================================= */
 
-window.mostrarToast = function(mensaje, tipo = "auto", duracion = 4500) {
+window.mostrarToast = function (mensaje, tipo = "auto", duracion = 4500) {
     let container = document.getElementById("toast-container");
     if (!container) {
         container = document.createElement("div");
@@ -126,7 +126,7 @@ window.mostrarToast = function(mensaje, tipo = "auto", duracion = 4500) {
 };
 
 // Sobreescritura global transparente de alert()
-window.alert = function(msg) {
+window.alert = function (msg) {
     if (msg) window.mostrarToast(msg, "auto");
 };
 
@@ -161,7 +161,7 @@ async function request(endpoint, options = {}) {
 
     try {
         const response = await fetch(url, config);
-        
+
         if (response.status === 401) {
             if (typeof cerrarSesion === "function") cerrarSesion();
             throw new Error("Sesión expirada o inválida.");
@@ -183,7 +183,7 @@ async function request(endpoint, options = {}) {
 }
 
 
-window.mostrarCarga = function(mensaje = "Procesando documento...") {
+window.mostrarCarga = function (mensaje = "Procesando documento...") {
     const overlay = document.getElementById("loading-overlay");
     const txt = document.getElementById("loading-text");
     if (txt) txt.textContent = mensaje;
@@ -193,7 +193,7 @@ window.mostrarCarga = function(mensaje = "Procesando documento...") {
     }
 };
 
-window.ocultarCarga = function() {
+window.ocultarCarga = function () {
     const overlay = document.getElementById("loading-overlay");
     if (overlay) {
         overlay.classList.add("hidden");
@@ -201,7 +201,7 @@ window.ocultarCarga = function() {
     }
 };
 
-window.abrirVisorPDF = function(fileURL, titulo = "Documento Oficial") {
+window.abrirVisorPDF = function (fileURL, titulo = "Documento Oficial") {
     const modal = document.getElementById("modal-visor-pdf");
     const iframe = document.getElementById("iframe-visor-pdf");
     const tituloTxt = document.getElementById("visor-titulo-doc");
@@ -215,7 +215,7 @@ window.abrirVisorPDF = function(fileURL, titulo = "Documento Oficial") {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-window.cerrarVisorPDF = function() {
+window.cerrarVisorPDF = function () {
     const modal = document.getElementById("modal-visor-pdf");
     const iframe = document.getElementById("iframe-visor-pdf");
     if (modal) {
@@ -255,7 +255,7 @@ async function downloadFile(endpoint, nombreArchivo = "documento", formato = "wo
             // MOSTRAR EN VISOR INTEGRADO
             const pdfBlob = new Blob([rawBlob], { type: "application/pdf" });
             const fileURL = URL.createObjectURL(pdfBlob);
-            
+
             ocultarCarga();
             abrirVisorPDF(fileURL, nombreArchivo);
 
@@ -279,7 +279,7 @@ async function downloadFile(endpoint, nombreArchivo = "documento", formato = "wo
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            
+
             ocultarCarga();
             setTimeout(() => window.URL.revokeObjectURL(fileURL), 1000);
         }
@@ -300,11 +300,11 @@ const ProcesosAPI = {
         const query = new URLSearchParams(params).toString();
         return await request(`/procesos${query ? `?${query}` : ""}`);
     },
-    verSolicitudInicial: async (procesoId) => 
+    verSolicitudInicial: async (procesoId) =>
         await downloadFile(`/procesos/${procesoId}/ver-solicitud`, `Solicitud_Inicial_${procesoId}`, "pdf"),
-    
+
     // NUEVO: DESCARGA MASIVA DEL EXPEDIENTE COMPLETO EN ZIP
-    descargarExpedienteZip: async (procesoId) => 
+    descargarExpedienteZip: async (procesoId) =>
         await downloadFile(`/procesos/${procesoId}/descargar-zip`, `Expediente_Completo_${procesoId}`, "zip"),
 
     obtener: async (id) => await request(`/procesos/${id}`),
@@ -315,9 +315,9 @@ const ProcesosAPI = {
     guardarDocumento: async (procesoId, payload) => await request(`/procesos/${procesoId}/documentos`, { method: "POST", body: JSON.stringify(payload) }),
     dashboard: async () => await request(`/procesos/dashboard`),
     descargarReporteExcel: async () => await downloadFile("/procesos/reportes/excel", "Reporte_Consolidado_GAMCH", "xlsx"),
-    descargarDocumento: async (procesoId, tipoDoc, formato = 'word') => 
+    descargarDocumento: async (procesoId, tipoDoc, formato = 'word') =>
         await downloadFile(`/procesos/${procesoId}/documentos/${tipoDoc}?formato=${formato}`, tipoDoc, formato),
-    fusionar: async (payload) => await request("/procesos/fusionar", {method: "POST",body: JSON.stringify(payload)}),
+    fusionar: async (payload) => await request("/procesos/fusionar", { method: "POST", body: JSON.stringify(payload) }),
 };
 
 /* =========================================
@@ -330,7 +330,7 @@ const ProveedoresAPI = {
 };
 
 const UnidadesAPI = {
-    listar: async () => await request(`/unidades`) 
+    listar: async () => await request(`/unidades`)
 };
 
 /* =========================================
@@ -365,12 +365,27 @@ const CatalogosAPI = {
     crearPartidaPOA: async (datos) => await request("/poa/partidas", { method: "POST", body: JSON.stringify(datos) })
 };
 
+const CorrespondenciaAPI = {
+    listar: async (params = {}) => {
+        const search = new URLSearchParams(params).toString();
+        return await request(`/correspondencia${search ? '?' + search : ''}`);
+    },
+    obtener: async (id) => await request(`/correspondencia/${id}`),
+    crear: async (datos) => await request(`/correspondencia/`, { method: "POST", body: JSON.stringify(datos) }),
+    acusarRecibo: async (id) => await request(`/correspondencia/${id}/acusar-recibo`, { method: "POST" }),
+    agregarNota: async (id, datos) => await request(`/correspondencia/${id}/agregar-nota`, { method: "POST", body: JSON.stringify(datos) }),
+    atender: async (id, datos) => await request(`/correspondencia/${id}/atender`, { method: "POST", body: JSON.stringify(datos) }),
+    promover: async (id) => await request(`/correspondencia/${id}/promover-contratacion`, { method: "POST" })
+};
+
 window.API = {
+    request: request,
     procesos: ProcesosAPI,
     proveedores: ProveedoresAPI,
     proyectos: ProyectosAPI,
     documentos: DocumentosAPI,
     dashboard: DashboardAPI,
     unidades: UnidadesAPI,
-    catalogos: CatalogosAPI
+    catalogos: CatalogosAPI,
+    correspondencia: CorrespondenciaAPI
 };

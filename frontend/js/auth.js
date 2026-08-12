@@ -1,11 +1,13 @@
 // frontend/js/auth.js
 
-const token = localStorage.getItem("access_token");
-
-// Si no hay token y no estamos en la página de login, expulsar.
-if (!token && !window.location.pathname.includes("login.html")) {
-    window.location.href = "login.html";
+function verificarTokenYPagina() {
+    const token = localStorage.getItem("access_token");
+    if (!token && !window.location.pathname.includes("login.html")) {
+        window.location.href = "login.html";
+    }
 }
+
+verificarTokenYPagina();
 
 // Función global para obtener el rol efectivo (Heredado de la Unidad para Pasantes y Auxiliares)
 function getEffectiveRole() {

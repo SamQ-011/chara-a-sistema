@@ -7,38 +7,60 @@
     <title>Métricas y Reportes Institucionales - GAMCH</title>
     <link href="css/output.css?v=2.0" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        body { background: #f8fafc; }
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f8fafc;
+        }
 
         @media print {
-            aside, header, button, .no-print {
+
+            aside,
+            header,
+            button,
+            .no-print {
                 display: none !important;
             }
-            body, main {
+
+            body,
+            main {
                 background: white !important;
                 overflow: visible !important;
                 height: auto !important;
             }
+
             .p-8 {
                 padding: 0 !important;
             }
+
             .print-only {
                 display: block !important;
             }
-            .shadow-sm, .shadow-xs, .shadow-xl {
+
+            .shadow-sm,
+            .shadow-xs,
+            .shadow-xl {
                 box-shadow: none !important;
             }
+
             .border {
                 border-color: #cbd5e1 !important;
             }
-            .rounded-2xl, .rounded-3xl {
+
+            .rounded-2xl,
+            .rounded-3xl {
                 border-radius: 8px !important;
             }
+
             table {
                 font-size: 10px !important;
             }
+
             .page-break-avoid {
                 page-break-inside: avoid !important;
             }
@@ -49,90 +71,41 @@
         }
     </style>
     <script src="js/auth.js"></script>
+    <script>
+        window.LAYOUT_CONFIG = {
+            titulo: "Centro de Inteligencia & Analytics Municipal",
+            subtitulo: "Monitoreo de ejecución presupuestaria, eficiencia operacional y proveedores"
+        };
+    </script>
 </head>
 
-<body class="flex h-screen overflow-hidden text-slate-900">
+<body class="flex h-screen overflow-hidden text-slate-900 bg-slate-50">
 
-    <!-- SIDEBAR INSTITUCIONAL -->
-    <aside class="w-72 bg-slate-900 text-white flex flex-col shadow-xl border-r border-slate-800 shrink-0">
-        <div class="p-6 border-b border-slate-800">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-blue-900/80 border border-blue-700/50 flex items-center justify-center text-blue-300 shadow-inner shrink-0">
-                    <i data-lucide="landmark" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg leading-none text-white tracking-tight">GAMCH</h1>
-                    <p class="text-blue-300 text-xs font-semibold mt-1">Gobierno Municipal</p>
-                </div>
-            </div>
-        </div>
-
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a href="index.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
-                <span>Bandeja de Procesos</span>
-            </a>
-
-            <a href="nuevo_proceso.html" id="btn-nuevo-proceso-sidebar" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-slate-400"></i>
-                <span>Nuevo Proceso</span>
-            </a>
-
-            <a id="menu-catalogos" href="catalogos.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
-                <span>Catálogos & Usuarios</span>
-            </a>
-
-            <a href="reportes.html" class="flex items-center gap-3 bg-blue-950/80 text-blue-200 border-l-4 border-blue-500 rounded-r-xl px-4 py-3 text-sm font-semibold transition">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-400"></i>
-                <span>Métricas & Reportes</span>
-            </a>
-
-            <a href="seguimiento.html" class="flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl px-4 py-3 text-sm font-medium transition">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                <span>Seguimiento Público</span>
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-slate-800">
-            <div class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
-                <p class="text-xs font-semibold text-slate-200">Módulo de Analítica</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">Gestión Presupuestaria GAMCH</p>
-            </div>
-        </div>
-    </aside>
+    <!-- SIDEBAR DINÁMICO -->
+    <aside id="app-sidebar"></aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto flex flex-col bg-slate-50">
-        <!-- HEADER -->
-        <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shrink-0 sticky top-0 z-10 shadow-xs">
-            <div>
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    <span>Navegación</span>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-                    <span class="text-slate-700">Métricas & Reportes</span>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Centro de Inteligencia & Analytics Municipal</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Monitoreo de ejecución presupuestaria, eficiencia operacional y proveedores</p>
-            </div>
+        <!-- HEADER SUPERIOR DINÁMICO -->
+        <header id="app-header"></header>
 
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <button onclick="exportarExcelConsolidado()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
-                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Exportar Excel Consolidado
-                    </button>
-                    <button onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm">
-                        <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Reporte PDF
-                    </button>
-                </div>
-                <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
-                    <div class="text-right">
-                        <p id="ui-user-name" class="font-semibold text-xs text-slate-900">Cargando...</p>
-                        <p id="ui-user-rol" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cargo</p>
-                    </div>
-                </div>
+        <!-- ACCIONES DE REPORTE Y EXPORTACIÓN -->
+        <div class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center no-print sticky top-[73px] z-10 shadow-xs">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i>
+                <span>Reportes Oficiales de Ejecución</span>
             </div>
-        </header>
+            <div class="flex items-center gap-2">
+                <button onclick="exportarExcelConsolidado()"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Exportar Excel Consolidado
+                </button>
+                <button onclick="window.print()"
+                    class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Reporte PDF
+                </button>
+            </div>
+        </div>
 
         <!-- WORKSPACE DE REPORTES -->
         <div class="p-8 max-w-[1600px] w-full mx-auto space-y-6">
@@ -141,9 +114,12 @@
             <div class="print-only mb-6 pb-4 border-b-2 border-slate-900">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">GOBIERNO AUTÓNOMO MUNICIPAL DE CHARAÑA</h1>
-                        <p class="text-xs font-bold text-slate-700 mt-0.5">SISTEMA INTEGRADO DE SEGUIMIENTO Y CONTRATACIONES (GAMCH)</p>
-                        <p class="text-sm font-black text-indigo-900 mt-2">INFORME EJECUTIVO DE GESTIÓN PRESUPUESTARIA Y CONTRATACIONES</p>
+                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">GOBIERNO AUTÓNOMO MUNICIPAL DE
+                            CHARAÑA</h1>
+                        <p class="text-xs font-bold text-slate-700 mt-0.5">SISTEMA INTEGRADO DE SEGUIMIENTO Y
+                            CONTRATACIONES (GAMCH)</p>
+                        <p class="text-sm font-black text-indigo-900 mt-2">INFORME EJECUTIVO DE GESTIÓN PRESUPUESTARIA Y
+                            CONTRATACIONES</p>
                     </div>
                     <div class="text-right text-xs text-slate-600">
                         <p class="font-bold">FECHA EMISIÓN: <span id="print-fecha-emision">--/--/----</span></p>
@@ -155,68 +131,87 @@
 
             <!-- 1. RESUMEN DE KPIs EJECUTIVOS DE GESTIÓN (6 tarjetas) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Presupuesto Certificado</p>
-                        <h3 id="rep-monto-solic" class="text-2xl font-black text-indigo-950 mt-1 tabular-nums">Bs. 0.00</h3>
+                        <h3 id="rep-monto-solic" class="text-2xl font-black text-indigo-950 mt-1 tabular-nums">Bs. 0.00
+                        </h3>
                         <p class="text-[11px] text-indigo-600 font-semibold mt-1">Total de Hojas de Ruta</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
                         <i data-lucide="wallet" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Monto Adjudicado Real</p>
-                        <h3 id="rep-monto-adj" class="text-2xl font-black text-emerald-600 mt-1 tabular-nums">Bs. 0.00</h3>
+                        <h3 id="rep-monto-adj" class="text-2xl font-black text-emerald-600 mt-1 tabular-nums">Bs. 0.00
+                        </h3>
                         <p class="text-[11px] text-emerald-700 font-bold mt-1">Ejecutado en proveedores</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
                         <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ahorro Municipal</p>
-                        <h3 id="rep-monto-ahorro" class="text-2xl font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00</h3>
+                        <h3 id="rep-monto-ahorro" class="text-2xl font-black text-blue-700 mt-1 tabular-nums">Bs. 0.00
+                        </h3>
                         <p class="text-[11px] text-blue-600 font-semibold mt-1">Devuelto al Saldo POA</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                         <i data-lucide="piggy-bank" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Retenciones Acumuladas (7%)</p>
-                        <h3 id="rep-retenciones" class="text-2xl font-black text-rose-700 mt-1 tabular-nums">Bs. 0.00</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Retenciones Acumuladas (7%)
+                        </p>
+                        <h3 id="rep-retenciones" class="text-2xl font-black text-rose-700 mt-1 tabular-nums">Bs. 0.00
+                        </h3>
                         <p class="text-[11px] text-rose-600 font-semibold mt-1">Pendiente de pago posterior</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
                         <i data-lucide="shield-alert" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">SLA Institucional Promedio</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">SLA Institucional Promedio
+                        </p>
                         <h3 id="rep-sla" class="text-2xl font-black text-slate-800 mt-1 tabular-nums">Cargando...</h3>
                         <p id="rep-sla-subtitulo" class="text-[11px] text-slate-400 font-medium mt-1">Calculando...</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
                         <i data-lucide="zap" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div
+                    class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Índice de Efectividad</p>
                         <h3 id="rep-efectividad" class="text-2xl font-black text-violet-700 mt-1 tabular-nums">0%</h3>
-                        <p id="rep-efectividad-sub" class="text-[11px] text-violet-600 font-semibold mt-1">Completados vs Anulados</p>
+                        <p id="rep-efectividad-sub" class="text-[11px] text-violet-600 font-semibold mt-1">Completados
+                            vs Anulados</p>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
                         <i data-lucide="target" class="w-6 h-6"></i>
                     </div>
                 </div>
@@ -230,7 +225,8 @@
                     <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <div>
                             <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="pie-chart" class="text-indigo-600 w-5 h-5"></i> Partidas POA Más Afectadas
+                                <i data-lucide="pie-chart" class="text-indigo-600 w-5 h-5"></i> Partidas POA Más
+                                Afectadas
                             </h3>
                             <p class="text-xs text-slate-500 mt-0.5">Top 5 partidas con mayor demanda presupuestaria</p>
                         </div>
@@ -245,7 +241,10 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-top-partidas" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="px-4 py-4 text-center text-slate-400 italic">Cargando partidas...</td></tr>
+                                <tr>
+                                    <td colspan="3" class="px-4 py-4 text-center text-slate-400 italic">Cargando
+                                        partidas...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -256,7 +255,8 @@
                     <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <div>
                             <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="award" class="text-emerald-600 w-5 h-5"></i> Ranking de Proveedores Adjudicados
+                                <i data-lucide="award" class="text-emerald-600 w-5 h-5"></i> Ranking de Proveedores
+                                Adjudicados
                             </h3>
                             <p class="text-xs text-slate-500 mt-0.5">Empresas adjudicadas en contrataciones mayores</p>
                         </div>
@@ -271,7 +271,10 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-ranking-proveedores" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="px-4 py-4 text-center text-slate-400 italic">Cargando proveedores...</td></tr>
+                                <tr>
+                                    <td colspan="3" class="px-4 py-4 text-center text-slate-400 italic">Cargando
+                                        proveedores...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -283,9 +286,11 @@
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="layers" class="text-slate-700 w-5 h-5"></i> Distribución por Tipo de Contratación
+                        <i data-lucide="layers" class="text-slate-700 w-5 h-5"></i> Distribución por Tipo de
+                        Contratación
                     </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Desglose de trámites activos por tipo: Bienes, Servicios Generales, Consultoría</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Desglose de trámites activos por tipo: Bienes, Servicios
+                        Generales, Consultoría</p>
                 </div>
                 <div class="p-6">
                     <div id="distribucion-tipos" class="grid md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -299,9 +304,11 @@
                 <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                     <div>
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="table" class="text-slate-700 w-5 h-5"></i> Matriz Consolidada de Expedientes Municipales
+                            <i data-lucide="table" class="text-slate-700 w-5 h-5"></i> Matriz Consolidada de Expedientes
+                            Municipales
                         </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Listado completo de hojas de ruta con comparativa de montos y estados</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Listado completo de hojas de ruta con comparativa de
+                            montos y estados</p>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -319,7 +326,10 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-matriz-consolidada" class="divide-y divide-slate-100">
-                            <tr><td colspan="8" class="px-6 py-6 text-center text-slate-400 italic">Cargando matriz de expediente...</td></tr>
+                            <tr>
+                                <td colspan="8" class="px-6 py-6 text-center text-slate-400 italic">Cargando matriz de
+                                    expediente...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -353,6 +363,8 @@
     </main>
 
     <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
     <script src="js/reportes.js"></script>
 </body>
+
 </html>

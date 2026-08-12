@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from app.api import catalogos, procesos, rutas_auth, rutas_usuarios
+from app.api import catalogos, procesos, rutas_auth, rutas_usuarios, rutas_correspondencia
 
 app = FastAPI(title="API Hoja de Ruta - GAMCH")
 
@@ -45,6 +45,7 @@ app.include_router(catalogos.router)
 app.include_router(procesos.router)
 app.include_router(rutas_auth.router, prefix="/api/auth", tags=["Autenticación"])
 app.include_router(rutas_usuarios.router)
+app.include_router(rutas_correspondencia.router)
 
 @app.get("/")
 def read_index():

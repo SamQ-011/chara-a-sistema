@@ -1,8 +1,10 @@
 // archivo: js/reportes.js
 
 document.addEventListener("DOMContentLoaded", async () => {
-    document.getElementById("ui-user-name").textContent = localStorage.getItem("user_nombre") || "Usuario";
-    document.getElementById("ui-user-rol").textContent = localStorage.getItem("user_cargo") || "Funcionario";
+    const elName = document.getElementById("ui-user-name");
+    const elRol = document.getElementById("ui-user-rol");
+    if (elName) elName.textContent = localStorage.getItem("user_nombre") || "Usuario";
+    if (elRol) elRol.textContent = localStorage.getItem("user_cargo") || "Funcionario";
     
     const elPrintFecha = document.getElementById("print-fecha-emision");
     if (elPrintFecha) {
@@ -34,26 +36,36 @@ async function cargarDatosReportes() {
         const formateador = new Intl.NumberFormat("es-BO", { style: "currency", currency: "BOB" });
 
         // KPIs principales
-        document.getElementById("rep-monto-solic").textContent = formateador.format(glob.presupuesto_solicitado || 0);
-        document.getElementById("rep-monto-adj").textContent = formateador.format(glob.presupuesto_ejecutado || 0);
-        document.getElementById("rep-monto-ahorro").textContent = formateador.format(glob.ahorro_acumulado || 0);
-        document.getElementById("rep-retenciones").textContent = formateador.format(glob.total_retenciones || 0);
+        const elSol = document.getElementById("rep-monto-solic");
+        const elAdj = document.getElementById("rep-monto-adj");
+        const elAho = document.getElementById("rep-monto-ahorro");
+        const elRet = document.getElementById("rep-retenciones");
+
+        if (elSol) elSol.textContent = formateador.format(glob.presupuesto_solicitado || 0);
+        if (elAdj) elAdj.textContent = formateador.format(glob.presupuesto_ejecutado || 0);
+        if (elAho) elAho.textContent = formateador.format(glob.ahorro_acumulado || 0);
+        if (elRet) elRet.textContent = formateador.format(glob.total_retenciones || 0);
 
         // SLA dinámico
         const elSla = document.getElementById("rep-sla");
         const elSlaSub = document.getElementById("rep-sla-subtitulo");
-        if (glob.sla_promedio_dias !== null && glob.sla_promedio_dias !== undefined) {
+        if (elSla && glob.sla_promedio_dias !== null && glob.sla_promedio_dias !== undefined) {
             elSla.textContent = `${glob.sla_promedio_dias} días`;
-            elSlaSub.textContent = glob.sla_promedio_dias <= 5 ? "⚡ Alta Eficiencia Operativa" : "⏳ Requiere revisión";
-            elSlaSub.className = `text-[11px] font-bold mt-1 ${glob.sla_promedio_dias <= 5 ? 'text-emerald-600' : 'text-amber-600'}`;
-        } else {
+            if (elSlaSub) {
+                elSlaSub.textContent = glob.sla_promedio_dias <= 5 ? "⚡ Alta Eficiencia Operativa" : "⏳ Requiere revisión";
+                elSlaSub.className = `text-[11px] font-bold mt-1 ${glob.sla_promedio_dias <= 5 ? 'text-emerald-600' : 'text-amber-600'}`;
+            }
+        } else if (elSla) {
             elSla.textContent = "Sin datos";
-            elSlaSub.textContent = "Sin trámites finalizados";
-            elSlaSub.className = "text-[11px] font-medium mt-1 text-slate-400";
+            if (elSlaSub) {
+                elSlaSub.textContent = "Sin trámites finalizados";
+                elSlaSub.className = "text-[11px] font-medium mt-1 text-slate-400";
+            }
         }
 
         // Efectividad
-        document.getElementById("rep-efectividad").textContent = `${glob.indice_efectividad || 0}%`;
+        const elEfe = document.getElementById("rep-efectividad");
+        if (elEfe) elEfe.textContent = `${glob.indice_efectividad || 0}%`;
         const efeSub = document.getElementById("rep-efectividad-sub");
         if (efeSub) {
             efeSub.textContent = `${glob.total_finalizados || 0} completados · ${glob.total_anulados || 0} anulados`;

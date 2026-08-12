@@ -10,25 +10,15 @@ const fileSizePreview = document.getElementById("file-size-preview");
 const btnRemovePdf = document.getElementById("btn-remove-pdf");
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const rolUsuario = getEffectiveRole(); 
-    
+    const form = document.getElementById("form-proceso");
+    if (form) {
+        form.addEventListener("submit", guardarCorrespondenciaPagina);
+    }
+
+    const rolUsuario = getEffectiveRole();
+
     const contenedorDerivacion = document.getElementById("contenedor_derivacion");
     const selectArea = document.getElementById("area_solicitante");
-
-    if (rolUsuario === "SOLICITANTE") {
-        if (contenedorDerivacion) contenedorDerivacion.style.display = "none";
-        if (selectArea) selectArea.removeAttribute("required");
-    }
-
-    if (!["ADMIN", "RPC", "PRESUPUESTO"].includes(rolUsuario)) {
-        const btnCatalogos = document.getElementById("menu-catalogos");
-        if (btnCatalogos) btnCatalogos.style.display = "none";
-    }
-
-    if (!["SOLICITANTE", "SECRETARIA"].includes(rolUsuario)) {
-        const btnSidebar = document.getElementById("btn-nuevo-proceso-sidebar");
-        if (btnSidebar) btnSidebar.style.display = "none";
-    }
 
     const fechaEl = document.getElementById('fecha_solicitud');
     if (fechaEl && !fechaEl.value) {
@@ -37,12 +27,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const unidades = await window.API.unidades.listar();
+        const userUnidadId = localStorage.getItem("user_unidad_id");
         if (selectArea) {
-            selectArea.innerHTML = '<option value="">Seleccione el Área a derivar...</option>';
+            selectArea.innerHTML = '<option value="">Seleccione el Área Solicitante...</option>';
             unidades.forEach(unidad => {
                 const option = document.createElement("option");
-                option.value = unidad.id; 
-                option.textContent = unidad.nombre; 
+                option.value = unidad.id;
+                option.textContent = unidad.nombre;
+                if (userUnidadId && String(unidad.id) === String(userUnidadId)) {
+                    option.selected = true;
+                }
                 selectArea.appendChild(option);
             });
         }
@@ -85,7 +79,7 @@ function manejarSeleccionArchivo() {
     if (pdfInput && pdfInput.files.length > 0) {
         const file = pdfInput.files[0];
         if (file.type !== "application/pdf") {
-            toast.warning("Por favor adjunte un archivo en formato PDF.");
+            if (typeof toast !== 'undefined') toast.warning("Por favor adjunte un archivo en formato PDF.");
             pdfInput.value = "";
             resetearDropzone();
             return;
@@ -114,61 +108,65 @@ function resetearDropzone() {
     }
 }
 
-if (form) {
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault(); 
-        
-        if (!pdfInput || !pdfInput.files.length) {
-            toast.warning("Debe adjuntar la solicitud escaneada en formato PDF.");
-            return;
-        }
+async function guardarCorrespondenciaPagina(e) {
+    e.preventDefault();
 
-        const rolUsuario = getEffectiveRole();
+    const selectArea = document.getElementById("area_solicitante");
+    const objetoEl = document.getElementById("objeto");
+    const fechaEl = document.getElementById("fecha_solicitud");
+    const pdfInput = document.getElementById("pdf_solicitud");
 
-        if (rolUsuario !== "SOLICITANTE" && (!selectArea || !selectArea.value)) {
-            toast.warning("Debe seleccionar un área de derivación válida.");
-            return;
-        }
+    if (!selectArea || !selectArea.value) {
+        window.mostrarToast("Debe seleccionar el Área Solicitante", "error");
+        return;
+    }
+    if (!objetoEl || !objetoEl.value.trim()) {
+        window.mostrarToast("Debe ingresar el Objeto o Nombre de la Solicitud", "error");
+        return;
+    }
+    if (!pdfInput || pdfInput.files.length === 0) {
+        window.mostrarToast("Debe adjuntar la Solicitud Escaneada en formato PDF", "error");
+        return;
+    }
 
+    const btnGuardar = document.getElementById("btn-guardar");
+    if (btnGuardar) {
         btnGuardar.disabled = true;
-        btnGuardar.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...`;
+        btnGuardar.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Registrando Proceso...`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 
-        const variables_ui = {
-            hoja_ruta: document.getElementById("hoja_ruta").value.trim(),
-            objeto: document.getElementById("objeto").value.trim(),
-            fecha_corta: document.getElementById("fecha_solicitud").value,
-            uni_solic: selectArea ? (selectArea.value || "") : "",
-            codigo: "HR-" + Date.now(),
-            proveedor: "POR DEFINIR",
-            nit: "0",
-            desca: "Ventanilla Única",
-            cod_proy: "S/A",
-            tipo_contratacion: "PENDIENTE",
-            monto_total: 0,
-Retencion_val: 0,
-        };
+    const formData = new FormData();
+    formData.append("unidad_solicitante_id", parseInt(selectArea.value));
+    formData.append("objeto", objetoEl.value.trim());
+    formData.append("fecha_solicitud", fechaEl?.value || new Date().toISOString().split('T')[0]);
+    formData.append("pdf_solicitud", pdfInput.files[0]);
 
-        try {
-            const payload = { variables_ui, items: [], gastos: [] };
-            const dataJSON = await window.API.procesos.crear(payload);
-            const proceso_id_final = dataJSON.data.proceso_id;
+    try {
+        const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+        const resp = await fetch("/api/procesos/crear-solicitud-form", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            body: formData
+        });
 
-            const formData = new FormData();
-            formData.append("file", pdfInput.files[0]);
-            await window.API.procesos.subirSolicitud(proceso_id_final, formData);
-
-            toast.success("Trámite ingresado y derivado exitosamente.");
-
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            window.mostrarToast(data.message || "Proceso de contratación iniciado exitosamente", "success");
             setTimeout(() => {
-                window.location.href = `index.html`;
+                window.location.href = "index.html";
             }, 1000);
-
-        } catch (error) {
-            toast.error("Error al ingresar trámite: " + error.message);
+        } else {
+            throw new Error(data.detail || data.message || "Error al registrar el proceso");
+        }
+    } catch (err) {
+        window.mostrarToast(`Error al crear el proceso: ${err.message}`, "error");
+        if (btnGuardar) {
             btnGuardar.disabled = false;
-            btnGuardar.innerHTML = `<i data-lucide="send" class="w-5 h-5"></i> Ingresar Trámite y Derivar`;
+            btnGuardar.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Crear Solicitud de Trámite`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
-    });
+    }
 }

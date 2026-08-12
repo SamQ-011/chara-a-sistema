@@ -52,12 +52,16 @@ class Proceso(Base, AuditoriaMixin):
     unidad_solicitante_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
 
+    # --- NUEVO: VÍNCULO OPCIONAL CON HOJA DE RUTA MADRE (CORRESPONDENCIA PROMOVIDA) ---
+    hoja_ruta_id = Column(Integer, ForeignKey("hojas_ruta.id"), nullable=True, unique=True)
+
     items = relationship("ItemProceso", back_populates="proceso", cascade="all, delete-orphan")
     gastos = relationship("GastoProceso", back_populates="proceso", cascade="all, delete-orphan")
     documentos = relationship("DocumentoProceso", back_populates="proceso", cascade="all, delete-orphan")
     proveedor = relationship("Proveedor", lazy="joined")
     proyecto = relationship("Proyecto", lazy="joined")
     unidad_solicitante = relationship("Unidad", lazy="joined")
+    hoja_ruta_rel = relationship("HojaRuta", back_populates="proceso", lazy="joined")
 
 class ItemProceso(Base, AuditoriaMixin):
     __tablename__ = "items_proceso"
@@ -118,3 +122,89 @@ class LogAuditoria(Base):
     detalle = Column(String(500), nullable=True) # Ej: "Adela no asistió, se deriva directo"
     fecha = Column(DateTime(timezone=True), server_default=func.now())
     ip = Column(String(50), nullable=True)
+
+class HojaRuta(Base, AuditoriaMixin):
+    __tablename__ = "hojas_ruta"
+
+    id = Column(Integer, primary_key=True, index=True)
+    numero_hr = Column(String(50), unique=True, index=True, nullable=False) # ej: "HR-2026-0089"
+    
+    fecha_recepcion = Column(DateTime, server_default=func.now())
+    usuario_recepcion_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    
+    tipo_remitente = Column(String(50), default="INSTITUCIONAL") # INSTITUCIONAL / PARTICULAR
+    nombre_remitente = Column(String(200), nullable=False)        # ej: "Pedro Quispe"
+    cargo_remitente = Column(String(200), nullable=True)         # ej: "Presidente OTB Charaña"
+    telefono_remitente = Column(String(50), nullable=True)       # ej: "71543210"
+    
+    cite_origen = Column(String(100), nullable=True)            # ej: "CITE N° 045/2026"
+    fecha_doc_origen = Column(String(20), nullable=True)         # ej: "2026-08-08"
+    tipo_documento = Column(String(50), default="CARTA")        # CARTA, MEMORIAL, SOLICITUD
+    asunto = Column(String(500), nullable=False)
+    nro_fojas = Column(Integer, default=1)
+    anexos = Column(String(255), nullable=True)                 # ej: "1 CD + 2 carpetas"
+    
+    unidad_actual_id = Column(Integer, ForeignKey("unidades.id"), nullable=False)
+    estado_general = Column(String(50), default="EN_BANDEJA")   # EN_BANDEJA, EN_PROCESO, RESPONDIDO, PROMOVIDO_A_COMPRA
+    
+    usuario_recepcion = relationship("Usuario", foreign_keys=[usuario_recepcion_id], lazy="joined")
+    unidad_actual = relationship("Unidad", foreign_keys=[unidad_actual_id], lazy="joined")
+    correspondencia = relationship("Correspondencia", back_populates="hoja_ruta", uselist=False, cascade="all, delete-orphan")
+    proceso = relationship("Proceso", back_populates="hoja_ruta_rel", uselist=False)
+    derivaciones = relationship("DerivacionHojaRuta", back_populates="hoja_ruta", cascade="all, delete-orphan")
+
+class Correspondencia(Base, AuditoriaMixin):
+    __tablename__ = "correspondencias"
+
+    id = Column(Integer, primary_key=True, index=True)
+    hoja_ruta_id = Column(Integer, ForeignKey("hojas_ruta.id"), unique=True, nullable=False)
+    
+    estado = Column(String(50), default="PENDIENTE")  # PENDIENTE, EN_PROCESO, RESPONDIDO, ARCHIVADO
+    
+    # Acuse de recibo
+    acusado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    fecha_acuse = Column(DateTime, nullable=True)
+    
+    # Respuesta final
+    cite_respuesta = Column(String(100), nullable=True)
+    resumen_respuesta = Column(String(500), nullable=True)
+    ruta_archivo_respuesta = Column(String(500), nullable=True)
+    fecha_atencion = Column(DateTime, nullable=True)
+    
+    hoja_ruta = relationship("HojaRuta", back_populates="correspondencia")
+    acusado_por = relationship("Usuario", foreign_keys=[acusado_por_id], lazy="joined")
+    movimientos = relationship("CorrespondenciaMovimiento", back_populates="correspondencia", order_by="CorrespondenciaMovimiento.fecha", cascade="all, delete-orphan")
+
+
+class CorrespondenciaMovimiento(Base):
+    """Historial de acciones realizadas sobre una correspondencia."""
+    __tablename__ = "correspondencia_movimientos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    correspondencia_id = Column(Integer, ForeignKey("correspondencias.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+
+    tipo = Column(String(50), nullable=False)  # RECEPCION, ACUSE, NOTA, RESPUESTA, PROMOCION
+    descripcion = Column(String(1000), nullable=False)
+    fecha = Column(DateTime, server_default=func.now())
+
+    correspondencia = relationship("Correspondencia", back_populates="movimientos")
+    usuario = relationship("Usuario", foreign_keys=[usuario_id], lazy="joined")
+
+class DerivacionHojaRuta(Base):
+    __tablename__ = "derivaciones_hoja_ruta"
+
+    id = Column(Integer, primary_key=True, index=True)
+    hoja_ruta_id = Column(Integer, ForeignKey("hojas_ruta.id"), nullable=False)
+    
+    unidad_origen_id = Column(Integer, ForeignKey("unidades.id"), nullable=False)
+    unidad_destino_id = Column(Integer, ForeignKey("unidades.id"), nullable=False)
+    usuario_emisor_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    
+    instruccion_proveido = Column(String(500), nullable=False) # ej: "Para informe técnico"
+    fecha_derivacion = Column(DateTime, server_default=func.now())
+    
+    hoja_ruta = relationship("HojaRuta", back_populates="derivaciones")
+    unidad_origen = relationship("Unidad", foreign_keys=[unidad_origen_id], lazy="joined")
+    unidad_destino = relationship("Unidad", foreign_keys=[unidad_destino_id], lazy="joined")
+    usuario_emisor = relationship("Usuario", foreign_keys=[usuario_emisor_id], lazy="joined")
