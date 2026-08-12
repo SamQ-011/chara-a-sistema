@@ -6,10 +6,13 @@ from app.api import catalogos, procesos, rutas_auth, rutas_usuarios, rutas_corre
 
 app = FastAPI(title="API Hoja de Ruta - GAMCH")
 
-# Configuración de CORS para permitir que el frontend se conecte sin bloqueos
+from app.core.config import settings
+
+# Configuración de CORS segura para entorno local y red LAN institucional
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,18 +21,18 @@ app.add_middleware(
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-class NoCacheStaticMiddleware(BaseHTTPMiddleware):
+class SmartStaticCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        if request.url.path.startswith("/static/") and (
-            request.url.path.endswith(".js") or request.url.path.endswith(".css") or request.url.path.endswith(".html")
-        ):
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
+        path = request.url.path
+        if path.startswith("/static/"):
+            if path.endswith(".html"):
+                response.headers["Cache-Control"] = "no-cache, must-revalidate"
+            elif any(path.endswith(ext) for ext in [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".woff2"]):
+                response.headers["Cache-Control"] = "public, max-age=3600"
         return response
 
-app.add_middleware(NoCacheStaticMiddleware)
+app.add_middleware(SmartStaticCacheMiddleware)
 
 from pathlib import Path
 

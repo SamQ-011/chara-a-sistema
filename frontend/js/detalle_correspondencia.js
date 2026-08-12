@@ -134,10 +134,10 @@ function renderizarTimeline(movimientos, derivaciones) {
             </div>
             <div class="flex-1 bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900">${m.usuario_nombre}</span>
-                    <span class="text-[10px] text-slate-400 font-medium">${m.fecha}</span>
+                    <span class="font-bold text-slate-900">${escapeHtml(m.usuario_nombre)}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">${escapeHtml(m.fecha)}</span>
                 </div>
-                <p class="text-slate-700 leading-relaxed font-medium">${m.descripcion}</p>
+                <p class="text-slate-700 leading-relaxed font-medium">${escapeHtml(m.descripcion)}</p>
             </div>
         </div>
         `;

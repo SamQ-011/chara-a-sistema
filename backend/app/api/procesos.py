@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from fastapi.responses import FileResponse, StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from datetime import datetime
 from sqlalchemy import func, or_, case, extract
 from sqlalchemy.orm import Session, joinedload
@@ -10,6 +11,7 @@ import pythoncom
 import os
 import shutil
 import zipfile
+import uuid
 
 
 from app.core.base_datos import get_db
@@ -19,30 +21,7 @@ from app.models.tablas_transaccionales import Proceso, ItemProceso, EstadoProces
 from app.models.tablas_base import Proyecto, Unidad, Proveedor, Usuario
 from app.schemas.proceso import ProcesoCreate, PayloadDocumento, ProcesoUpdate, FusionPayload
 from app.services.generador_documentos import orquestar_generacion_documento
-
-def evaluar_estado_proceso(proceso):
-    if proceso.estado == EstadoProceso.ANULADO:
-        return 
-        
-    # Extraemos claves únicas
-    docs_generados = {doc.clave_documento for doc in proceso.documentos if doc.estado == EstadoDocumento.FINALIZADO}
-    
-    # Lógica de equivalencia: Si el usuario hizo ambos almacenes, se marca el paso "almacenes" como cumplido
-    if "ingreso_almacenes" in docs_generados and "salida_almacenes" in docs_generados:
-        docs_generados.add("almacenes")
-    
-    requeridos = MATRIZ_REQUISITOS["ESTANDAR"]
-    
-    # Evaluación
-    if not docs_generados:
-        proceso.estado = EstadoProceso.BORRADOR
-    elif requeridos.issubset(docs_generados):
-        proceso.estado = EstadoProceso.FINALIZADO
-    # Si ya tienen el informe de conformidad pero faltan otros, el proceso está "atascado" (Con Pendientes)
-    elif "informe_conformidad" in docs_generados:
-        proceso.estado = EstadoProceso.CON_PENDIENTES
-    else:
-        proceso.estado = EstadoProceso.EN_CURSO
+from app.services.proceso_service import evaluar_estado_proceso, resolver_firmante_solicitante, generar_codigo_proceso
 
 # El prefix maneja la ruta base, así mantenemos los endpoints limpios
 router = APIRouter(
@@ -52,7 +31,13 @@ router = APIRouter(
 )
 
 @router.get("/")
-def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
+def listar_procesos(
+    unidad_id: Optional[int] = None, 
+    skip: Optional[int] = None,
+    limit: Optional[int] = None,
+    db: Session = Depends(get_db), 
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
     # Cargamos también la relación con la Unidad
     query = db.query(Proceso).options(
         joinedload(Proceso.documentos),
@@ -76,6 +61,12 @@ def listar_procesos(unidad_id: Optional[int] = None, db: Session = Depends(get_d
         else:
             query = query.filter(Proceso.usuario_id == int(user_id))
     
+    query = query.order_by(Proceso.id.desc())
+    if skip is not None:
+        query = query.offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+
     procesos_db = query.all()
         
     resultado = []
@@ -446,38 +437,7 @@ def descargar_reporte_excel(db: Session = Depends(get_db), usuario_actual: dict 
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-def resolver_firmante_solicitante(db: Session, unidad_id: Optional[int], usuario_actual_db: Optional[Usuario]) -> tuple[str, str]:
-    """
-    Resuelve el nombre y cargo de la autoridad firmante para la unidad solicitante.
-    Si la unidad tiene un responsable asignado (Titular), devuelve sus datos para que un
-    pasante o auxiliar genere el documento legal a nombre del Titular.
-    """
-    if unidad_id:
-        unidad_db = db.query(Unidad).filter(Unidad.id == unidad_id, Unidad.activo == True).first()
-        if unidad_db and unidad_db.responsable_id:
-            titular = db.query(Usuario).filter(Usuario.id == unidad_db.responsable_id, Usuario.activo == True).first()
-            if titular:
-                titulo = f"{titular.titulo.strip()} " if titular.titulo and titular.titulo.strip() else ""
-                return f"{titulo}{titular.nombre_completo}", titular.cargo or ""
-        
-        # Buscar usuario titular de esa unidad (rol SOLICITANTE)
-        titular = db.query(Usuario).filter(
-            Usuario.unidad_id == unidad_id,
-            Usuario.activo == True,
-            Usuario.rol == "SOLICITANTE"
-        ).first()
-        if titular:
-            titulo = f"{titular.titulo.strip()} " if titular.titulo and titular.titulo.strip() else ""
-            return f"{titulo}{titular.nombre_completo}", titular.cargo or ""
 
-    if usuario_actual_db:
-        titulo = f"{usuario_actual_db.titulo.strip()} " if usuario_actual_db.titulo and usuario_actual_db.titulo.strip() else ""
-        return f"{titulo}{usuario_actual_db.nombre_completo}", usuario_actual_db.cargo or ""
-
-def generar_codigo_proceso(db: Session) -> str:
-    ult = db.query(Proceso).order_by(Proceso.id.desc()).first()
-    num = (ult.id + 1) if ult else 1
-    return f"PROC-2026-{num:04d}"
 
 @router.post("/crear-solicitud-form", status_code=201)
 async def crear_solicitud_proceso_form(
@@ -519,9 +479,15 @@ async def crear_solicitud_proceso_form(
     db.flush()
 
     if pdf_solicitud and pdf_solicitud.filename:
+        nombre_base = os.path.basename(pdf_solicitud.filename)
+        ext = os.path.splitext(nombre_base)[1].lower()
+        if ext != ".pdf":
+            raise HTTPException(status_code=400, detail="El archivo adjunto debe ser estrictamente en formato PDF (.pdf).")
+
         folder = os.path.join("uploads", "procesos", str(nuevo_proceso.id))
         os.makedirs(folder, exist_ok=True)
-        filepath = os.path.join(folder, f"solicitud_inicial_{pdf_solicitud.filename}")
+        unique_filename = f"solicitud_inicial_{uuid.uuid4().hex[:8]}.pdf"
+        filepath = os.path.join(folder, unique_filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(pdf_solicitud.file, buffer)
 
@@ -1040,8 +1006,36 @@ def guardar_datos_documento(proceso_id: int, payload: PayloadDocumento, db: Sess
 
     return {"success": True, "estado": payload.estado}
 
+def _convertir_archivo_a_pdf_sync(abs_origen: str, abs_destino: str):
+    pythoncom.CoInitialize()
+    try:
+        if abs_origen.lower().endswith(".docx"):
+            from docx2pdf import convert
+            convert(abs_origen, abs_destino)
+        elif abs_origen.lower().endswith(".xlsx"):
+            import win32com.client
+            excel = None
+            wb = None
+            try:
+                excel = win32com.client.Dispatch("Excel.Application")
+                excel.Visible = False
+                excel.DisplayAlerts = False
+                wb = excel.Workbooks.Open(abs_origen)
+                wb.ExportAsFixedFormat(0, abs_destino)
+            finally:
+                if wb:
+                    try: wb.Close(False)
+                    except Exception: pass
+                if excel:
+                    try: excel.Quit()
+                    except Exception: pass
+        else:
+            raise ValueError(f"No hay motor PDF para este formato: {abs_origen}")
+    finally:
+        pythoncom.CoUninitialize()
+
 @router.get("/{proceso_id}/documentos/{tipo_documento}")
-def descargar_documento_individual(
+async def descargar_documento_individual(
     proceso_id: int, 
     tipo_documento: str, 
     formato: Optional[str] = "word",
@@ -1087,38 +1081,10 @@ def descargar_documento_individual(
             abs_origen = os.path.abspath(ruta_word)
             abs_destino = os.path.abspath(ruta_pdf)
             
-            pythoncom.CoInitialize()
             try:
-                # MOTOR 1: Si es Word
-                if ruta_word.lower().endswith(".docx"):
-                    from docx2pdf import convert
-                    convert(abs_origen, abs_destino)
-                
-                # MOTOR 2: Si es Excel (Ultra-robusto con rutas absolutas y cierre garantizado)
-                elif ruta_word.lower().endswith(".xlsx"):
-                    import win32com.client
-                    excel = None
-                    wb = None
-                    try:
-                        excel = win32com.client.Dispatch("Excel.Application")
-                        excel.Visible = False
-                        excel.DisplayAlerts = False
-                        wb = excel.Workbooks.Open(abs_origen)
-                        wb.ExportAsFixedFormat(0, abs_destino)
-                    finally:
-                        if wb:
-                            try: wb.Close(False)
-                            except Exception: pass
-                        if excel:
-                            try: excel.Quit()
-                            except Exception: pass
-                
-                else:
-                    raise HTTPException(status_code=500, detail=f"No hay motor PDF para este formato: {ruta_word}")
+                await run_in_threadpool(_convertir_archivo_a_pdf_sync, abs_origen, abs_destino)
             except Exception as ex:
                 raise HTTPException(status_code=500, detail=f"Error convirtiendo a PDF: {str(ex)}")
-            finally:
-                pythoncom.CoUninitialize() 
                 
             if not os.path.exists(ruta_pdf):
                 raise HTTPException(status_code=500, detail="Falló la conversión a PDF mediante COM.")
@@ -1131,13 +1097,14 @@ def descargar_documento_individual(
             
         else:
             raise HTTPException(status_code=400, detail="Formato no soportado.")
-            
+    except HTTPException:
+        raise
     except Exception as e:
         print("=== ERROR CRÍTICO EN GENERACIÓN ===")
         import traceback
         traceback.print_exc()
         print("===================================")
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al procesar solicitud de documento: {str(e)}")
 
     
 
@@ -1150,7 +1117,8 @@ async def subir_pdf_solicitud(proceso_id: int, file: UploadFile = File(...), db:
     if proceso.estado == EstadoProceso.ANULADO:
         raise HTTPException(status_code=400, detail="Este trámite ha sido ANULADO / FUSIONADO y no permite la subida de nuevos archivos.")
 
-    if not file.filename.lower().endswith(".pdf"):
+    nombre_base = os.path.basename(file.filename)
+    if not nombre_base.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="El archivo adjunto debe ser estrictamente un PDF.")
 
     # Guardamos directamente en su expediente (Resultados/Proceso_X/)

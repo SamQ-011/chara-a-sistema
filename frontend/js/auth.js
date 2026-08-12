@@ -1,28 +1,34 @@
 // frontend/js/auth.js
 
-function verificarTokenYPagina() {
-    const token = localStorage.getItem("access_token");
-    if (!token && !window.location.pathname.includes("login.html")) {
+window.GAMCH = window.GAMCH || {};
+
+window.GAMCH.Auth = {
+    verificarTokenYPagina: function () {
+        const token = localStorage.getItem("access_token");
+        if (!token && !window.location.pathname.includes("login.html")) {
+            window.location.href = "login.html";
+        }
+    },
+    getEffectiveRole: function () {
+        return localStorage.getItem("user_rol_efectivo") || localStorage.getItem("user_rol") || "SOLICITANTE";
+    },
+    cerrarSesion: function () {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user_rol");
+        localStorage.removeItem("user_rol_efectivo");
+        localStorage.removeItem("user_nombre");
+        localStorage.removeItem("user_cargo");
+        localStorage.removeItem("unidad_id");
         window.location.href = "login.html";
     }
-}
+};
+
+// Aliases globales para mantener 100% de compatibilidad
+window.verificarTokenYPagina = window.GAMCH.Auth.verificarTokenYPagina;
+window.getEffectiveRole = window.GAMCH.Auth.getEffectiveRole;
+window.cerrarSesion = window.GAMCH.Auth.cerrarSesion;
 
 verificarTokenYPagina();
-
-// Función global para obtener el rol efectivo (Heredado de la Unidad para Pasantes y Auxiliares)
-function getEffectiveRole() {
-    return localStorage.getItem("user_rol_efectivo") || localStorage.getItem("user_rol") || "SOLICITANTE";
-}
-
-// Función global para cerrar sesión
-function cerrarSesion() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user_rol");
-    localStorage.removeItem("user_rol_efectivo");
-    localStorage.removeItem("user_nombre");
-    localStorage.removeItem("user_cargo");
-    window.location.href = "login.html";
-}
 
 document.addEventListener("DOMContentLoaded", () => {
     const elNombre = document.getElementById("ui-user-name");

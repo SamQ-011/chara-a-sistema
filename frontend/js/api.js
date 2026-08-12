@@ -2,6 +2,19 @@
 const API_BASE_URL = window.ENV?.API_URL || (window.location.origin.startsWith("http") ? `${window.location.origin}/api` : "http://127.0.0.1:8000/api");
 
 /* =========================================
+   HELPER GLOBAL DE SANITIZACIÓN XSS
+========================================= */
+window.escapeHtml = function (str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
+
+/* =========================================
    HELPER GLOBAL DE NORMALIZACIÓN DE ÍTEMS (DRY)
 ========================================= */
 window.normalizarItem = function (i) {
@@ -163,7 +176,13 @@ async function request(endpoint, options = {}) {
         const response = await fetch(url, config);
 
         if (response.status === 401) {
-            if (typeof cerrarSesion === "function") cerrarSesion();
+            if (typeof window.ocultarCarga === "function") window.ocultarCarga();
+            if (typeof window.cerrarSesion === "function") {
+                window.cerrarSesion();
+            } else {
+                localStorage.removeItem("access_token");
+                window.location.href = "login.html";
+            }
             throw new Error("Sesión expirada o inválida.");
         }
 
@@ -171,12 +190,14 @@ async function request(endpoint, options = {}) {
         const data = isJson ? await response.json() : null;
 
         if (!response.ok) {
+            if (typeof window.ocultarCarga === "function") window.ocultarCarga();
             throw new Error(data?.message || data?.detail || "Error en la petición al servidor");
         }
 
         return data;
 
     } catch (error) {
+        if (typeof window.ocultarCarga === "function") window.ocultarCarga();
         console.error(`[API ERROR] ${endpoint}`, error.message);
         throw error;
     }
@@ -389,3 +410,6 @@ window.API = {
     catalogos: CatalogosAPI,
     correspondencia: CorrespondenciaAPI
 };
+
+window.GAMCH = window.GAMCH || {};
+window.GAMCH.API = window.API;

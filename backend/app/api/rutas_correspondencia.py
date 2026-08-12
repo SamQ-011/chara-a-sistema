@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime
-import os, shutil
+import os, shutil, uuid
 
 from app.core.base_datos import get_db
 from app.models.tablas_base import Usuario, Unidad
@@ -60,10 +60,18 @@ async def registrar_ingreso_correspondencia_form(
 
     ruta_guardada = None
     if pdf_solicitud and pdf_solicitud.filename:
+        nombre_base = os.path.basename(pdf_solicitud.filename)
+        ext = os.path.splitext(nombre_base)[1].lower()
+        if ext != ".pdf":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El archivo adjunto debe ser estrictamente un documento en formato PDF (.pdf)."
+            )
+
         folder = os.path.join("uploads", "correspondencia")
         os.makedirs(folder, exist_ok=True)
-        filename = f"{num_hr.replace('/', '_')}_{pdf_solicitud.filename}"
-        ruta_guardada = os.path.join(folder, filename)
+        unique_filename = f"{num_hr.replace('/', '_')}_{uuid.uuid4().hex[:8]}.pdf"
+        ruta_guardada = os.path.join(folder, unique_filename)
         with open(ruta_guardada, "wb") as buffer:
             shutil.copyfileobj(pdf_solicitud.file, buffer)
 
@@ -184,6 +192,8 @@ def registrar_ingreso_correspondencia(
 def listar_correspondencia(
     unidad_id: Optional[int] = None,
     estado: Optional[str] = None,
+    skip: Optional[int] = None,
+    limit: Optional[int] = None,
     db: Session = Depends(get_db),
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
@@ -217,7 +227,13 @@ def listar_correspondencia(
     if estado:
         query = query.filter(HojaRuta.estado_general == estado)
 
-    hrs = query.order_by(HojaRuta.id.desc()).all()
+    query = query.order_by(HojaRuta.id.desc())
+    if skip is not None:
+        query = query.offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+
+    hrs = query.all()
 
     resultado = []
     for hr in hrs:

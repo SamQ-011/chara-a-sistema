@@ -2,6 +2,8 @@
 let correspondenciasCache = [];
 let filtroEstadoActual = "TODOS";
 let correspondenciaSeleccionadaId = null;
+let paginaActualCorr = 1;
+const TAMANO_PAGINA_CORR = 50;
 document.addEventListener("DOMContentLoaded", async () => {
     verificarTokenYPagina();
     if (document.getElementById("tabla-correspondencia")) {
@@ -183,10 +185,20 @@ function renderizarTablaCorrespondencia() {
         tbody.innerHTML = `
             <tr><td colspan="6" class="py-12 text-center text-slate-400 font-medium">No se encontraron correspondencias en esta vista.</td></tr>
         `;
+        renderizarControlesPaginacionCorrespondencia(0, 0, 0);
         return;
     }
 
-    tbody.innerHTML = datos.map(c => {
+    const totalRegistros = datos.length;
+    const totalPaginas = Math.ceil(totalRegistros / TAMANO_PAGINA_CORR) || 1;
+    if (paginaActualCorr > totalPaginas) paginaActualCorr = totalPaginas;
+    if (paginaActualCorr < 1) paginaActualCorr = 1;
+
+    const inicio = (paginaActualCorr - 1) * TAMANO_PAGINA_CORR;
+    const fin = Math.min(inicio + TAMANO_PAGINA_CORR, totalRegistros);
+    const datosPagina = datos.slice(inicio, fin);
+
+    tbody.innerHTML = datosPagina.map(c => {
         let badgeEstado = '<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">En Bandeja</span>';
         if (c.estado_general === "EN_PROCESO") {
             badgeEstado = '<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">🔵 En Proceso</span>';
@@ -218,27 +230,27 @@ function renderizarTablaCorrespondencia() {
         return `
         <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
             <td class="px-6 py-4 font-mono font-bold text-indigo-900 text-xs whitespace-nowrap align-middle">
-                ${c.numero_hr}
-                <span class="block text-[10px] text-slate-400 font-normal font-sans">${c.fecha_recepcion}</span>
+                ${escapeHtml(c.numero_hr)}
+                <span class="block text-[10px] text-slate-400 font-normal font-sans">${escapeHtml(c.fecha_recepcion)}</span>
             </td>
 
             <td class="px-6 py-4 align-middle">
                 <div class="flex flex-col">
-                    <span class="font-bold text-slate-900 text-xs">${c.nombre_remitente}</span>
-                    <span class="text-[11px] text-slate-500 font-medium">${c.cargo_remitente || 'Particular'}</span>
-                    ${c.cite_origen ? `<span class="text-[10px] font-mono text-indigo-700 font-bold">${c.cite_origen}</span>` : ''}
+                    <span class="font-bold text-slate-900 text-xs">${escapeHtml(c.nombre_remitente)}</span>
+                    <span class="text-[11px] text-slate-500 font-medium">${escapeHtml(c.cargo_remitente || 'Particular')}</span>
+                    ${c.cite_origen ? `<span class="text-[10px] font-mono text-indigo-700 font-bold">${escapeHtml(c.cite_origen)}</span>` : ''}
                 </div>
             </td>
 
             <td class="px-6 py-4 align-middle">
-                <p class="line-clamp-2 text-xs font-medium text-slate-800 leading-relaxed" title="${c.asunto}">
-                    ${c.asunto}
+                <p class="line-clamp-2 text-xs font-medium text-slate-800 leading-relaxed" title="${escapeHtml(c.asunto)}">
+                    ${escapeHtml(c.asunto)}
                 </p>
             </td>
 
             <td class="px-6 py-4 align-middle whitespace-nowrap">
                 <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                    📍 ${c.unidad_actual}
+                    📍 ${escapeHtml(c.unidad_actual)}
                 </span>
             </td>
 
@@ -253,8 +265,49 @@ function renderizarTablaCorrespondencia() {
         `;
     }).join("");
 
+    renderizarControlesPaginacionCorrespondencia(inicio, fin, totalRegistros);
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
+function renderizarControlesPaginacionCorrespondencia(inicio, fin, total) {
+    const tbody = document.getElementById("tabla-correspondencia");
+    let pagContainer = document.getElementById("paginacion-corr-container");
+    if (!pagContainer && tbody) {
+        const parentTable = tbody.closest("table")?.parentElement;
+        if (parentTable) {
+            pagContainer = document.createElement("div");
+            pagContainer.id = "paginacion-corr-container";
+            pagContainer.className = "flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-600 font-medium";
+            parentTable.appendChild(pagContainer);
+        }
+    }
+    if (!pagContainer) return;
+
+    if (total === 0) {
+        pagContainer.innerHTML = `<span class="text-slate-400 font-normal">Sin registros para mostrar</span>`;
+        return;
+    }
+
+    const totalPaginas = Math.ceil(total / TAMANO_PAGINA_CORR);
+
+    pagContainer.innerHTML = `
+        <span>Mostrando <strong class="text-slate-900">${inicio + 1}</strong> a <strong class="text-slate-900">${fin}</strong> de <strong class="text-slate-900">${total}</strong> correspondencias</span>
+        <div class="flex items-center gap-2">
+            <button onclick="cambiarPaginaCorrespondencia(-1)" ${paginaActualCorr <= 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition cursor-pointer">
+                ← Anterior
+            </button>
+            <span class="font-bold text-slate-700 px-2">Pág. ${paginaActualCorr} / ${totalPaginas}</span>
+            <button onclick="cambiarPaginaCorrespondencia(1)" ${paginaActualCorr >= totalPaginas ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition cursor-pointer">
+                Siguiente →
+            </button>
+        </div>
+    `;
+}
+
+window.cambiarPaginaCorrespondencia = function(dir) {
+    paginaActualCorr += dir;
+    renderizarTablaCorrespondencia();
+};
 
 function filtrarCorrespondencias() {
     renderizarTablaCorrespondencia();

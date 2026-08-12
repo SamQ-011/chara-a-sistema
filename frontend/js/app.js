@@ -9,6 +9,8 @@ const buscador = document.getElementById("buscador");
 let procesosCache = [];
 let listasClasificadas = { pendientes: [], procesados: [] };
 let tabActual = "PENDIENTES";
+let paginaActualProcesos = 1;
+const TAMANO_PAGINA_PROCESOS = 50;
 
 const estados = {
     BORRADOR: { color: "bg-slate-100 text-slate-700 border-slate-300", icono: "📝" },
@@ -296,12 +298,22 @@ function pintarTabla(datos) {
 
     if (!datos || datos.length === 0) {
         tabla.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-400 font-medium">No se encontraron trámites en esta vista.</td></tr>`;
+        renderizarControlesPaginacionProcesos(0, 0, 0);
         return;
     }
 
+    const totalRegistros = datos.length;
+    const totalPaginas = Math.ceil(totalRegistros / TAMANO_PAGINA_PROCESOS) || 1;
+    if (paginaActualProcesos > totalPaginas) paginaActualProcesos = totalPaginas;
+    if (paginaActualProcesos < 1) paginaActualProcesos = 1;
+
+    const inicio = (paginaActualProcesos - 1) * TAMANO_PAGINA_PROCESOS;
+    const fin = Math.min(inicio + TAMANO_PAGINA_PROCESOS, totalRegistros);
+    const datosPagina = datos.slice(inicio, fin);
+
     const rol = localStorage.getItem("user_rol") || "SOLICITANTE";
     
-    tabla.innerHTML = datos.map(p => {
+    tabla.innerHTML = datosPagina.map(p => {
         const estadoObj = estados[p.estado] || estados.BORRADOR;
         const docsListos = p.docs_finalizados || [];
         
@@ -388,15 +400,15 @@ function pintarTabla(datos) {
                 ${checkboxHabilitado}
             </td>
 
-            <td class="px-6 py-4 font-mono font-bold text-blue-900 text-xs whitespace-nowrap align-middle">${p.hoja_ruta || p.codigo_proceso}</td>
+            <td class="px-6 py-4 font-mono font-bold text-blue-900 text-xs whitespace-nowrap align-middle">${escapeHtml(p.hoja_ruta || p.codigo_proceso)}</td>
             
             <td class="px-6 py-4 text-slate-700 align-middle">
                 <div class="flex flex-col gap-1">
-                    <span class="line-clamp-2 font-semibold text-slate-900 text-xs leading-snug" title="${p.objeto_contratacion || 'Sin objeto definido'}">
-                        ${p.objeto_contratacion || 'Sin objeto definido'}
+                    <span class="line-clamp-2 font-semibold text-slate-900 text-xs leading-snug" title="${escapeHtml(p.objeto_contratacion || 'Sin objeto definido')}">
+                        ${escapeHtml(p.objeto_contratacion || 'Sin objeto definido')}
                     </span>
                     <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> ${p.unidad_solicitante || 'Sin Unidad Asignada'}
+                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> ${escapeHtml(p.unidad_solicitante || 'Sin Unidad Asignada')}
                     </span>
                 </div>
             </td>
@@ -421,9 +433,49 @@ function pintarTabla(datos) {
         </tr>
         `;
     }).join("");
-    
+
+    renderizarControlesPaginacionProcesos(inicio, fin, totalRegistros);
     lucide.createIcons();
 }
+
+function renderizarControlesPaginacionProcesos(inicio, fin, total) {
+    let pagContainer = document.getElementById("paginacion-procesos-container");
+    if (!pagContainer && tabla) {
+        const parentTable = tabla.closest("table")?.parentElement;
+        if (parentTable) {
+            pagContainer = document.createElement("div");
+            pagContainer.id = "paginacion-procesos-container";
+            pagContainer.className = "flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-600 font-medium";
+            parentTable.appendChild(pagContainer);
+        }
+    }
+    if (!pagContainer) return;
+
+    if (total === 0) {
+        pagContainer.innerHTML = `<span class="text-slate-400 font-normal">Sin registros para mostrar</span>`;
+        return;
+    }
+
+    const totalPaginas = Math.ceil(total / TAMANO_PAGINA_PROCESOS);
+
+    pagContainer.innerHTML = `
+        <span>Mostrando <strong class="text-slate-900">${inicio + 1}</strong> a <strong class="text-slate-900">${fin}</strong> de <strong class="text-slate-900">${total}</strong> trámites</span>
+        <div class="flex items-center gap-2">
+            <button onclick="cambiarPaginaProcesos(-1)" ${paginaActualProcesos <= 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition cursor-pointer">
+                ← Anterior
+            </button>
+            <span class="font-bold text-slate-700 px-2">Pág. ${paginaActualProcesos} / ${totalPaginas}</span>
+            <button onclick="cambiarPaginaProcesos(1)" ${paginaActualProcesos >= totalPaginas ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition cursor-pointer">
+                Siguiente →
+            </button>
+        </div>
+    `;
+}
+
+window.cambiarPaginaProcesos = function(dir) {
+    paginaActualProcesos += dir;
+    renderizarVistaActual();
+};
 
 /*=========================================
     KPIS Y UTILIDADES

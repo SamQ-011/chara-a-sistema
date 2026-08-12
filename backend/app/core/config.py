@@ -13,6 +13,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 horas de jornada laboral
+    
+    # CORS
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost",
+        "http://localhost:8000",
+        "http://127.0.0.1",
+        "http://127.0.0.1:8000"
+    ]
 
     # Configuración de carga automática de archivos de entorno (Estándar Pydantic v2)
     model_config = SettingsConfigDict(
